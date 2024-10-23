@@ -1,17 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-class PageC extends StatefulWidget {
+@RoutePage()
+class PageC extends StatelessWidget {
   const PageC({super.key});
 
   @override
-  State<PageC> createState() => _PageCState();
-}
-
-class _PageCState extends State<PageC> {
-  @override
   Widget build(BuildContext context) {
     return Container(
-      child: Text('ページB'),
+      child: Text('ページC'),
     );
   }
 }

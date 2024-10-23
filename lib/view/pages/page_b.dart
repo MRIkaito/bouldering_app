@@ -1,13 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-class PageB extends StatefulWidget {
+@RoutePage()
+class PageB extends StatelessWidget {
   const PageB({super.key});
 
-  @override
-  State<PageB> createState() => _PageBState();
-}
-
-class _PageBState extends State<PageB> {
   @override
   Widget build(BuildContext context) {
     return Container(

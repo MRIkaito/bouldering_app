@@ -1,6 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 // 遷移先のページ
+@RoutePage()
 class SearchGimPage extends StatelessWidget {
   const SearchGimPage({Key? key}) : super(key: key);
 

@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.0
   flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -55,7 +56,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - lib/view/assets/rock.svg
+    - lib/view/assets/app_main_icon.svg
+    - lib/view/assets/rock_selected.svg
+    - lib/view/assets/rock_unselected.svg
+    - lib/view/assets/map_image.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

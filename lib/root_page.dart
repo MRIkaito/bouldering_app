@@ -1,8 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:bouldering_app/view/pages/home_page.dart';
-import 'package:bouldering_app/view/pages/my_page.dart';
-import 'package:bouldering_app/view/pages/page_b.dart';
-import 'package:bouldering_app/view/pages/page_c.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 

@@ -48,7 +48,7 @@ abstract class _$AppRouter extends RootStackRouter {
     MyRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const MyPage(),
+        child: const UnloginedMyPage(),
       );
     },
     RootRoute.name: (routeData) {
@@ -131,7 +131,7 @@ class RouteC extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [MyPage]
+/// [UnloginedMyPage]
 class MyRoute extends PageRouteInfo<void> {
   const MyRoute({List<PageRouteInfo>? children})
       : super(

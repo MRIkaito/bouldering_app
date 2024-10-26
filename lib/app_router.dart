@@ -3,7 +3,7 @@ import 'package:bouldering_app/root_page.dart';
 import 'package:bouldering_app/view/pages/home_page.dart';
 import 'package:bouldering_app/view/pages/page_b.dart';
 import 'package:bouldering_app/view/pages/page_c.dart';
-import 'package:bouldering_app/view/pages/my_page.dart';
+import 'package:bouldering_app/view/pages/unlogined_my_page.dart';
 import 'package:bouldering_app/view/pages/search_gim_page.dart';
 
 part 'app_router.gr.dart';

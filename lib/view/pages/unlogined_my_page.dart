@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -16,38 +17,8 @@ class UnloginedMyPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, // 左揃え
             children: [
-              // 「ゲストボルダー」部分
-              Container(
-                width: 375,
-                height: 72,
-                padding: const EdgeInsets.only(left: 6, right: 114),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFFEEEEEE),
-                        shape: OvalBorder(),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "ゲストボルダー",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 24,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        height: 1.2,
-                        letterSpacing: -0.50,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // ユーザーのロゴ・ユーザ名部分
+              const UserLogoAndName(userName: 'ゲストボルダー'),
 
               // 24ピクセルのスペースを設ける
               const SizedBox(height: 24),

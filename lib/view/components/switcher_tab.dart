@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 
 class SwitcherTab extends StatelessWidget {
   const SwitcherTab(
-      {super.key, required this.leftTabName, required this.rightTabName});
+      {super.key,
+      required this.leftTabName,
+      required this.rightTabName,
+      this.colorCode = 0xFFFEF7FF});
   final String leftTabName;
   final String rightTabName;
+  final int colorCode;
 
   @override
   Widget build(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(40.0),
       child: Container(
-        color: Colors.white,
+        color: Color(colorCode),
         child: TabBar(
           indicatorColor: const Color(0xFF0056FF),
           labelColor: const Color(0xFF0056FF),

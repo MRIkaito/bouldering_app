@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bouldering_app/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,12 +61,15 @@ class HomePage extends StatelessWidget {
                 MaterialPageRoute(
                     builder: (context) => SearchGimPage()), // 遷移先のページ
               );
+
+              // ページ遷移の際,レプレースするコード例
+              // context.router.replace(const SearchGimRoute());
             },
             borderRadius: BorderRadius.circular(32), // タッチエフェクトの範囲をボーダーに合わせる
             splashColor: Colors.grey.withOpacity(0.3), // タップ時のエフェクトカラー
 
             child: Container(
-              width: 344,
+              width: 360,
               height: 64,
               child: Stack(
                 children: [
@@ -73,7 +77,7 @@ class HomePage extends StatelessWidget {
                     left: 0,
                     top: 0,
                     child: Container(
-                      width: 344,
+                      width: 360,
                       height: 64,
                       decoration: ShapeDecoration(
                         color: Colors.white,
@@ -91,7 +95,7 @@ class HomePage extends StatelessWidget {
                       'ボルダリング以外の種目も検索できます',
                       style: TextStyle(
                         color: Color(0xFFD9D9D9),
-                        fontSize: 12,
+                        fontSize: 14,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w600,
                         height: 0.11,
@@ -101,9 +105,9 @@ class HomePage extends StatelessWidget {
                   ),
                   const Positioned(
                     left: 64,
-                    top: 16,
+                    top: 18,
                     child: Text(
-                      'ジムを探す',
+                      '条件からジムを探す',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16,

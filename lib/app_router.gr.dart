@@ -36,7 +36,7 @@ abstract class _$AppRouter extends RootStackRouter {
     RouteB.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const PageB(),
+        child: const BoulLogPage(),
       );
     },
     RouteC.name: (routeData) {
@@ -103,7 +103,7 @@ class HomeRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [PageB]
+/// [BoulLogPage]
 class RouteB extends PageRouteInfo<void> {
   const RouteB({List<PageRouteInfo>? children})
       : super(

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bouldering_app/view/pages/page_c.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -44,7 +45,30 @@ class RootPage extends StatelessWidget {
                 label: 'マイページ',
               ),
             ],
-            onDestinationSelected: tabsRouter.setActiveIndex,
+            // onDestinationSelected: tabsRouter.setActiveIndex,
+            onDestinationSelected: (index) {
+              if (index == 2) {
+                // 投稿タブが選択されたらモーダルを表示
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: PageC(), // 投稿用のモーダルウィジェットを表示
+                    );
+                  },
+                );
+              } else {
+                tabsRouter.setActiveIndex(index);
+              }
+            },
           ),
         );
       },

@@ -37,6 +37,7 @@ class AppRouter extends _$AppRouter {
             AutoRoute(
               path: 'page_c',
               page: RouteC.page,
+              fullscreenDialog: true, // モーダル表示を可能にする設定を追加
             ),
             AutoRoute(
               path: 'my_page',

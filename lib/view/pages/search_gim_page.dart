@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/gim_category.dart';
+import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
 
 // 遷移先のページ
@@ -158,10 +159,17 @@ class _SearchGimPageState extends State<SearchGimPage> {
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // 設定した条件に応じて、検索押下
+                    // Navigatorで画面遷移を行う
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SearchedGimListPage(),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
-                    // padding:
-                    //     const EdgeInsets.symmetric(horizontal: 32, vertical: 0),
                     fixedSize: const Size(304, 32),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

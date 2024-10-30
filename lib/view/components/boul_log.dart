@@ -2,35 +2,18 @@ import 'package:flutter/material.dart';
 
 class BoulLog extends StatelessWidget {
   final String userName;
-  //final String userRole;
   final String date;
   final String gymName;
   final String gymLocation;
   final String activity;
-  // final String userIconUrl;
-  // final String imageUrl;
 
   const BoulLog({
     super.key,
-    /* 本来はすべて必要・・・本番では下記のrequiredをつける */
-    // required this.userName,
-    // required this.userRole,
-    // required this.date,
-    // required this.gymName,
-    // required this.gymLocation,
-    // required this.activity,
-    // required this.userIconUrl,
-    // required this.imageUrl,
-
-    // デモ用：userIconUrl, imageUrlは，設定する必要あり．今はただの◯とか写真をベタ書きで設定
-    this.userName = 'ムラーん',
-    // this.userRole,
+    this.userName = 'ムラーン',
     this.date = '2024.09.23',
     this.gymName = 'Folkボルダリングジム',
     this.gymLocation = '[神奈川県]',
     this.activity = 'いまセッションやってます！',
-    // this.userIconUrl,
-    // this.imageUrl,
   });
 
   @override
@@ -46,7 +29,6 @@ class BoulLog extends StatelessWidget {
               // 丸いアイコン部分
               const CircleAvatar(
                 radius: 24,
-                // backgroundImage: NetworkImage(userIconUrl),    // 本番はDBから取得したアイコンを表示
                 backgroundImage:
                     AssetImage("lib/view/assets/test_user_icon.png"),
               ),
@@ -113,14 +95,6 @@ class BoulLog extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 // 活動の画像
-                // 下記，本番用
-                // Image.network(
-                //   imageUrl,
-                //   height: 150,
-                //   width: double.infinity,
-                //   fit: BoxFit.cover,
-                // ),
-                // 下記，ここからデモ用
                 Container(
                   width: 359,
                   height: 136,
@@ -134,17 +108,15 @@ class BoulLog extends StatelessWidget {
                     ),
                   ),
                 ),
-                // ここまでデモ用
               ],
             ),
           ),
           // 下線
           const SizedBox(height: 8),
-          // 下線部分
           Container(
             width: MediaQuery.of(context).size.width - 16,
             height: 1,
-            color: Color(0xFFB1B1B1),
+            color: const Color(0xFFB1B1B1),
           ),
         ],
       ),

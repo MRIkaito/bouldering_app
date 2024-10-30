@@ -1,7 +1,5 @@
 import 'package:bouldering_app/view/components/gim_category.dart';
 import 'package:flutter/material.dart';
-import 'package:bouldering_app/view/components/bouldering.dart';
-import 'package:bouldering_app/view/components/kids.dart';
 
 class GimCard extends StatelessWidget {
   final String gymName;
@@ -52,27 +50,32 @@ class GimCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Placeholder for gym images, using Flutter logo for demo purposes
-              // ジムの紹介写真を配置する．今は適当な画像でデモ表示する
-              ...List.generate(
-                  3,
-                  (index) => Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          // image: AssetImage("lib/view/assets/map_image.png"),
-                          child: Image.asset(
-                            'lib/view/assets/map_image.png',
-                            width: 132,
-                            height: 100,
-                            fit: BoxFit.cover,
+
+          // 更新：横スクロールできるようにした。
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Placeholder for gym images, using Flutter logo for demo purposes
+                // ジムの紹介写真を配置する．今は適当な画像でデモ表示する
+                ...List.generate(
+                    3,
+                    (index) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            // image: AssetImage("lib/view/assets/map_image.png"),
+                            child: Image.asset(
+                              'lib/view/assets/map_image.png',
+                              width: 132,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                      )),
-            ],
+                        )),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Row(

@@ -57,11 +57,16 @@ class RootPage extends StatelessWidget {
                         BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (context) {
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                    return Container(
+                      // モーダルウィンドウの高さを，画面全体(height)からappBarの分を引いた大きさに設定
+                      height:
+                          (MediaQuery.of(context).size.height - kToolbarHeight),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                        child: PageC(), // 投稿用のモーダルウィジェットを表示
                       ),
-                      child: PageC(), // 投稿用のモーダルウィジェットを表示
                     );
                   },
                 );

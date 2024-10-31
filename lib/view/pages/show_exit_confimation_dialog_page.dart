@@ -13,6 +13,7 @@ class _ShowExitConfirmationDialogPageState
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _isChecked = false; // 退会するかチェックを入れるチェックボックスの変数
 
   @override
   void initState() {
@@ -37,7 +38,26 @@ class _ShowExitConfirmationDialogPageState
       opacity: _animation,
       child: AlertDialog(
         title: const Text('本当に退会しますか？'),
-        content: const Text('退会後、あなたのデータはすべて消去されます。この操作は取り消せません。'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('退会後、あなたのデータはすべて消去されます。この操作は取り消せません。'),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                  value: _isChecked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isChecked = value ?? false;
+                    });
+                  },
+                ),
+                const Text('退会します'),
+              ],
+            ),
+          ],
+        ),
         actions: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,12 +72,16 @@ class _ShowExitConfirmationDialogPageState
                 ),
               ),
               TextButton(
-                onPressed: () {
-                  // 退会処理をここに実装
-                },
-                child: const Text(
+                onPressed: _isChecked
+                    ? () {
+                        // 退会処理をここに実装
+                      }
+                    : null,
+                child: Text(
                   'はい',
-                  style: TextStyle(color: Colors.red),
+                  style: _isChecked
+                      ? const TextStyle(color: Colors.red)
+                      : const TextStyle(color: Colors.grey),
                 ),
               ),
             ],

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class SettingItem extends StatelessWidget{
+class SettingItem extends StatelessWidget {
   final String text;
-  const SettingItem({Key? key, required this.text}): super(key:key);
+  const SettingItem({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 352,
+      width: MediaQuery.of(context).size.width,
       height: 48,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -20,18 +20,17 @@ class SettingItem extends StatelessWidget{
             child: Text(
               text,
               style: const TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                height: 0.05
-              ),
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w600,
+                  height: 0.05),
             ),
           ),
           Transform(
-            transform: Matrix4.identity()..rotateZ(3.14),
+            transform: Matrix4.identity()..rotateZ(0),
             child: const Text(
-              '<',
+              '>',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.black,

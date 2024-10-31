@@ -3,6 +3,7 @@ import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
+import 'package:bouldering_app/view/pages/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -14,7 +15,23 @@ class LoginedMyPage extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                  icon: const Icon(Icons.settings, size: 32.0),
+                  onPressed: () {
+                    // 設定画面二ページ遷移
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SettingPage()),
+                    );
+                  }),
+            ),
+          ],
+        ),
         body: SafeArea(
           child: NestedScrollView(
             headerSliverBuilder:

@@ -27,20 +27,10 @@ class SettingItem extends StatelessWidget {
                   height: 0.05),
             ),
           ),
-          Transform(
-            transform: Matrix4.identity()..rotateZ(0),
-            child: const Text(
-              '>',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontFamily: 'SF Pro Text',
-                fontWeight: FontWeight.w600,
-                height: 0.07,
-                letterSpacing: -0.50,
-              ),
-            ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.black,
+            size: 20,
           ),
         ],
       ),

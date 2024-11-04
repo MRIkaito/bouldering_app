@@ -15,6 +15,7 @@ class SwitcherTab extends StatelessWidget {
     return PreferredSize(
       preferredSize: const Size.fromHeight(40.0),
       child: Container(
+        height: 48,
         color: Color(colorCode),
         child: TabBar(
           indicatorColor: const Color(0xFF0056FF),

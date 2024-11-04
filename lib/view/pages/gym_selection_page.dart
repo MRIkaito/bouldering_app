@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/components/gym_tile.dart';
+import 'package:bouldering_app/view/pages/facility_info_page.dart';
 import 'package:flutter/material.dart';
 
 class GymSelectionPage extends StatelessWidget {

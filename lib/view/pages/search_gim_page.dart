@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/gim_category.dart';
+import 'package:bouldering_app/view/pages/gym_selection_page.dart';
 import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,8 @@ class SearchGimPage extends StatefulWidget {
 }
 
 class _SearchGimPageState extends State<SearchGimPage> {
+  // String selectedGym = '';
+
   final List<String> hokkaidoTohoku = [
     '北海道',
     '青森県',
@@ -91,6 +94,34 @@ class _SearchGimPageState extends State<SearchGimPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    readOnly: true, // 選択のみを可能にする
+                    onTap: () async {
+                      // GymSelectionPage に遷移して選択したジム名を取得
+                      await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) =>
+                              const GymSelectionPage(),
+                          transitionDuration: Duration.zero, // アニメーションを無効化
+                          reverseTransitionDuration:
+                              Duration.zero, // 戻り時のアニメーションも無効化
+                        ),
+                      );
+
+                      // final result = await Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const GymSelectionPage(),
+                      //   ),
+                      // );
+
+                      // 選択したジム名を設定
+                      // if ((result != null) && (result is String)) {
+                      //   setState(() {
+                      //     selectedGym = result;
+                      //   });
+                      // }
+                    },
                     decoration: InputDecoration(
                       hintText: 'エリア・施設名・キーワード',
                       border: OutlineInputBorder(
@@ -104,6 +135,10 @@ class _SearchGimPageState extends State<SearchGimPage> {
                 TextButton(
                   onPressed: () {
                     // 検索ボックスのクリア
+                    // setState(() {
+                    //   selectedGym = '';
+                    // });
+                    print("クリアボタン押下");
                   },
                   child:
                       const Text('クリア', style: TextStyle(color: Colors.blue)),

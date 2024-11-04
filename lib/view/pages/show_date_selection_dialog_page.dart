@@ -16,7 +16,6 @@ class _ShowDateSelectionDialogPageState
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  DateTime _selectedDate = DateTime.now();
   late bool isBoulderingDebut;
 
   int _selectedYear = DateTime.now().year;

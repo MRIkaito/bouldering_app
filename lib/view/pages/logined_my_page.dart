@@ -3,6 +3,8 @@ import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
+import 'package:bouldering_app/view/pages/favored_by_user_page.dart';
+import 'package:bouldering_app/view/pages/favorite_user_page.dart';
 import 'package:bouldering_app/view/pages/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,19 +56,37 @@ class LoginedMyPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Button(
+                              onPressedFunction: () => {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          FavoriteUserPage()), // 遷移先のページ
+                                ),
+                              },
                               buttonName: "お気に入り",
                               buttonWidth:
                                   ((MediaQuery.of(context).size.width) / 2) -
                                       24,
                               buttonHeight: 36,
+                              buttonColorCode: 0xFFE3DCE4,
                               buttonTextColorCode: 0xFF000000,
                             ),
                             Button(
+                              onPressedFunction: () => {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          FavoredByUserPage()), // 遷移先のページ
+                                ),
+                              },
                               buttonName: "お気に入られ",
                               buttonWidth:
                                   ((MediaQuery.of(context).size.width) / 2) -
                                       24,
                               buttonHeight: 36,
+                              buttonColorCode: 0xFFE3DCE4,
                               buttonTextColorCode: 0xFF000000,
                             ),
                           ],

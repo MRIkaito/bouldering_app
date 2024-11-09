@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/switcher_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
@@ -37,7 +38,7 @@ class SearchedGimListPage extends StatelessWidget {
             ),
 
             // タブバー
-            const SwitcherTab(leftTabName: "施設情報", rightTabName: "ボル活"),
+            const SwitcherTab(leftTabName: "施　設", rightTabName: "ボル活"),
 
             // タブビュー内でのリスト
             Expanded(
@@ -129,21 +130,38 @@ class SearchedGimListPage extends StatelessWidget {
                     ),
                   ),
 
-                  // 2つ目のタブの内容（例として同じリストを表示）
+                  // 2つ目のタブの内容
+                  // 検索条件に関連するジムのボル活を表示する
                   SingleChildScrollView(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // チューニングアイコンと検索条件
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.tune),
+                                onPressed: () {},
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 8, right: 8, bottom: 8),
+                                child: const Text("神奈川県のジム施設"),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // ジムリスト
                         ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          itemCount: 3, // ダミーデータとして3つのジムを表示
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 5,
                           itemBuilder: (context, index) {
-                            return const GimCard(
-                              gymName: 'Folkボルダリングジム',
-                              gymLocation: '[神奈川県]',
-                              ikitaiCount: 200,
-                              boulCount: 400,
-                            );
+                            return const BoulLog();
                           },
                         ),
                       ],

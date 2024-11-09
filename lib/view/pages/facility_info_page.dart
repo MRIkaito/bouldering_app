@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/gim_category.dart';
 import 'package:bouldering_app/view/components/switcher_tab.dart';
 import 'package:flutter/material.dart';
@@ -147,7 +148,14 @@ class FacilityInfoPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text("Test")
+
+                // 施設名と同じ名称のボル活を時系列順に表示する予定
+                ListView.builder(
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return const BoulLog();
+                  },
+                ),
               ]),
             ),
 

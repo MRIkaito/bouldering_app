@@ -8,17 +8,19 @@ class StaticsReportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: const Center(
-        child: Column(
-          children: [
-            StaticsReport(),
-            SizedBox(
-              height: 8,
-            ),
-            StaticsReport(
-              backgroundColor: 0xFF8D8D8D,
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              StaticsReport(),
+              SizedBox(
+                height: 8,
+              ),
+              StaticsReport(
+                backgroundColor: 0xFF8D8D8D,
+              ),
+            ],
+          ),
         ),
       ),
     );

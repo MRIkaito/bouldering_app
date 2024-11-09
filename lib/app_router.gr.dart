@@ -15,10 +15,40 @@ abstract class _$AppRouter extends RootStackRouter {
 
   @override
   final Map<String, PageFactory> pagesMap = {
+    ActivityPostRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ActivityPostPage(),
+      );
+    },
+    UnloginedMyRouterRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const UnloginedMyRouterPage(),
+      );
+    },
+    UnloginedMyRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const UnloginedMyPage(),
+      );
+    },
+    LoginOrSignUpRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const LoginOrSignUpPage(),
+      );
+    },
     SearchGimRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const SearchGimPage(),
+      );
+    },
+    BoulLogRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const BoulLogPage(),
       );
     },
     HomeRouterRoute.name: (routeData) {
@@ -33,24 +63,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const HomePage(),
       );
     },
-    RouteB.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BoulLogPage(),
-      );
-    },
-    RouteC.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: ActivityPostPage(),
-      );
-    },
-    MyRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const UnloginedMyPage(),
-      );
-    },
     RootRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -58,6 +70,62 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
   };
+}
+
+/// generated route for
+/// [ActivityPostPage]
+class ActivityPostRoute extends PageRouteInfo<void> {
+  const ActivityPostRoute({List<PageRouteInfo>? children})
+      : super(
+          ActivityPostRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ActivityPostRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [UnloginedMyRouterPage]
+class UnloginedMyRouterRoute extends PageRouteInfo<void> {
+  const UnloginedMyRouterRoute({List<PageRouteInfo>? children})
+      : super(
+          UnloginedMyRouterRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'UnloginedMyRouterRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [UnloginedMyPage]
+class UnloginedMyRoute extends PageRouteInfo<void> {
+  const UnloginedMyRoute({List<PageRouteInfo>? children})
+      : super(
+          UnloginedMyRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'UnloginedMyRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [LoginOrSignUpPage]
+class LoginOrSignUpRoute extends PageRouteInfo<void> {
+  const LoginOrSignUpRoute({List<PageRouteInfo>? children})
+      : super(
+          LoginOrSignUpRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LoginOrSignUpRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for
@@ -70,6 +138,20 @@ class SearchGimRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SearchGimRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [BoulLogPage]
+class BoulLogRoute extends PageRouteInfo<void> {
+  const BoulLogRoute({List<PageRouteInfo>? children})
+      : super(
+          BoulLogRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BoulLogRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }
@@ -98,48 +180,6 @@ class HomeRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'HomeRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [BoulLogPage]
-class RouteB extends PageRouteInfo<void> {
-  const RouteB({List<PageRouteInfo>? children})
-      : super(
-          RouteB.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'RouteB';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [ActivityPostPage]
-class RouteC extends PageRouteInfo<void> {
-  const RouteC({List<PageRouteInfo>? children})
-      : super(
-          RouteC.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'RouteC';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [UnloginedMyPage]
-class MyRoute extends PageRouteInfo<void> {
-  const MyRoute({List<PageRouteInfo>? children})
-      : super(
-          MyRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'MyRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

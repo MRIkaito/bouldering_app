@@ -14,9 +14,9 @@ class RootPage extends StatelessWidget {
     return AutoTabsRouter(
       routes: const [
         HomeRoute(),
-        RouteB(),
-        RouteC(),
-        MyRoute(),
+        BoulLogRoute(),
+        ActivityPostRoute(),
+        UnloginedMyRoute(),
       ],
       builder: (context, child) {
         // タブが切り替わると発火します

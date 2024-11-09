@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 @RoutePage()
+class UnloginedMyRouterPage extends AutoRouter {
+  const UnloginedMyRouterPage({super.key});
+}
+
+@RoutePage()
 class UnloginedMyPage extends StatelessWidget {
   const UnloginedMyPage({super.key});
 

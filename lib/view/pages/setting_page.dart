@@ -7,7 +7,6 @@ import 'package:bouldering_app/view/pages/show_exit_confimation_dialog_page.dart
 import 'package:bouldering_app/view/pages/show_mail_address_confirmation_dialog_page.dart';
 
 // 遷移先のページ
-@RoutePage()
 class SettingPage extends StatelessWidget {
   const SettingPage({Key? key}) : super(key: key);
 

@@ -42,6 +42,12 @@ class _ActivityPostPageState extends State<ActivityPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: const Text('ボル活投稿'),
         actions: [
           TextButton(

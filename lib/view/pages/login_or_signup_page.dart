@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/mail_adress_form.dart';
@@ -6,6 +7,7 @@ import 'package:bouldering_app/view/components/switcher_tab.dart';
 import 'package:bouldering_app/view/pages/logined_my_page.dart';
 import 'package:flutter/material.dart';
 
+@RoutePage()
 class LoginOrSignUpPage extends StatelessWidget {
   const LoginOrSignUpPage({super.key});
 

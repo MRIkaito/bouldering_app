@@ -191,7 +191,7 @@ class HomePage extends StatelessWidget {
                           left: 8.90,
                           top: 8.41,
                           child: SizedBox(
-                            width: 159,
+                            width: 160,
                             height: 13,
                             child: Text(
                               '地図からジムを探す',

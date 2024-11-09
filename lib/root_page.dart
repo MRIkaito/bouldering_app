@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:bouldering_app/view/pages/page_c.dart';
+import 'package:bouldering_app/view/pages/activity_post_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -65,7 +65,7 @@ class RootPage extends StatelessWidget {
                         padding: EdgeInsets.only(
                           bottom: MediaQuery.of(context).viewInsets.bottom,
                         ),
-                        child: PageC(), // 投稿用のモーダルウィジェットを表示
+                        child: ActivityPostPage(), // 投稿用のモーダルウィジェットを表示
                       ),
                     );
                   },

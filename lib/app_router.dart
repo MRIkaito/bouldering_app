@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/root_page.dart';
 import 'package:bouldering_app/view/pages/home_page.dart';
 import 'package:bouldering_app/view/pages/boul_log_page.dart';
-import 'package:bouldering_app/view/pages/page_c.dart';
+import 'package:bouldering_app/view/pages/activity_post_page.dart';
 import 'package:bouldering_app/view/pages/unlogined_my_page.dart';
 import 'package:bouldering_app/view/pages/search_gim_page.dart';
 

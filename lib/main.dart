@@ -5,6 +5,8 @@
 import 'package:bouldering_app/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 
 /* ============================================
  * ・種別
@@ -16,7 +18,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
  * ・補足
  * Riverpodによる状態管理を行うため、ProviderScopeで囲う
  * ============================================ */
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform, // Firebase設定を指定
+  // );
   runApp(ProviderScope(child: App()));
 }
 

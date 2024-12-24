@@ -42,5 +42,15 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Drawioファイル
-*.drawio
+# 情報まとめ
+/temp/
+
+# バックエンドAPI
+/functions/
+
+# Firebase
+.firebaserc
+firebase.json
+
+# test
+.test/*

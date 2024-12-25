@@ -23,6 +23,7 @@ class SubmitFormWidget extends StatelessWidget {
         fillColor: Colors.grey[200],
         hintText: hintText,
       ),
+      onChanged: onSubmitTextChanged, // 入力が変更されるたびコールバック関数を呼び出す．
     );
   }
 }

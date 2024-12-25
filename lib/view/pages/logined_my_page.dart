@@ -18,6 +18,7 @@ class LoginedMyPage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false, // 戻るボタンを非表示
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),

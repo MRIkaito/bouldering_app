@@ -9,7 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 @RoutePage()
 class LoginOrSignUpPage extends StatefulWidget {
-  const LoginOrSignUpPage({Key? key}) : super(key: key);
+  const LoginOrSignUpPage({super.key});
 
   @override
   _LoginOrSignUpPageState createState() => _LoginOrSignUpPageState();
@@ -107,6 +107,7 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                       ],
                     ),
                   ),
+
                   // 新規登録タブの中身
                   Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -161,14 +162,11 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                         const SizedBox(height: 24),
                         Button(
                             buttonName: "新規登録",
-                            // onPressedFunction: () => {
-                            //       Navigator.push(
-                            //       context,
-                            //           MaterialPageRoute(
-                            //               builder: (context) =>
-                            //                   LoginedMyPage()))
-                            //     }
                             onPressedFunction: () async {
+                              if (_mailAddress.isEmpty || _password.isEmpty) {
+                                print("メールアドレスまたはパスワードが空です");
+                                return;
+                              }
                               try {
                                 // メールアドレス・パスワードでユーザー登録
                                 final FirebaseAuth auth = FirebaseAuth.instance;
@@ -184,8 +182,8 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                                   }),
                                 );
                               } catch (e) {
-                                // ユーザー登録に失敗した場合
-                                // 失敗した旨を示すメッセージを表示？
+                                print("エラー");
+                                print(e);
                               }
                             }),
                       ],
@@ -200,139 +198,3 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
     );
   }
 }
-
-
-///////////////////////////////////////////////////////
-// @RoutePage()
-// class LoginOrSignUpPage extends StatelessWidget {
-//   const LoginOrSignUpPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return DefaultTabController(
-//       length: 2,
-//       child: Scaffold(
-//         appBar: AppBar(
-//           elevation: 0,
-//         ),
-//         body: Column(
-//           children: [
-//             // タブバー部分
-//             const SwitcherTab(leftTabName: "ログイン", rightTabName: "新規登録"),
-
-//             // タブの内容部分
-//             Expanded(
-//               child: TabBarView(
-//                 children: [
-//                   // ログインタブの中身
-//                   Padding(
-//                     padding: const EdgeInsets.all(16.0),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         // 余白
-//                         const SizedBox(height: 32),
-//                         // ロゴ
-//                         const AppLogo(),
-//                         // 余白
-//                         const SizedBox(height: 24),
-//                         // メールアドレスの入力欄
-//                         const Text(
-//                           'メールアドレス',
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                             fontSize: 18,
-//                             fontWeight: FontWeight.w600,
-//                           ),
-//                         ),
-//                         // 余白
-//                         const SizedBox(height: 8),
-//                         // メールアドレス テキストフォーム
-//                         const MailAdressFormWidget(),
-//                         // 余白
-//                         const SizedBox(height: 24),
-//                         // パスワードの入力欄
-//                         const Text(
-//                           'パスワード',
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                             fontSize: 18,
-//                             fontWeight: FontWeight.w600,
-//                           ),
-//                         ),
-//                         // 余白
-//                         const SizedBox(height: 8),
-//                         // パスワードテキストフォーム
-//                         const PasswordForm(),
-//                         // 余白
-//                         const SizedBox(height: 24),
-//                         // ログインボタン
-//                         Button(
-//                             buttonName: "ログイン",
-//                             onPressedFunction: () => {
-//                                   Navigator.push(
-//                                       context,
-//                                       MaterialPageRoute(
-//                                           builder: (context) =>
-//                                               LoginedMyPage()))
-//                                 }),
-//                       ],
-//                     ),
-//                   ),
-//                   // 新規登録タブの中身
-//                   Padding(
-//                     padding: const EdgeInsets.all(16.0),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         // 余白
-//                         const SizedBox(height: 32),
-//                         // アイコン
-//                         const AppLogo(),
-//                         // 余白
-//                         const SizedBox(height: 24),
-//                         // メールアドレスの入力欄
-//                         const Text(
-//                           'メールアドレス',
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                             fontSize: 18,
-//                             fontWeight: FontWeight.w600,
-//                           ),
-//                         ),
-//                         const SizedBox(height: 8),
-//                         const MailAdressFormWidget(),
-//                         const SizedBox(height: 24),
-//                         // パスワードの入力欄
-//                         const Text(
-//                           'パスワード',
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                             fontSize: 18,
-//                             fontWeight: FontWeight.w600,
-//                           ),
-//                         ),
-//                         const SizedBox(height: 8),
-//                         const PasswordForm(),
-//                         const SizedBox(height: 24),
-//                         Button(
-//                             buttonName: "新規登録",
-//                             onPressedFunction: () => {
-//                                   Navigator.push(
-//                                       context,
-//                                       MaterialPageRoute(
-//                                           builder: (context) =>
-//                                               LoginedMyPage()))
-//                                 }),
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

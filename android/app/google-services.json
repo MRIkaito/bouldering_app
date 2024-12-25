@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "198136283431",
+    "project_id": "boulderapp-cfb41",
+    "storage_bucket": "boulderapp-cfb41.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198136283431:android:96fe1bfe5c15e8bde92902",
+        "android_client_info": {
+          "package_name": "com.example.bouldering_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7mpw3i9ojUaeRi799CGp-EWgWmRSBzQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

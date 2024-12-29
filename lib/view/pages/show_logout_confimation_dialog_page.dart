@@ -1,3 +1,5 @@
+import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ShowLogoutConfirmationDialogPage extends StatefulWidget {
@@ -55,8 +57,20 @@ class _ShowLogoutConfirmationDialogPageState
                 ),
               ),
               TextButton(
-                onPressed: () {
-                  // 退会処理をここに実装
+                onPressed: () async {
+                  try {
+                    // 退会処理をここに実装
+                    await FirebaseAuth.instance.signOut();
+                    // すべての画面を取り除き、ログイン画面に戻る
+                    // GoRouterの `go` メソッドを使用してログインページへ遷移
+                    context.go('/unlogined'); // `UnloginedMyRoute` に対応するパスを指定
+                    // // ログイン画面に遷移
+                    // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    //     builder: (context) => LoginOrSignUpPage()));
+                  } catch (e) {
+                    // エラーハンドリング
+                    print("ログアウト中にエラーが発生しました: $e");
+                  }
                 },
                 child: const Text('はい', style: TextStyle(color: Colors.red)),
               ),

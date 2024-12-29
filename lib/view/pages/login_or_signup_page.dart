@@ -16,8 +16,101 @@ class LoginOrSignUpPage extends StatefulWidget {
 }
 
 class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
+/* ============================================
+ * ・変数
+ * String _mailAndPasswordCheck：パスワードを管理する変数
+ * String _mailAddress：メールアドレスを管理する変数
+ *
+ * ============================================ */
   String _password = ''; // パスワードを管理する変数
   String _mailAddress = ''; // メールアドレスを管理する変数
+
+/* ============================================
+ * ・関数
+ * _mailAndPasswordCheck
+ *
+ * ・引数
+ * String _mailAddress：メールアドレス
+ * String _password：パスワード
+ * BuildContext context：ウィジェットツリー情報
+ *
+ * ・説明
+ * メールアドレス・パスワードがから出ないことを確認する
+ * 空の場合は何も発生しない
+ * 初めてアカウント作成する場合は，作成後にマイページに遷移する
+ * すでにアカウントがある場合は，エラーが発生する
+ *
+ * ・補足
+ *
+ * ============================================ */
+  void _signUp(
+      String mailAddress, String password, BuildContext context) async {
+    if (mailAddress.isEmpty || password.isEmpty) {
+      print("メールアドレスまたはパスワードが空です");
+      return;
+    }
+
+    try {
+      // メールアドレス・パスワードでユーザー登録
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      await auth.createUserWithEmailAndPassword(
+        email: mailAddress,
+        password: password,
+      );
+      // ユーザー登録に成功した時
+      // マイページに遷移+ログイン・サインアップ画面を吐き
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) {
+          return LoginedMyPage(); // ユーザID情報を渡す必要があると思う
+        }),
+      );
+    } catch (e) {
+      print("エラー発生：$e");
+    }
+  }
+
+  /* ============================================
+ * ・関数
+ * _
+ *
+ * ・引数
+ * String _mailAddress：メールアドレス
+ * String _password：パスワード
+ * BuildContext context：ウィジェットツリー情報
+ *
+ * ・説明
+ * メールアドレス・パスワードがから出ないことを確認する
+ * 空の場合は何も発生しない
+ * 初めてアカウント作成する場合は，作成後にマイページに遷移する
+ * すでにアカウントがある場合は，エラーが発生する
+ *
+ * ・補足
+ *
+ * ============================================ */
+  void _login(String mailAddress, String password, BuildContext context) async {
+    if (mailAddress.isEmpty || password.isEmpty) {
+      print("メールアドレスまたはパスワードが空です");
+      return;
+    }
+
+    try {
+      // メールアドレス・パスワードでユーザー登録
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      await auth.signInWithEmailAndPassword(
+        email: mailAddress,
+        password: password,
+      );
+      // ユーザー登録に成功した時
+      // マイページに遷移+ログイン・サインアップ画面を吐き
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) {
+          return LoginedMyPage();
+        }),
+      );
+    } catch (e) {
+      print("エラー発生：$e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +118,7 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false, // 戻るボタンを非表示
           elevation: 0,
         ),
         body: Column(
@@ -98,11 +192,7 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                         Button(
                             buttonName: "ログイン",
                             onPressedFunction: () => {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              LoginedMyPage()))
+                                  _login(_mailAddress, _password, context),
                                 }),
                       ],
                     ),
@@ -163,28 +253,7 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                         Button(
                             buttonName: "新規登録",
                             onPressedFunction: () async {
-                              if (_mailAddress.isEmpty || _password.isEmpty) {
-                                print("メールアドレスまたはパスワードが空です");
-                                return;
-                              }
-                              try {
-                                // メールアドレス・パスワードでユーザー登録
-                                final FirebaseAuth auth = FirebaseAuth.instance;
-                                await auth.createUserWithEmailAndPassword(
-                                  email: _mailAddress,
-                                  password: _password,
-                                );
-                                // ユーザー登録に成功した時
-                                // マイページに遷移+ログイン・サインアップ画面を吐き
-                                await Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (context) {
-                                    return LoginedMyPage();
-                                  }),
-                                );
-                              } catch (e) {
-                                print("エラー");
-                                print(e);
-                              }
+                              _signUp(_mailAddress, _password, context);
                             }),
                       ],
                     ),

@@ -1,10 +1,10 @@
 import 'package:bouldering_app/view/pages/edit_profile_page.dart';
 import 'package:bouldering_app/view/pages/show_logout_confimation_dialog_page.dart';
 import 'package:flutter/material.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/setting_item.dart';
 import 'package:bouldering_app/view/pages/show_exit_confimation_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_mail_address_confirmation_dialog_page.dart';
+import 'package:go_router/go_router.dart';
 
 // 遷移先のページ
 class SettingPage extends StatelessWidget {
@@ -18,9 +18,7 @@ class SettingPage extends StatelessWidget {
           child: Column(children: [
         InkWell(
           onTap: () => {
-            // ページ遷移する処理を実装
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => EditProfilePage()))
+            context.push("/EditProfile"),
           },
           child: SettingItem(text: "プロフィール編集"),
         ),

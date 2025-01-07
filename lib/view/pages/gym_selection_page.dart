@@ -2,6 +2,7 @@ import 'package:bouldering_app/view/components/gym_tile.dart';
 import 'package:bouldering_app/view/pages/facility_info_page.dart';
 import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GymSelectionPage extends StatelessWidget {
   // ignore: use_super_parameters
@@ -64,12 +65,8 @@ class GymSelectionPage extends StatelessWidget {
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SearchedGimListPage(),
-                      ),
-                    );
+                    context
+                        .push("/Home/SearchGim/GymSelection/SearchedGimList");
                   },
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size(304, 32),

@@ -1,5 +1,6 @@
 import 'package:bouldering_app/view/pages/facility_info_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GymTile extends StatelessWidget {
   GymTile({super.key});
@@ -24,16 +25,7 @@ class GymTile extends StatelessWidget {
             title: Text(gym['name']!),
             subtitle: Text(gym['location']!),
             onTap: () {
-              // ジム選択時にFacilityInfoPageへ遷移
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FacilityInfoPage(),
-                ),
-              );
-
-              // ジム選択時の処理（選択したジムを渡すなど）
-              //Navigator.pop(context, gym['name']);
+              context.push("/FacilityInfo"); // 選択したジムのパラメータを遷移先に渡すß
             },
           );
         },

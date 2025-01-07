@@ -1,13 +1,11 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/gim_category.dart';
 import 'package:bouldering_app/view/pages/gym_selection_page.dart';
 import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-// 遷移先のページ
-@RoutePage()
 class SearchGimPage extends StatefulWidget {
-  const SearchGimPage({Key? key}) : super(key: key);
+  const SearchGimPage({super.key});
 
   @override
   _SearchGimPageState createState() => _SearchGimPageState();
@@ -97,16 +95,18 @@ class _SearchGimPageState extends State<SearchGimPage> {
                     readOnly: true, // 選択のみを可能にする
                     onTap: () async {
                       // GymSelectionPage に遷移して選択したジム名を取得
-                      await Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) =>
-                              const GymSelectionPage(),
-                          transitionDuration: Duration.zero, // アニメーションを無効化
-                          reverseTransitionDuration:
-                              Duration.zero, // 戻り時のアニメーションも無効化
-                        ),
-                      );
+                      await context.push("/Home/SearchGim/GymSelection");
+                      // 下記コードは上記コードが上手く実行されれば不要．
+                      // await Navigator.push(
+                      //   context,
+                      //   PageRouteBuilder(
+                      //     pageBuilder: (context, animation1, animation2) =>
+                      //         const GymSelectionPage(),
+                      //     transitionDuration: Duration.zero, // アニメーションを無効化
+                      //     reverseTransitionDuration:
+                      //         Duration.zero, // 戻り時のアニメーションも無効化
+                      //   ),
+                      // );
 
                       // final result = await Navigator.push(
                       //   context,
@@ -196,13 +196,7 @@ class _SearchGimPageState extends State<SearchGimPage> {
                 ElevatedButton(
                   onPressed: () {
                     // 設定した条件に応じて、検索押下
-                    // Navigatorで画面遷移を行う
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SearchedGimListPage(),
-                      ),
-                    );
+                    context.push("/Home/SearchGim/SearchedGimList");
                   },
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size(304, 32),

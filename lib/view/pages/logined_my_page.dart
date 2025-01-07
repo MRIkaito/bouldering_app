@@ -8,6 +8,7 @@ import 'package:bouldering_app/view/pages/favorite_user_page.dart';
 import 'package:bouldering_app/view/pages/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginedMyPage extends StatelessWidget {
   const LoginedMyPage({super.key});
@@ -25,12 +26,7 @@ class LoginedMyPage extends StatelessWidget {
               child: IconButton(
                   icon: const Icon(Icons.settings, size: 32.0),
                   onPressed: () {
-                    // 設定画面二ページ遷移
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SettingPage()),
-                    );
+                    context.push('/Setting');
                   }),
             ),
           ],
@@ -58,12 +54,7 @@ class LoginedMyPage extends StatelessWidget {
                           children: [
                             Button(
                               onPressedFunction: () => {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          FavoriteUserPage()), // 遷移先のページ
-                                ),
+                                context.push('/FavoriteUser'),
                               },
                               buttonName: "お気に入り",
                               buttonWidth:
@@ -75,12 +66,7 @@ class LoginedMyPage extends StatelessWidget {
                             ),
                             Button(
                               onPressedFunction: () => {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          FavoredByUserPage()), // 遷移先のページ
-                                ),
+                                context.push("/FaboredByUser"),
                               },
                               buttonName: "お気に入られ",
                               buttonWidth:

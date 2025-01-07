@@ -1,5 +1,6 @@
 import 'package:bouldering_app/view/pages/statics_report_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ThisMonthBoulLog extends StatelessWidget {
   const ThisMonthBoulLog({super.key});
@@ -36,10 +37,7 @@ class ThisMonthBoulLog extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     // ページ繊維
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => StaticsReportPage()));
+                    context.push('/StaticsReport');
                   },
                   child: const Text(
                     '統計レポート >',

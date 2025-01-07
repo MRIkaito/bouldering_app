@@ -1,16 +1,9 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:bouldering_app/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bouldering_app/view/pages/search_gim_page.dart';
 
-@RoutePage()
-class HomeRouterPage extends AutoRouter {
-  const HomeRouterPage({super.key});
-}
-
-@RoutePage()
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -18,10 +11,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        // 上から開始
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // 上から80ピクセルのスペースを作成
           const SizedBox(height: 80),
 
           // アプリアイコン
@@ -49,21 +40,13 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // 余白:48px
           const SizedBox(height: 48),
 
-          // 検索ボックス・・・アプリ名とのマージンが必要
+          // ジム条件検索
           InkWell(
             onTap: () {
               // ページ遷移
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SearchGimPage()), // 遷移先のページ
-              );
-
-              // ページ遷移の際,レプレースするコード例
-              // context.router.replace(const SearchGimRoute());
+              context.push("/Home/SearchGim");
             },
             borderRadius: BorderRadius.circular(32), // タッチエフェクトの範囲をボーダーに合わせる
             splashColor: Colors.grey.withOpacity(0.3), // タップ時のエフェクトカラー
@@ -139,7 +122,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // 余白:48px
           SizedBox(height: 48),
 
           // 地図検索ウィジェット
@@ -168,53 +150,59 @@ class HomePage extends StatelessWidget {
                 Positioned(
                   left: 91.10,
                   top: 55.59,
-                  child: Container(
-                    width: 176,
-                    height: 32,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          child: Container(
-                            width: 176,
-                            height: 32,
-                            decoration: ShapeDecoration(
-                              color: Color(0xFF0056FF),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    onTap: () {
+                      print("タップしたよ");
+                      // ページ遷移：実装したら以下コメントアウト削除
+                      // context.push("/home/searchGimOnMap");
+                    },
+                    child: Container(
+                      width: 176,
+                      height: 32,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              width: 176,
+                              height: 32,
+                              decoration: ShapeDecoration(
+                                color: Color(0xFF0056FF),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const Positioned(
-                          left: 8.90,
-                          top: 8.41,
-                          child: SizedBox(
-                            width: 160,
-                            height: 13,
-                            child: Text(
-                              '地図からジムを探す',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w600,
-                                height: 0.6,
-                                letterSpacing: -0.50,
+                          const Positioned(
+                            left: 8.90,
+                            top: 8.41,
+                            child: SizedBox(
+                              width: 160,
+                              height: 13,
+                              child: Text(
+                                '地図からジムを探す',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.6,
+                                  letterSpacing: -0.50,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           )
-          // 次のウィジェット開始位置
         ],
       ),
     );

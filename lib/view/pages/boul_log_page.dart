@@ -1,9 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/switcher_tab.dart';
 import 'package:flutter/material.dart';
 
-@RoutePage()
 class BoulLogPage extends StatelessWidget {
   const BoulLogPage({super.key});
 

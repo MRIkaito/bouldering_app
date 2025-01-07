@@ -1,83 +1,67 @@
-import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bouldering_app/auth_provider.dart';
+import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class ShowLogoutConfirmationDialogPage extends StatefulWidget {
+class ShowLogoutConfirmationDialogPage extends ConsumerWidget {
   const ShowLogoutConfirmationDialogPage({Key? key}) : super(key: key);
 
-  @override
-  _ShowLogoutConfirmationDialogPageState createState() =>
-      _ShowLogoutConfirmationDialogPageState();
-}
-
-class _ShowLogoutConfirmationDialogPageState
-    extends State<ShowLogoutConfirmationDialogPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-    _controller.forward();
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).logout();
+      context.go("/Unlogined");
+    } catch (e) {
+      showPopup(context, "エラー発生", "登録に失敗しました");
+    }
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _animation,
-      child: AlertDialog(
-        title: const Text(
-          'ログアウトします\nよろしいですか？',
-          textAlign: TextAlign.center,
-        ),
-        actions: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: () {
-                  // 何もせず，一つ前の画面に戻る
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  'いいえ',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  try {
-                    // 退会処理をここに実装
-                    await FirebaseAuth.instance.signOut();
-                    // すべての画面を取り除き、ログイン画面に戻る
-                    // GoRouterの `go` メソッドを使用してログインページへ遷移
-                    context.go('/unlogined'); // `UnloginedMyRoute` に対応するパスを指定
-                    // // ログイン画面に遷移
-                    // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    //     builder: (context) => LoginOrSignUpPage()));
-                  } catch (e) {
-                    // エラーハンドリング
-                    print("ログアウト中にエラーが発生しました: $e");
-                  }
-                },
-                child: const Text('はい', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    // return FadeTransition(
+    //   opacity: _animation,
+    //   child:
+    return AlertDialog(
+      title: const Text(
+        'ログアウトします\nよろしいですか？',
+        textAlign: TextAlign.center,
       ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: () {
+                // 何もせず，一つ前の画面に戻る
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'いいえ',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                _logout(context, ref);
+              },
+              // onPressed: () async {
+              //   try {
+              //     // ログアウト処理
+              //     await FirebaseAuth.instance.signOut();
+              //     // authProviderの状態を更新(未ログイン状態に変更)
+              //     ref.read(authProvider.notifier).logoutStatusChanged();
+              //     // 未ログイン時のページに遷移
+              //     context.go("/Unlogined");
+              //   } catch (e) {
+              //     // エラーハンドリング
+              //     print("ログアウト中にエラーが発生しました: $e");
+              //   }
+              // },
+              child: const Text('はい', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

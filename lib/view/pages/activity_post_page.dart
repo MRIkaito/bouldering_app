@@ -1,8 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 日付フォーマット用のパッケージ
 
-@RoutePage()
 class ActivityPostPage extends StatefulWidget {
   @override
   _ActivityPostPageState createState() => _ActivityPostPageState();
@@ -42,12 +40,6 @@ class _ActivityPostPageState extends State<ActivityPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: const Text('ボル活投稿'),
         actions: [
           TextButton(

@@ -1,15 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
-@RoutePage()
-class UnloginedMyRouterPage extends AutoRouter {
-  const UnloginedMyRouterPage({super.key});
-}
-
-@RoutePage()
 class UnloginedMyPage extends StatelessWidget {
   const UnloginedMyPage({super.key});
 
@@ -104,16 +98,10 @@ class UnloginedMyPage extends StatelessWidget {
 
                     const SizedBox(height: 48),
 
-                    // ボタン
                     // ボタン（InkWellを追加して押下時に画面遷移する）
                     InkWell(
                       onTap: () {
-                        // Navigatorで画面遷移を行う
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginOrSignUpPage()),
-                        );
+                        context.push("/Unlogined/LoginOrSignUp");
                       },
                       borderRadius: BorderRadius.circular(10), // 角丸をボタンに適用
                       child: Container(

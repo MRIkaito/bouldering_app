@@ -19,8 +19,6 @@ import 'package:bouldering_app/view/pages/home_page.dart';
 import 'package:bouldering_app/view/pages/search_gim_page.dart';
 import 'package:bouldering_app/view/pages/activity_post_page.dart';
 
-import 'auth_provider.dart'; // AuthProviderを読み込み
-
 // GlobalKeys
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -30,13 +28,11 @@ final GlobalKey<NavigatorState> _boullogNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'boullog');
 final GlobalKey<NavigatorState> _activitypostNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'activitypost');
-final GlobalKey<NavigatorState> _unloginedNavigatorKey =
-    GlobalKey<NavigatorState>(debugLabel: 'Unlogined');
+final GlobalKey<NavigatorState> _mypageNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'Mypage');
 
 // final GoRouter router = GoRouter(
 final routerProvider = Provider<GoRouter>((ref) {
-  final isLogined = ref.watch(authProvider);
-
   return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/home',
@@ -61,9 +57,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                       path: 'SearchGim',
                       pageBuilder: (context, state) =>
                           const NoTransitionPage(child: SearchGimPage()),
-                      // builderでも可能なら，こちらのほうが単純な（デフォルトの遷移で済む
-                      // 今は，どちらがいいのかわからないので，コメントアウトで残しておく．
-                      // builder: (context, state) => const SearchGimPage(),
                       routes: [
                         GoRoute(
                             path: 'GymSelection',
@@ -109,36 +102,25 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ],
             ),
-            StatefulShellBranch(
-              navigatorKey: _unloginedNavigatorKey,
-              routes: [
-                GoRoute(
+            StatefulShellBranch(navigatorKey: _mypageNavigatorKey, routes: [
+              GoRoute(
                   path: '/Unlogined',
                   pageBuilder: (context, state) =>
                       const NoTransitionPage(child: UnloginedMyPage()),
                   routes: [
                     GoRoute(
-                      path: "LoginOrSignUp",
-                      pageBuilder: (context, state) =>
-                          const NoTransitionPage(child: LoginOrSignUpPage()),
-                      routes: [
-                        GoRoute(
-                          path: "Logined",
-                          pageBuilder: (context, state) =>
-                              const NoTransitionPage(child: LoginedMyPage()),
-                        ),
-                      ],
-                    ),
-                  ],
-                  redirect: (BuildContext context, GoRouterState state) {
-                    if (isLogined) {
-                      return '/Unlogined/LoginOrSignUp/Logined'; // ログイン：マイページ
-                    }
-                    return null; // 未ログイン：ログイン・サインアップページ
-                  },
-                ),
-              ],
-            ),
+                        path: 'LoginOrSignUp',
+                        pageBuilder: (context, state) =>
+                            const NoTransitionPage(child: LoginOrSignUpPage()),
+                        routes: [
+                          GoRoute(
+                            path: 'Logined',
+                            pageBuilder: (context, state) =>
+                                const NoTransitionPage(child: LoginedMyPage()),
+                          ),
+                        ]),
+                  ]),
+            ]),
           ],
         ),
 
@@ -179,11 +161,5 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (context, state) => const MaterialPage(
               fullscreenDialog: true, child: EditProfilePage()),
         ),
-        // GoRoute(
-        //   parentNavigatorKey: _rootNavigatorKey,
-        //   path: '/notification',
-        //   pageBuilder: (context, state) => const MaterialPage(
-        //       fullscreenDialog: true, child: NotificationPage()),
-        // )
       ]);
 });

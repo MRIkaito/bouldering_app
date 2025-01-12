@@ -23,9 +23,15 @@ class AuthNotifier extends StateNotifier<bool> {
   // ログイン処理
   Future<void> login(String mailAddress, String password) async {
     try {
+      // Firebase ログイン
       await _auth.signInWithEmailAndPassword(
           email: mailAddress, password: password);
+
+      // 状態を更新
       state = true;
+
+      // 状態更新後，繊維が即時発生しないよう，少し遅延をいれる
+      await Future.delayed(Duration(milliseconds: 500));
     } catch (e) {
       throw Exception("登録に失敗しました：$e");
     }
@@ -34,8 +40,11 @@ class AuthNotifier extends StateNotifier<bool> {
   // サインアップ処理
   Future<void> signUp(String mailAddress, String password) async {
     try {
+      // Firebase アカウント作成
       await _auth.createUserWithEmailAndPassword(
           email: mailAddress, password: password);
+
+      //
       state = true; // サインアップ成功時に状態を更新
     } catch (e) {
       throw Exception("登録に失敗しました: $e");

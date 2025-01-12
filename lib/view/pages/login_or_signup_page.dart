@@ -20,10 +20,15 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
   String _mailAddress = ''; // メールアドレスを管理する変数
 
   Future<void> _signUp() async {
+    if (_mailAddress.isEmpty || _password.isEmpty) {
+      showPopup(context, "メールアドレス, またはパスワードが空です", "入力してください");
+      return;
+    }
+
     try {
       await ref.read(authProvider.notifier).signUp(_mailAddress, _password);
       if (mounted) {
-        context.go("/Unlogined/LoginOrSignUp/Logined");
+        context.push("/Unlogined/LoginOrSignUp/Logined");
       }
     } catch (e) {
       if (mounted) {
@@ -31,26 +36,6 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
       }
     }
   }
-  // void _signUp(
-  //     String mailAddress, String password, BuildContext context) async {
-  //   if (mailAddress.isEmpty || password.isEmpty) {
-  //     showPopup(context, "メールアドレス, またはパスワードが空です", "入力してください");
-  //     return;
-  //   }
-
-  //   try {
-  //     // メールアドレス・パスワードでユーザー登録
-  //     final FirebaseAuth auth = FirebaseAuth.instance;
-  //     await auth.createUserWithEmailAndPassword(
-  //       email: mailAddress,
-  //       password: password,
-  //     );
-  //     context.go("/Unlogined/LoginOrSignUp/Logined");
-  //   } catch (e) {
-  //     showPopup(context, "エラー発生", "登録に失敗しました");
-  //     // print("エラー発生：$e");
-  //   }
-  // }
 
   Future<void> _login() async {
     if (_mailAddress.isEmpty || _password.isEmpty) {
@@ -61,7 +46,8 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
     try {
       await ref.read(authProvider.notifier).login(_mailAddress, _password);
       if (mounted) {
-        context.go("/Unlogined/LoginOrSignUp/Logined");
+        // 状態が更新された後にリダイレクト
+        context.push("/Unlogined/LoginOrSignUp/Logined");
       }
     } catch (e) {
       if (mounted) {
@@ -69,25 +55,6 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
       }
     }
   }
-  // void _login(String mailAddress, String password, BuildContext context) async {
-  //   if (mailAddress.isEmpty || password.isEmpty) {
-  //     showPopup(context, "メールアドレス, またはパスワードが空です", "入力してください");
-  //     return;
-  //   }
-
-  //   try {
-  //     // メールアドレス・パスワードでユーザー登録
-  //     final FirebaseAuth auth = FirebaseAuth.instance;
-  //     await auth.signInWithEmailAndPassword(
-  //       email: mailAddress,
-  //       password: password,
-  //     );
-  //     context.go("/Unlogined/LoginOrSignUp/Logined");
-  //   } catch (e) {
-  //     showPopup(context, "エラー発生", "ログインに失敗しました");
-  //     // print("エラー発生：$e");
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -169,8 +136,10 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           // ログインボタン
                           Button(
                               buttonName: "ログイン",
-                              onPressedFunction: () => {
-                                    _login(),
+                              onPressedFunction: () async => {
+                                    print("ログインしますよ"),
+                                    await _login(),
+                                    print("ログインしました")
                                   }),
                         ],
                       ),

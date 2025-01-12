@@ -10,6 +10,11 @@ class ShowLogoutConfirmationDialogPage extends ConsumerWidget {
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(authProvider.notifier).logout();
+
+      // ダイアログを閉じてから画面遷移を実行
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
       context.go("/Unlogined");
     } catch (e) {
       showPopup(context, "エラー発生", "登録に失敗しました");
@@ -18,9 +23,6 @@ class ShowLogoutConfirmationDialogPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // return FadeTransition(
-    //   opacity: _animation,
-    //   child:
     return AlertDialog(
       title: const Text(
         'ログアウトします\nよろしいですか？',
@@ -42,21 +44,8 @@ class ShowLogoutConfirmationDialogPage extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () async {
-                _logout(context, ref);
+                await _logout(context, ref);
               },
-              // onPressed: () async {
-              //   try {
-              //     // ログアウト処理
-              //     await FirebaseAuth.instance.signOut();
-              //     // authProviderの状態を更新(未ログイン状態に変更)
-              //     ref.read(authProvider.notifier).logoutStatusChanged();
-              //     // 未ログイン時のページに遷移
-              //     context.go("/Unlogined");
-              //   } catch (e) {
-              //     // エラーハンドリング
-              //     print("ログアウト中にエラーが発生しました: $e");
-              //   }
-              // },
               child: const Text('はい', style: TextStyle(color: Colors.red)),
             ),
           ],

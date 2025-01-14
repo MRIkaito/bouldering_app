@@ -54,3 +54,6 @@ firebase.json
 
 # test
 .test/*
+
+# backend
+/backend/*

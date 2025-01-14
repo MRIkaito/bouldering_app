@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bouldering_app/view/pages/search_gim_page.dart';
 
+// HTTPリクエスト テスト
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -47,6 +51,9 @@ class HomePage extends StatelessWidget {
             onTap: () {
               // ページ遷移
               context.push("/Home/SearchGim");
+
+              // テスト：データ取得
+              // fetchData(9);
             },
             borderRadius: BorderRadius.circular(32), // タッチエフェクトの範囲をボーダーに合わせる
             splashColor: Colors.grey.withOpacity(0.3), // タップ時のエフェクトカラー
@@ -206,5 +213,43 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// テスト作成
+Future<void> fetchData(int gymId) async {
+  gymId = gymId + 1;
+  final url = Uri.parse(
+          'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+      .replace(queryParameters: {'gym_id': gymId.toString()});
+
+  try {
+    // HTTP GETリクエスト
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      // レスポンスボディをJSONとしてデコード
+      final List<dynamic> data = jsonDecode(response.body);
+      print("$data");
+
+      // 指定されたgym_idのデータを検索
+      final gym = data.firstWhere((gym) => gym['gym_id'] == gymId,
+          orElse: () => null // 見つからない場合はnullを返す
+          );
+
+      print(gym);
+
+      if (gym != null) {
+        // is_bouldering_gym の値を取得
+        final isBouldering = gym['is_lead_gym'];
+        print('gym_id: $gymId のis_lead_gym: $isBouldering');
+      } else {
+        print('gym_id: $gymId のデータがみつかりませんでした');
+      }
+    } else {
+      print("エラー：${response.statusCode}");
+    }
+  } catch (e) {
+    print("リクエスト中にErrorが発生しました: $e");
   }
 }

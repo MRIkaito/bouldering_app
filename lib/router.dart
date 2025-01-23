@@ -116,6 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                           GoRoute(
                             path: 'Logined',
                             pageBuilder: (context, state) =>
+                                // final user = state.extra as
                                 const NoTransitionPage(child: LoginedMyPage()),
                           ),
                         ]),

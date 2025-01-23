@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AuthNotifier extends StateNotifier<bool> {
   AuthNotifier() : super(false) {
@@ -21,17 +23,19 @@ class AuthNotifier extends StateNotifier<bool> {
   }
 
   // ログイン処理
-  Future<void> login(String mailAddress, String password) async {
+  Future<String> login(String mailAddress, String password) async {
     try {
       // Firebase ログイン
-      await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: mailAddress, password: password);
+      String userId = userCredential.user!.uid;
 
       // 状態を更新
       state = true;
 
       // 状態更新後，繊維が即時発生しないよう，少し遅延をいれる
       await Future.delayed(Duration(milliseconds: 500));
+      return userId;
     } catch (e) {
       throw Exception("登録に失敗しました：$e");
     }
@@ -59,6 +63,38 @@ class AuthNotifier extends StateNotifier<bool> {
     } catch (e) {
       throw Exception("ログアウトに失敗しました：$e");
     }
+  }
+}
+
+// ユーザー情報を取得するFetchData
+Future<void> fetchDataUserInformation(int userId) async {
+  final url = Uri.parse(
+          'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+      .replace(queryParameters: {'user_id': userId.toString()});
+
+  try {
+    // HTTP GETリクエスト
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      // レスポンスボディをJSONとしてデコードする
+      final List<dynamic> data = jsonDecode(response.body);
+
+      // 指定されたuser_idのデータを検索
+      final user = data.firstWhere((user) => user['user_id'] == userId,
+          orElse: () => null // 見つからない場合，nllを返す
+          );
+
+      if (user != null) {
+        //
+      } else {
+        print('user_id: $userId のデータが見つかりませんでした');
+      }
+    } else {
+      print('エラーコード：${response.statusCode}');
+    }
+  } catch (e) {
+    print('リクエスト中にErrorが発生しました: $e');
   }
 }
 

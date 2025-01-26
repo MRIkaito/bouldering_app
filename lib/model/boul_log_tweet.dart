@@ -2,7 +2,7 @@ class BoulLogTweet {
   final int tweetId;
   final String userId;
   final DateTime visitedDate;
-  final DateTime tweetedDate;
+  final DateTime tweetedDate; // createdDateと同じ意味
   final int gymId;
   final String tweetContents;
   final int likedCount;

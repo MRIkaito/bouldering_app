@@ -4,7 +4,7 @@ class BoulLog extends StatelessWidget {
   final String userName;
   final String date;
   final String gymName;
-  final String gymLocation;
+  final String prefecture;
   final String activity;
 
   const BoulLog({
@@ -12,7 +12,7 @@ class BoulLog extends StatelessWidget {
     this.userName = 'ムラーン',
     this.date = '2024.09.23',
     this.gymName = 'Folkボルダリングジム',
-    this.gymLocation = '[神奈川県]',
+    this.prefecture = '神奈川県',
     this.activity = 'いまセッションやってます！',
   });
 
@@ -76,7 +76,7 @@ class BoulLog extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: " [$gymLocation]",
+                        text: " [$prefecture]",
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,

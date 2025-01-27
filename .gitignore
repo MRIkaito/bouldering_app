@@ -56,4 +56,7 @@ firebase.json
 .test/*
 
 # backend
-/backend/*
+# /backend/*
+
+# 環境設定ファイル
+.env

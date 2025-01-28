@@ -4,11 +4,6 @@ import * as dotenv from "dotenv";
 
 // データベース接続情報
 const dbConfig = {
-  // user: "postgres",
-  // host: "35.185.152.107",
-  // database: "test_boulder_app_db",
-  // password: "d8@q]kI|HJD&6G|I",
-  // port: 5432,
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE,
@@ -42,7 +37,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // gym_idを使ったクエリ
           const result = await client.query(
-            "SELECT * FROM climbingtypes WHERE gym_id = $1",
+            "SELECT * FROM climbing_type WHERE gym_id = $1",
             [gym_id]    // パラメータをプレースホルダで安全に渡す
           );
 
@@ -77,7 +72,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         const result = await client.query(`
           SELECT
             BLT.tweet_id,
-            U.user_name,
+            B.user_name,
             BLT.visited_date,
             BLT.tweeted_date,
             BLT.tweet_contents,
@@ -86,12 +81,12 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             GI.gym_name,
             GI.prefecture
           FROM
-            boullogtweet AS BLT
+            boul_log_tweet AS BLT
           INNER JOIN
-            users AS U
+            boulder AS B
             ON BLT.user_id = U.user_id
           INNER JOIN
-            gyminfo AS GI
+            gym_info AS GI
             ON BLT.gym_id = GI.gym_id
           ORDER BY
             BLT.tweeted_date DESC
@@ -135,14 +130,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           // user_idが使ったクエリ
           const result = await client.query(`
             SELECT
-              users.user_name,
-              users.user_icon_url,
-              users.user_introduce,
-              users.favorite_gym,
-              users.boul_start_date,
-              users.email
+              boulder.user_name,
+              boulder.user_icon_url,
+              boulder.user_introduce,
+              boulder.favorite_gym,
+              boulder.boul_start_date,
+              boulder.email
             FROM
-              users;
+              boulder;
           `);
 
           // DB接続を解放
@@ -184,16 +179,16 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               FUR.likee_user_id,
               FUR.created_at, -- 不要かもしれない
-              U.user_name,
+              B.user_name,
               GI.gym_id,
               GI.gym_name
             FROM
               favorite_user_relation AS FUR
             INNER JOIN
-              users AS U
+              boulder AS B
               ON FUR.likee_user_id = U.user_id
             INNER JOIN
-              gyminfo AS GI
+              gym_info AS GI
               ON U.home_gym_id = GI.gym_id
             WHERE
               FUR.liker_user_id = $1
@@ -240,16 +235,16 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               FUR.liker_user_id,
               FUR.created_at,
-              U.user_name,
+              B.user_name,
               GI.gym_id,
               GI.gym_name
             FROM
               favorite_user_relation AS FUR
             INNER JOIN
-              users AS U
+              boulder AS B
               ON FUR.liker_user_id = U.user_id
             INNER JOIN
-              gyminfo AS GI
+              gym_info AS GI
               ON U.home_gym_id = GI.gym_id
             WHERE
               FUR.likee_user_id = $1
@@ -299,7 +294,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           const result = await client.query(`
             SELECT
               BLT.tweet_id,
-              U.user_name,
+              B.user_name,
               FUR.likee_user_id,
               BLT.visited_date,
               BLT.tweeted_date,
@@ -309,12 +304,12 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               GI.gym_name,
               GI.prefecture
             FROM
-              boullogtweet AS BLT
+              boul_log_tweet AS BLT
             INNER JOIN
-              users AS U
+              boulder AS B
               ON BLT.user_id = U.user_id
             INNER JOIN
-              gyminfo AS GI
+              gym_info AS GI
               ON BLT.gym_id = GI.gym_id
             INNER JOIN
               favorite_user_relation AS FUR

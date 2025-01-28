@@ -56,7 +56,11 @@ firebase.json
 .test/*
 
 # backend
-# /backend/*
+/backend/lib/*
+/backend/package-lock.json
+/backend/package.json
+/backend/tsconfig.dev.json
+/backend/tsconfig.json
 
 # 環境設定ファイル
 .env

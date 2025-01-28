@@ -43,6 +43,33 @@ class BoulLogPage extends StatelessWidget {
     }
   }
 
+  Future<List<dynamic>> fetchDataFavoriteTweet() async {
+    int requestId = 6;
+
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': requestId.toString(),
+      // 'user_id': user_id.toStrint()  // ここに、ログインしていた時のグローバル情報を投げる必要がある。
+    });
+
+    try {
+      // HTTP GETリクエスト
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        // レスポンスボディをJSONとしてデコードする
+        final List<dynamic> data = jsonDecode(response.body);
+        return data;
+      } else {
+        throw Exception("Failed to fetch data");
+      }
+    } catch (error) {
+      print("リクエスト中にErrorが発生しました");
+      throw error;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -121,6 +148,45 @@ class BoulLogPage extends StatelessWidget {
                       }
                     },
                   ),
+
+                  // タブ3：お気に入りユーザーのみを表示する
+                  FutureBuilder<List<dynamic>>(
+                      future: fetchDataFavoriteTweet(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text("Errorが発生しました: ${snapshot.error}"));
+                        } else if (snapshot.hasData) {
+                          final data = snapshot.data!;
+                          return ListView.builder(
+                              itemCount: data.length,
+                              itemBuilder: (context, index) {
+                                final tweet = data[index];
+                                final String userName = tweet['user_name'];
+                                final String gymName = tweet['gym_name'];
+                                final String prefecture = tweet['prefecture'];
+                                final String date =
+                                    DateTime.parse(tweet['visited_date'])
+                                        .toLocal()
+                                        .toString()
+                                        .split(' ')[0];
+                                final String activity = tweet['tweet_contents'];
+
+                                return BoulLog(
+                                    userName: userName,
+                                    date: date,
+                                    gymName: gymName,
+                                    prefecture: prefecture,
+                                    activity: activity);
+                              });
+                        } else {
+                          return const Center(child: Text("データが見つかりませんでした"));
+                        }
+                      }),
                 ],
               ),
             ),

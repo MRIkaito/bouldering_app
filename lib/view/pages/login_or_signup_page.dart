@@ -1,12 +1,10 @@
-import 'package:bouldering_app/auth_provider.dart';
+import 'package:bouldering_app/view_model/auth_provider.dart';
 import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/submit_form.dart';
 import 'package:bouldering_app/view/components/switcher_tab.dart';
-import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginOrSignUpPage extends ConsumerStatefulWidget {
   const LoginOrSignUpPage({super.key});
@@ -16,45 +14,10 @@ class LoginOrSignUpPage extends ConsumerStatefulWidget {
 }
 
 class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
-  String _password = ''; // パスワードを管理する変数
-  String _mailAddress = ''; // メールアドレスを管理する変数
-
-  Future<void> _signUp() async {
-    if (_mailAddress.isEmpty || _password.isEmpty) {
-      showPopup(context, "メールアドレス, またはパスワードが空です", "入力してください");
-      return;
-    }
-
-    try {
-      await ref.read(authProvider.notifier).signUp(_mailAddress, _password);
-      if (mounted) {
-        context.push("/Unlogined/LoginOrSignUp/Logined");
-      }
-    } catch (e) {
-      if (mounted) {
-        showPopup(context, "エラー発生", "登録に失敗しました");
-      }
-    }
-  }
-
-  Future<void> _login() async {
-    if (_mailAddress.isEmpty || _password.isEmpty) {
-      showPopup(context, "メールアドレス, またはパスワードが空です", "入力してください");
-      return;
-    }
-
-    try {
-      await ref.read(authProvider.notifier).login(_mailAddress, _password);
-      if (mounted) {
-        // 状態が更新された後にリダイレクト
-        context.push("/Unlogined/LoginOrSignUp/Logined");
-      }
-    } catch (e) {
-      if (mounted) {
-        showPopup(context, "エラー発生", "ログインに失敗しました");
-      }
-    }
-  }
+  // パスワードを管理する変数
+  String _password = '';
+  // メールアドレスを管理する変数
+  String _mailAddress = '';
 
   @override
   Widget build(BuildContext context) {
@@ -137,9 +100,8 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           Button(
                               buttonName: "ログイン",
                               onPressedFunction: () async => {
-                                    print("ログインしますよ"),
-                                    await _login(),
-                                    print("ログインしました")
+                                    await ref.read(authProvider.notifier).login(
+                                        context, _mailAddress, _password),
                                   }),
                         ],
                       ),
@@ -200,7 +162,9 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           Button(
                               buttonName: "新規登録",
                               onPressedFunction: () async {
-                                _signUp();
+                                await ref
+                                    .read(authProvider.notifier)
+                                    .signUp(context, _mailAddress, _password);
                               }),
                         ],
                       ),

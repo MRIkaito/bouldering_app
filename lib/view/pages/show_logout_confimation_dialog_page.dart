@@ -1,4 +1,4 @@
-import 'package:bouldering_app/auth_provider.dart';
+import 'package:bouldering_app/view_model/auth_provider.dart';
 import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

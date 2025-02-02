@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 
-/* ============================================
- * ・関数
- * showPopup
- *
- * ・引数
- * BuildContext context：ウィジェットツリー情報
- * String title：タイトル・標題
- * String message：メッセージ・内容
- *
- * ・説明
- * ポップアップメッセージを表示する
- *
- * ・補足
- *
- * ============================================ */
+/// ■ メソッド
+/// - ポップアップメッセージを表示する
+///
+/// 引数：
+/// - [context] ウィジェットツリーの情報
+/// - [title] タイトル・概要
+/// - [message] メッセージ・内容
 void showPopup(BuildContext context, String title, String message) {
   showDialog(
     context: context,

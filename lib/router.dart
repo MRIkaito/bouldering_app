@@ -145,6 +145,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               const MaterialPage(fullscreenDialog: true, child: SettingPage()),
         ),
         GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: '/FavoriteUser/:type',
+            pageBuilder: (context, state) {
+              // 遷移先に渡すパラメータ:お気に入り(favorite)・被お気に入り(favoredBy)を選ぶ
+              // デフォルト:favorite
+              final String type = state.pathParameters['type'] ?? 'favorite';
+              return MaterialPage(
+                  fullscreenDialog: true, child: FavoriteUserPage(type: type));
+            }),
+        /*
+        GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/FavoriteUser',
           pageBuilder: (context, state) => const MaterialPage(
@@ -156,6 +167,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (context, state) => const MaterialPage(
               fullscreenDialog: true, child: FavoredByUserPage()),
         ),
+        */
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/EditProfile',

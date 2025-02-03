@@ -204,6 +204,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               FUR.likee_user_id,
               FUR.created_at,
               B.user_name,
+              B.user_icon_url,
               GI.gym_id,
               GI.gym_name
             FROM
@@ -249,6 +250,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         // クエリパラメータを取得
         const {user_id} = req.query;
 
+
         // user_idがないケース
         if(!user_id){
           // エラーコード400, user_idが送られてきていない旨を返信して終了
@@ -263,7 +265,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               FUR.liker_user_id,
               FUR.created_at,
-              B.user_name,
+              B.user_name,  -- 新規追加
+              B.user_icon_url,
               GI.gym_id,
               GI.gym_name
             FROM
@@ -273,7 +276,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               ON FUR.liker_user_id = B.user_id
             INNER JOIN
               gym_info AS GI
-              ON U.home_gym_id = GI.gym_id
+              ON B.home_gym_id = GI.gym_id
             WHERE
               FUR.likee_user_id = $1
             ORDER BY

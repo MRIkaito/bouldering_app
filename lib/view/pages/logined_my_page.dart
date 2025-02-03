@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
+/// ■ クラス
+/// - ログインした時のマイページ
 class LoginedMyPage extends StatelessWidget {
   const LoginedMyPage({super.key});
 
@@ -19,7 +21,8 @@ class LoginedMyPage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          automaticallyImplyLeading: false, // 戻るボタンを非表示
+          // 【必須】戻るボタンを非表示
+          automaticallyImplyLeading: false,
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),
@@ -45,16 +48,18 @@ class LoginedMyPage extends StatelessWidget {
                         // ユーザ欄
                         const UserLogoAndName(userName: 'ログインユーザ名'),
                         const SizedBox(height: 16),
+
                         // ボル活
                         const ThisMonthBoulLog(),
                         const SizedBox(height: 8),
-                        // お気に入り・お気に入られ
+
+                        // お気に入り・お気にいられ欄
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Button(
                               onPressedFunction: () => {
-                                context.push('/FavoriteUser'),
+                                context.push('/FavoriteUser/favorite'),
                               },
                               buttonName: "お気に入り",
                               buttonWidth:
@@ -65,9 +70,8 @@ class LoginedMyPage extends StatelessWidget {
                               buttonTextColorCode: 0xFF000000,
                             ),
                             Button(
-                              onPressedFunction: () => {
-                                context.push("/FaboredByUser"),
-                              },
+                              onPressedFunction: () =>
+                                  {context.push("/FavoriteUser/favoredBy")},
                               buttonName: "お気に入られ",
                               buttonWidth:
                                   ((MediaQuery.of(context).size.width) / 2) -

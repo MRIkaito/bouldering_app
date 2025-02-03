@@ -1,14 +1,30 @@
+import 'package:bouldering_app/view/components/favorite_user_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 
-class FavoriteUserPage extends StatelessWidget {
-  const FavoriteUserPage({Key? key}) : super(key: key);
+/// ■ クラス
+/// - お気に入り登録している/されている ユーザーを表示するクラス
+class FavoriteUserPage extends ConsumerWidget {
+  // コンストラクタ
+  const FavoriteUserPage({super.key, required this.type});
+
+  // favorite(お気に入り)/favoredBy(被お気に入り)の区分を示す
+  final String type;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // インスタンス化
+    final FavoriteUserViewModel favoriteUser = FavoriteUserViewModel();
+    // ユーザー情報(ID)を取得
+    // TODO：強制的アンラップで問題ないかを確認する
+    final userId = ref.read(userProvider)!.userId;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'お気に入り',
+        title: Text(
+          (type == 'favorite') ? 'お気に入り' : 'お気に入られ',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -20,96 +36,43 @@ class FavoriteUserPage extends StatelessWidget {
           },
         ),
       ),
-      body: ListView.builder(
-        itemCount: 3, // 表示したいお気に入りの数に応じて変更
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemBuilder: (context, index) {
-          return FavoriteItem(
-            name: _favoriteNames[index],
-            description: _favoriteDescriptions[index],
-            imageUrl: _favoriteImages[index],
-          );
+      body: FutureBuilder<List<dynamic>>(
+        future: favoriteUser.fetchDataFavoriteUser(type, userId),
+        builder: (context, snapshot) {
+          // お気に入りユーザーデータ取得中
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Errorが発生しました:${snapshot.error}"));
+          } else if (snapshot.hasData) {
+            // お気に入りユーザーを取得
+            final favoirteUserData = snapshot.data!;
+
+            // お気に入りユーザーをリスト形式で表示
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: favoirteUserData.length,
+              itemBuilder: (context, index) {
+                final favoriteUser = favoirteUserData[index];
+                final String favoriteUserIconUrl =
+                    favoriteUser['user_icon_url'] ?? 'https://fakeimg.pl/50x50';
+                // TODO：今は、上記のuser_icon_urlがnullの場合は直接記述している
+                // URL(ダミーデータ)として標示しているが、これはいずれDBに記述するようにする。
+                // 設定していない場合は上記のURLを記述して埋めるようにする
+                final String favoriteUserName = favoriteUser['user_name'];
+                final String favoriteUserHomeGym = favoriteUser['gym_name'];
+
+                return FavoriteUserItem(
+                  name: favoriteUserName,
+                  description: favoriteUserHomeGym,
+                  imageUrl: favoriteUserIconUrl,
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text("データが見つかりませんでした"));
+          }
         },
-      ),
-    );
-  }
-}
-
-// ダミーデータ
-const _favoriteNames = ["あっちゃんさん", "ぽんたろー", "たしかに"];
-const _favoriteDescriptions = ["月見湯", "虹の湯", "綱島源泉 湯けむりの庄"];
-const _favoriteImages = [
-  "https://via.placeholder.com/50", // ダミー画像URL
-  "https://via.placeholder.com/50",
-  "https://via.placeholder.com/50"
-];
-
-// お気に入り項目のウィジェット
-class FavoriteItem extends StatelessWidget {
-  final String name;
-  final String description;
-  final String imageUrl;
-
-  const FavoriteItem({
-    Key? key,
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Row(
-        children: [
-          // ユーザー画像
-          CircleAvatar(
-            backgroundImage: NetworkImage(imageUrl),
-            radius: 24,
-          ),
-          const SizedBox(width: 12),
-
-          // 名前と説明
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          // お気に入りを解除ボタン
-          OutlinedButton(
-            onPressed: () {
-              // お気に入り解除の処理
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.blue),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            child: const Text(
-              'お気に入りを解除',
-              style: TextStyle(color: Colors.blue),
-            ),
-          ),
-        ],
       ),
     );
   }

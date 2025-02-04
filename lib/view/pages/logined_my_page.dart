@@ -3,20 +3,23 @@ import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
-import 'package:bouldering_app/view/pages/favored_by_user_page.dart';
-import 'package:bouldering_app/view/pages/favorite_user_page.dart';
-import 'package:bouldering_app/view/pages/setting_page.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 /// ■ クラス
 /// - ログインした時のマイページ
-class LoginedMyPage extends StatelessWidget {
+class LoginedMyPage extends ConsumerWidget {
+  // コンストラクタ
   const LoginedMyPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // ユーザー情報を取得
+    final user = ref.read(userProvider);
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -46,10 +49,15 @@ class LoginedMyPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // ユーザ欄
+                        // ↓下記、URLを渡す処理をUserLogoAndNameに追加する
+                        // 新規追加：UserLogoAndName(userName: user!.userName),
                         const UserLogoAndName(userName: 'ログインユーザ名'),
                         const SizedBox(height: 16),
 
                         // ボル活
+                        // TODO 1：ログインしているユーザーのツイート情報を渡す必要がある
+                        // TODO 2：ThisMonthBoulLogに、ユーザーのツイート情報をもらう処理を実装する
+                        // TODO 3：SQLで、ツイートを取得する処理を実装する必要がある
                         const ThisMonthBoulLog(),
                         const SizedBox(height: 8),
 
@@ -83,16 +91,18 @@ class LoginedMyPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
+
                         // 自己紹介文
                         Container(
                           width: double.infinity,
-                          child: const Text(
-                            "今はまだ5級しか登れませんが，将来は1級を登れるようになることが目標です！！よろしくお願いします！",
+                          child: Text(
+                            // "今はまだ5級しか登れませんが，将来は1級を登れるようになることが目標です！！よろしくお願いします！",
+                            "$user!.self_introduce", // TODO：null値でないことを確認する+null値の時のエラーハンドリングを実装する
                             textAlign: TextAlign.left,
                             softWrap: true,
                             overflow: TextOverflow.visible,
                             maxLines: null,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontFamily: 'Roboto',
@@ -103,6 +113,7 @@ class LoginedMyPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
+
                         // 好きなジム欄
                         const Text(
                           "好きなジム",
@@ -116,18 +127,21 @@ class LoginedMyPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
+                        //
                         Container(
                           width: double.infinity,
-                          child: const Text(
-                            """
-・Folkボルダリングジム
-・Dボルダリング綱島
-                            """,
+                          child: Text(
+//                             """
+// ・Folkボルダリングジム
+// ・Dボルダリング綱島
+//                             """,
+                            user!
+                                .favoriteGyms, // TODO：null値でないことを確認する+null値の時のエラーハンドリングを実装する
                             textAlign: TextAlign.left,
                             softWrap: true,
                             overflow: TextOverflow.visible,
                             maxLines: null,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontFamily: 'Roboto',
@@ -138,7 +152,9 @@ class LoginedMyPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
+
                         // ボル活歴
+                        // boulStartDateから、何年何か月かを計算する処理が必要
                         Row(
                           children: [
                             SvgPicture.asset('lib/view/assets/date_range.svg'),
@@ -147,7 +163,9 @@ class LoginedMyPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
+
                         // ホームジム
+                        // TODO：utilityに、ジムIDから、なんという名前のジムなのか知る処理を定義する必要がある。
                         Row(
                           children: [
                             SvgPicture.asset(
@@ -161,6 +179,8 @@ class LoginedMyPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // ボル活・イキタイタブ
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
@@ -182,6 +202,7 @@ class LoginedMyPage extends StatelessWidget {
                 ),
               ];
             },
+            // タブの中に表示する画面
             body: TabBarView(
               children: [
                 ListView.builder(

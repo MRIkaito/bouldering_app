@@ -87,8 +87,6 @@ class AuthNotifier extends StateNotifier<bool> {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
 
-      print("userId(auth_provider.dart):${userCredential.user!.uid}");
-
       // ユーザー情報取得
       userProviderRef
           .read(userProvider.notifier)

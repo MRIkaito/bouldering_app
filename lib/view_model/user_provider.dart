@@ -19,9 +19,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// 引数：
   /// - [userId] ユーザーのID
   Future<void> fetchUserData(String userId) async {
-    // テスト:ユーザーIDが渡されているかを確認する
-    print("userId(user_provider.dart): ${userId}");
-
     // リクエストNOを確認する必要有
     int requestId = 3;
 
@@ -38,23 +35,21 @@ class UserNotifier extends StateNotifier<Boulder?> {
       if (response.statusCode == 200) {
         // レスポンスボディをJSONとしてデコードする
         // ここでまず、[{"id":1. "name":"Alice"}]のような形で取得する
-        final List<dynamic> userInformation = jsonDecode(response.body);
-        print("レスポンスデータ(userInformation): $userInformation");
+        final List<dynamic> userList = jsonDecode(response.body);
 
-        if (userInformation.isEmpty) {
+        if (userList.isEmpty) {
           throw Exception("ユーザーデータが空です");
         }
 
         // ここで、{"id":1. "name":"Alice"}を取得
         // ※ データは1つしか取得しないので、[0]でアクセスしてもOK
-        final Map<String, dynamic> user = userInformation[0];
-        print("取得したユーザーデータ(user): $user");
+        final Map<String, dynamic> userMap = userList[0];
 
         // fromJsonで、Boulderクラスのデータをすべて取得する
-        final use = Boulder.fromJson(user);
+        final userState = Boulder.fromJson(userMap);
 
         // 最後に、state(状態)としてデータを取得する
-        state = use;
+        state = userState;
       } else {
         throw Exception("Failed to fetch data");
       }
@@ -101,4 +96,48 @@ class UserNotifier extends StateNotifier<Boulder?> {
 /// ■ プロバイダ
 final userProvider = StateNotifierProvider<UserNotifier, Boulder?>((ref) {
   return UserNotifier();
+});
+
+/// ■プロバイダ
+/// 非同期取得専用の FutureProvider(whenメソッドを使うため定義)
+// final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
+//   await Future.delayed(const Duration(seconds: 3));
+//   final userNotifier = ref.watch(userProvider.notifier);
+//   final user = ref.watch(userProvider); // nullの可能性あり
+
+//   print('user(asyncUserProvider): $user');
+
+//   if (user == null) {
+//     // nullだった場合の処理
+//     // TODO：userIdを取得して渡す
+//     final userId = FirebaseAuth.instance.currentUser?.uid;
+//     print('userId(asyncUserProvider): $userId');
+
+//     if (userId != null) {
+//       await userNotifier.fetchUserData(userId);
+//       print("情報取得確認");
+//     }
+//   }
+//   print('user?.userId (asyncUserProvider): ${user?.userId}');
+
+//   return ref.watch(userProvider);
+// });
+
+final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
+  await Future.delayed(const Duration(seconds: 2));
+  final userNotifier = ref.read(userProvider.notifier);
+  final userState = ref.watch(userProvider);
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+
+  print("userNotifier: ${userNotifier}");
+  print("user: ${userState}");
+  print("userId: ${userId}");
+
+  // user(状態)を取得できておらず，またuserIdは取得できているときに
+  // 改めてuser(状態)を取得する
+  if ((userState == null) && (userId != null)) {
+    await userNotifier.fetchUserData(userId);
+  }
+
+  return ref.watch(userProvider);
 });

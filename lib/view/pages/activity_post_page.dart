@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 日付フォーマット用のパッケージ
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+/// ■ クラス
+/// - View
+/// - ボル活(ツイート)を投稿するページ
+/// - StatefulWidget
+/// - 状態：テキストの長さ
 class ActivityPostPage extends StatefulWidget {
   @override
   _ActivityPostPageState createState() => _ActivityPostPageState();
 }
 
+/// ■ クラス
+/// - -View
+/// - ボル活(ツイート)を投稿するページの状態を定義したもの
 class _ActivityPostPageState extends State<ActivityPostPage> {
   final TextEditingController _textController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
@@ -33,6 +43,55 @@ class _ActivityPostPageState extends State<ActivityPostPage> {
       setState(() {
         _selectedDate = picked;
       });
+    }
+  }
+
+  /// ■メソッド
+  /// - 投稿内容をPOSTする処理
+  ///
+  /// 引数
+  /// - [userId] ログイン中のユーザーID
+  /// - [gymId] 訪問したジムのID
+  /// - [visitedDate] 訪問した日
+  /// - [photoUrls] 写真のURL
+  /// - [movieUrls]動画のURL
+  Future<void> _insertBoulLogTweet(
+      String userId,
+      int gymId,
+      String visitedDate,
+      String tweetContents,
+      List<String> photoUrls,
+      List<String> movieUrls) async {
+    // 送信先URL
+    final url = Uri.parse(
+        'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData');
+
+    // リクエスト
+    final Map<String, dynamic> requestBody = {
+      'gym_id': gymId.toString(),
+      'user_id': userId.toString(),
+      'visited_date': visitedDate,
+      'tweet_content': tweetContents,
+      'photosUrl': photoUrls,
+      'moviesUrl': movieUrls
+    }.map(
+        (key, value) => MapEntry(key, value is List ? value.join(',') : value));
+
+    try {
+      // HTTP POST
+      final response = await http.post(url,
+          headers: {'content-type': 'application/json'},
+          body: jsonEncode(requestBody));
+
+      // レスポンスを確認
+      if (response.statusCode == 200) {
+        print("ここにアップロード成功時のメッセージ");
+      } else {
+        // 400/ 500エラー：何らかの問題発生
+        print("ここにエラー発生時のメッセージ");
+      }
+    } catch (error) {
+      print("例外発生");
     }
   }
 

@@ -128,6 +128,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
 
     // requestId：3
+    // ログイン時に(自身の)ユーザーデータを取得する
     //
     // クエリパラメータ：
     // user_id：ユーザーを識別するID
@@ -147,18 +148,22 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           //
           const result = await client.query(`
             SELECT
-              user_id,
-              user_name,
-              user_icon_url,
-              user_introduce,
-              favorite_gym,
-              boul_start_date,
-              home_gym_id,
-              email,
-              created_at,
-              updated_at
+              B.user_id,
+              B.user_name,
+              B.user_icon_url,
+              B.user_introduce,
+              B.favorite_gym,
+              B.boul_start_date,
+              B.home_gym_id,
+              GI.gym_name,
+              B.email,
+              B.created_at,
+              B.updated_at
             FROM
-              boulder
+              boulder AS B
+            INNER JOIN
+              gym_info AS GI
+              ON B.home_gym_id = GI.gym_id
             WHERE
              user_id = $1;
           `,[user_id]);
@@ -690,6 +695,81 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       } catch(error) {
         console.error("データ挿入エラー:", error);
         res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // requestId：12
+    // - 自分のツイートを取得する
+    // - マイページで使うことを想定
+    //
+    // クエリパラメータ：
+    // user_id：ユーザーを識別するID
+    case 12:
+      try{
+        // クエリパラメータを取得
+        const {user_id} = req.query;
+
+        // user_idがない(null)ケース
+        if(!user_id){
+          // エラーコード400とuser_idが送られてきていない旨を返信して終了
+          res.status(400).send("user_idパラメータが必要です");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // ツイート数を取得するパラメータ
+          const limit = 20;
+          const offset = 0;
+
+          // お気に入りユーザーのツイートを最新順から時系列順に取得
+          const result = await client.query(`
+            SELECT
+              BLT.tweet_id,
+              BLT.tweetcontents,
+              BLT.visited_date,
+              BLT.tweeted_date,
+              BLT.liked_count,
+              BLT.movie_url,
+              B.user_id,
+              B.user_name,
+              B.user_icon_url,
+              GI.gym_id,
+              GI.gym_name,
+              GI.prefecture,
+            FROM
+              boul_log_tweet AS BLT
+            INNER JOIN
+              boulder AS B
+              ON BLT.user_id = B.user_id
+            INNER JOIN
+              gym_info AS GI
+              ON BLT.gym_id = GI.gym_id
+            WHERE
+              BLT.user_id = $1
+            ORDER BY
+              BLT.visited_date DESC
+            LIMIT ${limit}
+            OFFSET ${offset};
+            `, [user_id]
+          );
+
+          // DB接続を解放
+          client.release();
+
+          // データが見つからないケース
+          if(result.rows.length === 0) {
+            // エラーコード404, 見つからない旨を返信
+            res.status(404).send("データは見つかりませんでした");
+            return;
+          }
+
+          // 結果を返信
+          res.status(200).json(result.rows);
+        }
+      } catch(error){
+        console.error("Error querying database: ",error);
+        res.status(500).send("Error querying database");
       }
       break;
 

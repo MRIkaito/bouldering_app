@@ -32,15 +32,17 @@ class BoulLogPage extends ConsumerWidget {
           body: SafeArea(
         child: Column(
           children: [
-            // タブバー部分
+            // タブバー
             const SwitcherTab(leftTabName: "みんなのボル活", rightTabName: "お気に入り"),
+            // タブの中身
             Expanded(
               child: TabBarView(
                 children: [
-                  // タブ1：みんなのボル活
+                  // (タブ1)みんなのボル活
                   FutureBuilder<List<dynamic>>(
                     future: boulLogTweet.fetchDataTweet(),
-                    builder: (context, snapshot) {
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<dynamic>> snapshot) {
                       // ツイートデータ取得中
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -58,12 +60,12 @@ class BoulLogPage extends ConsumerWidget {
                             final String userName = tweet['user_name'];
                             final String gymName = tweet['gym_name'];
                             final String prefecture = tweet['prefecture'];
+                            // visited_dateをYYYY-MM-DDにフォーマット
                             final String date =
                                 DateTime.parse(tweet['visited_date'])
-                                        .toLocal()
-                                        .toString()
-                                        .split(' ')[
-                                    0]; // visited_dateをYYYY-MM-DDにフォーマット
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0];
                             final String activity = tweet['tweet_contents'];
 
                             return BoulLog(
@@ -81,7 +83,9 @@ class BoulLogPage extends ConsumerWidget {
                     },
                   ),
 
-                  // タブ3：お気に入りユーザーのみを表示する
+                  // (タブ2)
+                  // ログイン状態(isLoggedIn = true)：お気に入りユーザーのツイートのみ表示
+                  // ログイン状態(isLoggedIn = false)：「イワノボリタイに登録しよう」画面を表示
                   FutureBuilder<List<dynamic>>(
                       future: boulLogTweet.fetchDataFavoriteTweet(userId),
                       builder: isLoggedIn
@@ -134,12 +138,11 @@ class BoulLogPage extends ConsumerWidget {
                             }
                           : (context, snapshot) {
                               return Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.center, // 左揃えに修正
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const SizedBox(height: 32),
 
-                                  // イワノボリタイロゴを中央揃えに
+                                  // ロゴ：イワノボリタイ
                                   Center(
                                     child: SizedBox(
                                       width: 72,
@@ -149,10 +152,9 @@ class BoulLogPage extends ConsumerWidget {
                                       ),
                                     ),
                                   ),
-
                                   const SizedBox(height: 16),
 
-                                  // 「イワノボリタイに登録しよう」のタイトル（2行に分ける）
+                                  // タイトル："イワノボリタイに登録しよう"
                                   const Center(
                                     child: Text(
                                       'イワノボリタイに\n登録しよう',
@@ -169,7 +171,7 @@ class BoulLogPage extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 16),
 
-                                  // 説明テキスト
+                                  // 説明文
                                   const Text(
                                     'ログインしてユーザーを\nお気に入り登録しよう!',
                                     textAlign: TextAlign.center, // 左揃え
@@ -182,10 +184,9 @@ class BoulLogPage extends ConsumerWidget {
                                       letterSpacing: -0.50,
                                     ),
                                   ),
-
                                   const SizedBox(height: 16),
 
-                                  // 説明テキスト
+                                  // 説明文
                                   const Text(
                                     'お気に入り登録したユーザーの\nツイートを見ることができます！',
                                     textAlign: TextAlign.center, // 左揃え

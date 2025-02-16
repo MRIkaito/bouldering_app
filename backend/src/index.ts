@@ -773,6 +773,47 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
+    // request_id: 13
+    // -ジムの情報を取得する
+    // - アプリ起動時に実行し，アプリ全体で参照する
+    //
+    // クエリパラメータ：
+    // なし
+    case 13:
+      try{
+        // DB接続
+        const client = await pool.connect();
+
+        // すべてのジムの情報を取得する
+        const result = await client.query(`
+          SELECT
+            gym_id,
+            gym_name,
+            latitude,
+            longitude
+          FROM
+            gym_info
+        `);
+
+        // DB接続を解放
+        client.release();
+
+
+        // データが見つからないケース
+        if(result.rows.length === 0){
+          // エラーコード404, 見つからない旨を返信
+          res.status(404).send("データは見つかりませんでした");
+          return;
+        }
+
+        // 結果を返信
+        res.status(200).json(result.rows);
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
     // 無効なIDが送られてきたとき
     default:
       try {

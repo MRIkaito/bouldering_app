@@ -98,31 +98,8 @@ final userProvider = StateNotifierProvider<UserNotifier, Boulder?>((ref) {
   return UserNotifier();
 });
 
-/// ■プロバイダ
-/// 非同期取得専用の FutureProvider(whenメソッドを使うため定義)
-// final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
-//   await Future.delayed(const Duration(seconds: 3));
-//   final userNotifier = ref.watch(userProvider.notifier);
-//   final user = ref.watch(userProvider); // nullの可能性あり
-
-//   print('user(asyncUserProvider): $user');
-
-//   if (user == null) {
-//     // nullだった場合の処理
-//     // TODO：userIdを取得して渡す
-//     final userId = FirebaseAuth.instance.currentUser?.uid;
-//     print('userId(asyncUserProvider): $userId');
-
-//     if (userId != null) {
-//       await userNotifier.fetchUserData(userId);
-//       print("情報取得確認");
-//     }
-//   }
-//   print('user?.userId (asyncUserProvider): ${user?.userId}');
-
-//   return ref.watch(userProvider);
-// });
-
+/// ■ プロバイダ
+/// - 非同期表示用のプロバイダ
 final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
   await Future.delayed(const Duration(seconds: 2));
   final userNotifier = ref.read(userProvider.notifier);
@@ -136,7 +113,7 @@ final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
   // user(状態)を取得できておらず，またuserIdは取得できているときに
   // 改めてuser(状態)を取得する
   if ((userState == null) && (userId != null)) {
-    await userNotifier.fetchUserData(userId);
+    userNotifier.fetchUserData(userId);
   }
 
   return ref.watch(userProvider);

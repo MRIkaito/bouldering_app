@@ -3,6 +3,7 @@
  * インポート
  * ============================================ */
 import 'package:bouldering_app/router.dart';
+import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,10 +39,13 @@ class App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
+    final routerRef = ref.watch(routerProvider);
+    // TODO: 下記のコードが実際に実行できるかを試す必要がある
+    // TODO：また，DBに実装したデータを，軽度・緯度が小数点0で埋められているので，すべてもう一度登録しなおす必要あり．
+    final gymRef = ref.watch(gymProvider.notifier).fetchGymData();
 
     return MaterialApp.router(
-      routerConfig: router,
+      routerConfig: routerRef,
     );
   }
 }

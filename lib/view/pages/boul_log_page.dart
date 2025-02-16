@@ -22,6 +22,8 @@ class BoulLogPage extends ConsumerWidget {
     final isLoggedIn = ref.watch(authProvider);
     // ユーザー情報を取得
     final userId = isLoggedIn ? ref.read(userProvider)?.userId : null;
+    // TODO：↑このコードを修正して，ref.readだと，一度読み込んだら終いになってしまう．
+    // そうではなく，これを更新してお気に入りユーザーをひょおお応じするようにする必要がある．
 
     print("isLoggedIn: ${isLoggedIn}");
     print("userId: ${userId}");

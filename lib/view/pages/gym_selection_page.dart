@@ -1,11 +1,8 @@
 import 'package:bouldering_app/view/components/gym_tile.dart';
-import 'package:bouldering_app/view/pages/facility_info_page.dart';
-import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class GymSelectionPage extends StatelessWidget {
-  // ignore: use_super_parameters
   const GymSelectionPage({Key? key}) : super(key: key);
 
   @override
@@ -14,7 +11,7 @@ class GymSelectionPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ジム検索', style: TextStyle(color: Colors.black)),
         elevation: 0.0,
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFEF7FF),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Column(

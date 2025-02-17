@@ -21,6 +21,9 @@ dependencies:
   cloud_functions: ^5.2.0
   http: ^1.2.2
   dartz: ^0.10.1
+  image_picker: ^1.1.2
+  googleapis: ^13.2.0
+  googleapis_auth: ^1.6.0
 
 dev_dependencies:
   flutter_test:

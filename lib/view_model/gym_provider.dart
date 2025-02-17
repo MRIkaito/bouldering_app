@@ -7,18 +7,17 @@ import 'dart:convert';
 /// - アプリ起動時に、全ジムのジムID・ジム名・経度・緯度を取得して管理する
 /// - Gymクラスを状態保持する
 class GymNotifier extends StateNotifier<List<Gym>> {
-  /// ■ コンストラクタ
-  /// TODO 初期状態をどうするかを考える必要がある
-  GymNotifier() : super([]); // ひとまず、空の配列でコンストラクタを作成する
+  // コンストラクタ
+  GymNotifier() : super([]);
 
   /// ■メソッド: fetchGymData
   /// - ジムのID・ジム名・経度・緯度を取得する
   ///
   /// 引数:
-  /// - []
+  /// なし
   Future<void> fetchGymData() async {
     // DBアクセス・データ取得
-    int requestId = 13; // TODO：リクエストIDを確認する
+    int requestId = 13;
 
     final url = Uri.parse(
             'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
@@ -30,6 +29,7 @@ class GymNotifier extends StateNotifier<List<Gym>> {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
+        final List<dynamic> gymLocation = jsonDecode(response.body);
         // response bodyをJSONでDecode
         // 出力例：
         // [
@@ -40,7 +40,7 @@ class GymNotifier extends StateNotifier<List<Gym>> {
         //    "longitude": 133.33244
         //  }
         // ]
-        final List<dynamic> gymLocation = jsonDecode(response.body);
+
         print("【Debug】レスポンスデータ(gymLocation):");
         print("$gymLocation");
 
@@ -48,20 +48,26 @@ class GymNotifier extends StateNotifier<List<Gym>> {
           throw Exception("ジムの情報を取得できませんでした");
         }
 
-        // 取得した事務情報の要素数
-        int gymLocationsLength = gymLocation.length;
         // 状態(state)に代入する一時的な変数
         List<Gym> returnGymList = [];
-        // 取得したジム情報を、Gymクラスに変換して状態に代入する
-        for (int i = 0; i < gymLocationsLength; i++) {
-          Gym aimAppendGymLocation = Gym(
-            gymId: gymLocation[i]['gym_id'],
-            gymName: gymLocation[i]['gym_name'],
-            latitude: gymLocation[i]['latitude'],
-            longitude: gymLocation[i]['longitude'],
-          );
 
-          returnGymList.add(aimAppendGymLocation);
+        for (var gym in gymLocation) {
+          if (gym['latitude'] == null || gym['longitude'] == null) {
+            print("警告: 緯度・経度が null のデータをスキップしました: $gym");
+            continue; // スキップ
+          }
+          returnGymList.add(Gym(
+            gymId: (gym['gym_id'] as int?) ?? 0,
+            gymName: (gym['gym_name'] as String?) ?? "ジム名なし",
+            latitude: (gym['latitude'] is double)
+                ? gym['latitude']
+                : double.tryParse(gym['latitude'].toString()) ?? 0.0,
+            longitude: (gym['longitude'] is double)
+                ? gym['longitude']
+                : double.tryParse(gym['longitude'].toString()) ?? 0.0,
+            prefecture: (gym['prefecture'] as String?) ?? "不明な都道府県",
+            city: (gym['city'] as String?) ?? "不明な市区町村",
+          ));
         }
 
         state = [...returnGymList];

@@ -40,9 +40,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routerRef = ref.watch(routerProvider);
-    // TODO: 下記のコードが実際に実行できるかを試す必要がある
-    // TODO：また，DBに実装したデータを，軽度・緯度が小数点0で埋められているので，すべてもう一度登録しなおす必要あり．
-    final gymRef = ref.watch(gymProvider.notifier).fetchGymData();
+    ref.read(gymProvider.notifier).fetchGymData();
 
     return MaterialApp.router(
       routerConfig: routerRef,

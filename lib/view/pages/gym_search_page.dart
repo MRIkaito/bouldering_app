@@ -21,6 +21,7 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
   List<Map<String, String>> filterdGyms = [];
 
   // 初期化
+  @override
   initState() {
     super.initState();
 
@@ -29,8 +30,8 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
     final gymsLength = gymRef.length;
     for (int i = 0; i < gymsLength; i++) {
       Map<String, String> oneGym = {
-        'name': '${gymRef[i].gymName}',
-        'location': '${gymRef[i].prefecture}${gymRef[i].city}'
+        'name': '${gymRef[i]?.gymName}',
+        'location': '${gymRef[i]?.prefecture}${gymRef[i]?.city}'
       };
       allGyms.add(oneGym);
     }

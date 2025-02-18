@@ -1,10 +1,12 @@
-import 'package:bouldering_app/model/boulder.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
+import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
+import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
+import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -20,10 +22,6 @@ class LoginedMyPage extends ConsumerStatefulWidget {
 /// ■ クラス
 /// - ログインした時のマイページ
 class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
-  // TODO：コンストラクタは消去していいのか？確認する
-  // コンストラクタ
-  // const LoginedMyPage({super.key});
-
   // 1. 初期化
   @override
   void initState() {
@@ -32,9 +30,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ユーザー情報を取得
-    // final user = ref.read(userProvider);
     final asyncUser = ref.watch(asyncUserProvider);
+    final gymRef = ref.read(gymProvider);
 
     return DefaultTabController(
       length: 2,
@@ -54,8 +51,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
           ],
         ),
         body: asyncUser.when(
-          error: (err, stack) => Text("エラーが発生しました"),
-          loading: () => Center(child: const CircularProgressIndicator()),
+          error: (err, stack) => const Text("エラーが発生しました"),
+          loading: () => const Center(child: CircularProgressIndicator()),
           data: (user) => SafeArea(
             child: NestedScrollView(
               headerSliverBuilder:
@@ -67,9 +64,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ユーザ欄
-                          // ↓下記、URLを渡す処理をUserLogoAndNameに追加する
-                          // 新規追加：UserLogoAndName(userName: user!.userName),
+                          // ユーザ写真・名前欄
+                          // TODO：下記、URLを渡す処理をUserLogoAndNameに追加する
                           UserLogoAndName(
                               userName: (user?.userName == null)
                                   ? "名無し"
@@ -115,7 +111,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                           const SizedBox(height: 8),
 
                           // 自己紹介文
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: Text(
                               user?.selfIntroduce == null
@@ -150,8 +146,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          //
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: Text(
                               user?.favoriteGyms != null
@@ -174,25 +169,23 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                           const SizedBox(height: 8),
 
                           // ボル活歴
-                          // boulStartDateから、何年何か月かを計算する処理が必要
                           Row(
                             children: [
                               SvgPicture.asset(
                                   'lib/view/assets/date_range.svg'),
                               const SizedBox(width: 8),
-                              const Text("1年2ヶ月"),
+                              Text(calcBoulderingDuration(user)),
                             ],
                           ),
                           const SizedBox(height: 8),
 
                           // ホームジム
-                          // TODO：utilityに、ジムIDから、なんという名前のジムなのか知る処理を定義する必要がある。
                           Row(
                             children: [
                               SvgPicture.asset(
                                   'lib/view/assets/home_gim_icon.svg'),
                               const SizedBox(width: 8),
-                              const Text("Folkボルダリングジム"),
+                              Text(showGymName(user, gymRef)),
                             ],
                           ),
                           const SizedBox(height: 16),

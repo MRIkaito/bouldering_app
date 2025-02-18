@@ -1,5 +1,4 @@
 class Gym {
-  final int gymId;
   final String gymName;
   final double latitude;
   final double longitude;
@@ -7,7 +6,6 @@ class Gym {
   final String city;
 
   Gym({
-    required this.gymId,
     required this.gymName,
     required this.latitude,
     required this.longitude,
@@ -17,14 +15,9 @@ class Gym {
 
   factory Gym.fromJson(Map<String, dynamic> json) {
     return Gym(
-      gymId: (json['gym_id'] as int?) ?? 0,
-      gymName: (json['gym_name'] as String?) ?? 'ジム名なし',
-      latitude: (json['latitude'] is double)
-          ? json['latitude']
-          : double.tryParse(json['latitude'].toString()) ?? 0.0,
-      longitude: (json['longitude'] is double)
-          ? json['longitude']
-          : double.tryParse(json['longitude'].toString()) ?? 0.0,
+      gymName: (json['gymName'] as String?) ?? 'ジム名なし',
+      latitude: ((json['latitude'] ?? 0) as num).toDouble(),
+      longitude: ((json['longitude'] ?? 0) as num).toDouble(),
       prefecture: (json['prefecture'] as String?) ?? '○○県',
       city: (json['city'] as String?) ?? '○○市',
     );
@@ -32,8 +25,7 @@ class Gym {
 
   Map<String, dynamic> toJson() {
     return {
-      'gym_id': gymId,
-      'gym_name': gymName,
+      'gymName': gymName,
       'latitude': latitude,
       'longitude': longitude,
       'prefecture': prefecture,

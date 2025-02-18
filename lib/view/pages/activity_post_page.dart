@@ -32,8 +32,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   String? _uploadedFileUrl;
   final String bucketName =
       "your-gcs-bucket-name"; // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
-  // 選択したジム
-  String? selectedGym;
 
   // 初期化
   @override
@@ -88,16 +86,16 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
         : await _picker.pickVideo(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState() {
+      setState(() {
         _mediaFile = File(pickedFile.path);
-      }
+      });
 
       // GCSへアップロード
       String? url = await _uploadToGCS(_mediaFile!);
       if (url != null) {
-        setState() {
+        setState(() {
           _uploadedFileUrl = url;
-        }
+        });
       }
     }
   }
@@ -211,8 +209,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// ■ Widget build
   @override
   Widget build(BuildContext context) {
-    // ユーザー情報を取得 / ログイン状態にあるかを確認
+    // ジム情報参照
+    // final gymRef = ref.read(gymProvider);
+    // ユーザー情報を取得して、ログイン状態にあるかを確認
     final userRef = ref.watch(userProvider);
+    // 選択したジム
+    String? selectedGym;
 
     // ログイン状態にないと、投稿できないようにする
     return (userRef?.userId == null)
@@ -254,6 +256,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ジム名
+                  // const Text(
+                  //   // TODO：Riverpodで状態としてジムの情報を取得する
+                  //   'ジム',
+                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  // ),
+                  // TODO：下記を採用する
                   TextField(
                       readOnly: true,
                       decoration: InputDecoration(

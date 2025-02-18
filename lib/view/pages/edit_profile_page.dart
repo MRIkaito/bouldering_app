@@ -2,14 +2,31 @@ import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_gender_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_nickname_confirmation_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_self_introduce_favorite_gim_page.dart';
+import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bouldering_app/view/components/edit_setting_item.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EditProfilePage extends StatelessWidget {
-  const EditProfilePage({Key? key}) : super(key: key);
+class EditProfilePage extends ConsumerStatefulWidget {
+  const EditProfilePage({super.key});
+
+  @override
+  _EditProfilePageState createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends ConsumerState<EditProfilePage> {
+  // 初期化
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userRef = ref.watch(userProvider);
+    final gymRef = ref.read(gymProvider);
+
     return Scaffold(
       appBar: AppBar(),
       body: SingleChildScrollView(
@@ -44,7 +61,9 @@ class EditProfilePage extends StatelessWidget {
                 },
                 child: EditSettingItem(
                   title: 'ニックネーム',
-                  subtitle: 'むらーん',
+                  subtitle: (userRef?.userName == null)
+                      ? '名前を取得できませんでした'
+                      : userRef!.userName,
                 ),
               ),
               InkWell(
@@ -54,7 +73,9 @@ class EditProfilePage extends StatelessWidget {
                 },
                 child: EditSettingItem(
                   title: '自己紹介',
-                  subtitle: 'よろしく！',
+                  subtitle: (userRef?.selfIntroduce == null)
+                      ? '自己紹介文を取得できませんでした'
+                      : userRef!.selfIntroduce,
                 ),
               ),
               InkWell(
@@ -64,7 +85,9 @@ class EditProfilePage extends StatelessWidget {
                 },
                 child: EditSettingItem(
                   title: '好きなジム',
-                  subtitle: 'フォークボルダリングジム',
+                  subtitle: (userRef?.favoriteGyms == null)
+                      ? '自己紹介文を取得できませんでした'
+                      : userRef!.favoriteGyms,
                 ),
               ),
               InkWell(
@@ -74,7 +97,9 @@ class EditProfilePage extends StatelessWidget {
                 },
                 child: EditSettingItem(
                   title: 'ボルダリングデビュー日',
-                  subtitle: '2023-12-11',
+                  subtitle: (userRef?.boulStartDate == null)
+                      ? "YYYY-MM"
+                      : "${userRef!.boulStartDate.year}-${userRef!.boulStartDate.month}",
                 ),
               ),
               InkWell(
@@ -83,7 +108,8 @@ class EditProfilePage extends StatelessWidget {
                   showDateSelectionDialog(context, "生年月日"),
                 },
                 child: EditSettingItem(
-                  title: '生年月日',
+                  title: '生年月日(非公開)',
+                  // TODO：userクラスに，生年月日を格納するように変更
                   subtitle: '1998-07-22',
                 ),
               ),
@@ -93,7 +119,8 @@ class EditProfilePage extends StatelessWidget {
                   showGenderSelectionDialog(context, "性別"),
                 },
                 child: EditSettingItem(
-                  title: '性別',
+                  title: '性別 (非公開)',
+                  // TODO：userクラスに，性別を格納するように変更
                   subtitle: '男性',
                 ),
               ),

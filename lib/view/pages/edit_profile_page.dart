@@ -1,6 +1,6 @@
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_gender_selection_dialog_page.dart';
-import 'package:bouldering_app/view/pages/show_nickname_confirmation_dialog_page.dart';
+import 'package:bouldering_app/view/pages/edit_name_introduce_favorite_gym_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_self_introduce_favorite_gim_page.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
@@ -25,7 +25,23 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final userRef = ref.watch(userProvider);
-    final gymRef = ref.read(gymProvider);
+    final gymRef = ref.watch(gymProvider);
+    final String gender;
+
+    if (userRef?.gender == null) {
+      gender = "未回答";
+    } else {
+      switch (userRef!.gender) {
+        case 0:
+          gender = '未回答';
+        case 1:
+          gender = '男性';
+        case 2:
+          gender = '女性';
+        default:
+          gender = '未回答';
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(),
@@ -35,6 +51,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // アイコン
               Center(
                 child: Column(
                   children: [
@@ -54,10 +71,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // 名前
               InkWell(
                 onTap: () => {
-                  // ページ遷移する処理を実装
-                  showSelfIntroduceFavoriteGimPage(context),
+                  editNameIntroduceFavoriteGymPage(context),
                 },
                 child: EditSettingItem(
                   title: 'ニックネーム',
@@ -66,30 +84,34 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       : userRef!.userName,
                 ),
               ),
+
+              // 自己紹介
               InkWell(
                 onTap: () => {
-                  // ページ遷移する処理を実装
                   showSelfIntroduceFavoriteGim(context, "自己紹介"),
                 },
                 child: EditSettingItem(
                   title: '自己紹介',
                   subtitle: (userRef?.selfIntroduce == null)
-                      ? '自己紹介文を取得できませんでした'
+                      ? '未設定'
                       : userRef!.selfIntroduce,
                 ),
               ),
+
+              // 好きなジム
               InkWell(
                 onTap: () => {
-                  // ページ遷移する処理を実装
                   showSelfIntroduceFavoriteGim(context, "好きなジム"),
                 },
                 child: EditSettingItem(
                   title: '好きなジム',
                   subtitle: (userRef?.favoriteGyms == null)
-                      ? '自己紹介文を取得できませんでした'
+                      ? '未設定'
                       : userRef!.favoriteGyms,
                 ),
               ),
+
+              // ボルダリングデビュー日
               InkWell(
                 onTap: () => {
                   // ページ遷移する処理を実装
@@ -98,10 +120,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 child: EditSettingItem(
                   title: 'ボルダリングデビュー日',
                   subtitle: (userRef?.boulStartDate == null)
-                      ? "YYYY-MM"
+                      ? "未設定"
                       : "${userRef!.boulStartDate.year}-${userRef!.boulStartDate.month}",
                 ),
               ),
+
+              // 生年月日
               InkWell(
                 onTap: () => {
                   // ページ遷移する処理を実装
@@ -109,10 +133,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '生年月日(非公開)',
-                  // TODO：userクラスに，生年月日を格納するように変更
-                  subtitle: '1998-07-22',
+                  // TODO：今はboulStartDateにしているが、birthdayカラムをDBに追加して
+                  // TODO：boulStartDate→birthdayへ変更する
+                  subtitle: (userRef?.birthday == null)
+                      ? "未設定"
+                      : "${userRef!.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
                 ),
               ),
+
+              // 性別
               InkWell(
                 onTap: () => {
                   // ページ遷移する処理を実装
@@ -120,8 +149,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '性別 (非公開)',
-                  // TODO：userクラスに，性別を格納するように変更
-                  subtitle: '男性',
+                  // TODO：userクラスに，性別を格納するように変更する必要有り
+                  subtitle: gender,
                 ),
               ),
             ],

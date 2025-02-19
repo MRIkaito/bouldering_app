@@ -149,9 +149,9 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                           SizedBox(
                             width: double.infinity,
                             child: Text(
-                              user?.favoriteGyms != null
-                                  ? user!.favoriteGyms
-                                  : "データが有りません",
+                              user?.favoriteGyms == null
+                                  ? ""
+                                  : user!.favoriteGyms,
                               textAlign: TextAlign.left,
                               softWrap: true,
                               overflow: TextOverflow.visible,

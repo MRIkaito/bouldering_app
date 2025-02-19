@@ -1,17 +1,19 @@
 import 'package:bouldering_app/view/pages/show_mail_address_confirmed_page.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ShowNicknameConfirmationDialogPage extends StatefulWidget {
-  const ShowNicknameConfirmationDialogPage({Key? key}) : super(key: key);
+class editNameIntroduceFavoriteGymDialogPage extends ConsumerStatefulWidget {
+  const editNameIntroduceFavoriteGymDialogPage({Key? key}) : super(key: key);
 
   @override
-  _ShowNicknameConfirmationDialogPageState createState() =>
-      _ShowNicknameConfirmationDialogPageState();
+  _editNameIntroduceFavoriteGymDialogPageState createState() =>
+      _editNameIntroduceFavoriteGymDialogPageState();
 }
 
-class _ShowNicknameConfirmationDialogPageState
-    extends State<ShowNicknameConfirmationDialogPage>
+class _editNameIntroduceFavoriteGymDialogPageState
+    extends ConsumerState<editNameIntroduceFavoriteGymDialogPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -26,6 +28,12 @@ class _ShowNicknameConfirmationDialogPageState
     );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+
+    if ((ref.read(userProvider)?.userName) == null) {
+      _nicknameController.text = "";
+    } else {
+      _nicknameController.text = ref.read(userProvider)!.userName;
+    }
   }
 
   @override
@@ -66,29 +74,28 @@ class _ShowNicknameConfirmationDialogPageState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton(
-                onPressed: () {
-                  // 何もせず，一つ前の画面に戻る
-                  Navigator.of(context).pop();
-                },
                 child: const Text(
                   '戻る',
                   style: TextStyle(color: Colors.black),
                 ),
+                onPressed: () {
+                  // 何もせずに前の画面に戻る
+                  Navigator.of(context).pop();
+                },
               ),
               TextButton(
+                child: const Text('決定', style: TextStyle(color: Colors.red)),
                 onPressed: () {
-                  // ニックネーム入力時の処理をここに実装
                   // ニックネームを取得し，外部DBに保存する．
 
                   // 仮実装
                   String nickname = _nicknameController.text;
                   print("入力されたニックネーム： $nickname");
 
-                  // 登録が肝ろうで来たら，登録完了ページに遷移
+                  // 登録完了したら，登録完了ページに遷移
                   Navigator.of(context).pop();
                   showConfirmedDialog(context);
                 },
-                child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -98,7 +105,7 @@ class _ShowNicknameConfirmationDialogPageState
   }
 }
 
-void showSelfIntroduceFavoriteGimPage(BuildContext context) {
+void editNameIntroduceFavoriteGymPage(BuildContext context) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -108,7 +115,7 @@ void showSelfIntroduceFavoriteGimPage(BuildContext context) {
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
       return const Center(
-        child: ShowNicknameConfirmationDialogPage(),
+        child: editNameIntroduceFavoriteGymDialogPage(),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {

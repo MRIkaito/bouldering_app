@@ -7,15 +7,18 @@ import 'package:bouldering_app/model/gym.dart';
 /// 引数：
 /// - [userRef] ユーザークラスの情報
 /// - [gymRef] ジム情報のクラス
-String showGymName(Boulder? userRef, Map<int, Gym> gymRef) {
-  String gymName = "-";
+String showGymName(Boulder? userRef, Map<int, Gym>? gymRef) {
+  String gymName = "登録なし";
 
-  // userRef(ユーザーState)とgymRef(ジムState)のnullチェック
-  if ((userRef?.homeGymId == null) &&
-      ((gymRef[userRef!.homeGymId]?.gymName) == null)) {
-    gymName = "-";
+  // nullチェック
+  // userRef, userRefに登録のhomeGymId, gymRef, gymRef[キー(※nullでない)]で検索したgymName
+  // のいずれかがnullであれば，gynNameを「登録なし」とする
+  if ((userRef?.homeGymId == null) ||
+      ((gymRef?[userRef!.homeGymId]?.gymName) == null)) {
+    // DO NOTHING
+    // gymName = "登録なし";  と同義
   } else {
-    gymName = gymRef[userRef!.homeGymId]!.gymName;
+    gymName = gymRef![userRef!.homeGymId]!.gymName;
   }
 
   print("gymName:$gymName");

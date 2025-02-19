@@ -7,6 +7,8 @@ class Boulder {
   final DateTime boulStartDate;
   final int homeGymId;
   final String email;
+  final DateTime birthday;
+  final int gender;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -19,28 +21,38 @@ class Boulder {
       required this.boulStartDate,
       required this.homeGymId,
       required this.email,
+      required this.birthday,
+      required this.gender,
       required this.createdAt,
       required this.updatedAt});
 
   // JSON形式からUserクラスへの変換
   factory Boulder.fromJson(Map<String, dynamic> json) {
     return Boulder(
-      userId: json['user_id'] ?? '', // Null の場合は空文字
-      userName: json['user_name'] ?? '', // 【修正】キーのスペルミスを修正
+      userId: json['user_id'] ?? '',
+      userName: json['user_name'] ?? '',
       userIconUrl: json['user_icon_url'] ?? '',
       selfIntroduce: json['self_introduce'] ?? '',
       favoriteGyms: json['favorite_gym'] ?? '',
       boulStartDate: json['boul_start_date'] != null
-          ? DateTime.parse(json['boul_start_date']) // 【修正】DateTime.parse を適用
-          : DateTime.now(), // デフォルト値：(ToDo)この部分の処理を理解する
-      homeGymId: json['home_gym_id'] ?? 0, // 【修正】nullの場合は0にする,
+          ? DateTime.parse(json['boul_start_date']) // DateTime.parse を適用
+          : DateTime.now(),
+      homeGymId: json['home_gym_id'] ?? 0, // nullの場合は0にする
       email: json['email'] ?? '',
+      birthday: json['birthday'] != null
+          ? DateTime.parse(json['birthday'])
+          : DateTime.now(), // nullの場合、点在時刻をデフォルト値とする
+      gender: ((json['gender'] == '0') || // 0:未回答 / 1:男性 / 2:女性
+              (json['gender'] == '1') ||
+              (json['gender'] == '2'))
+          ? (int.tryParse((json['gender'])))!
+          : 0,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at']) // 【修正】DateTime.parse を適用
-          : DateTime.now(), // デフォルト値
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(), // nullの場合、現在時刻をデフォルト値とする
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at']) // 【修正】DateTime.parse を適用
-          : DateTime.now(), // デフォルト値
+          ? DateTime.parse(json['updated_at'])
+          : DateTime.now(), // nullの場合、現在時刻をデフォルト値とする
     );
   }
 
@@ -55,6 +67,8 @@ class Boulder {
       'boul_start_date': boulStartDate,
       'home_gym_id': homeGymId,
       'email': email,
+      'birthday': birthday,
+      'gender': gender,
       'created_at': createdAt,
       'updated_at': updatedAt
     };

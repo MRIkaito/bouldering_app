@@ -19,7 +19,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// 引数：
   /// - [userId] ユーザーのID
   Future<void> fetchUserData(String userId) async {
-    // リクエストNOを確認する必要有
     int requestId = 3;
 
     final url = Uri.parse(
@@ -62,6 +61,10 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - (サインアップ)ユーザー情報を新規登録する
   /// - サインアップ時に使用する
   ///
+  /// 引数：
+  /// - [userId] ユーザーID.
+  /// - [email] メールアドレス
+  ///
   /// 返り値：
   /// - true：新規登録成功
   /// - false：新規登録失敗
@@ -82,6 +85,107 @@ class UserNotifier extends StateNotifier<Boulder?> {
       return true;
     } else {
       return false;
+    }
+  }
+
+  /// ■ メソッド：updateUserName
+  /// - ユーザー名を変更する
+  /// - userIdを取得できていないと、変更失敗(false)
+  /// - 変更前・後の名前が同じ場合は、DBアクセスなしで終了(true)
+  ///
+  /// 引数
+  /// - [userName] 変更後のユーザー名
+  ///
+  /// 戻り値
+  /// - true: ユーザー名変更 成功
+  /// - false: ユーザー名変更 失敗
+  Future<bool> updateUserName(
+      String preUserName, String setUserName, String userId) async {
+    print("userI: $userId");
+    print("preUserName: $preUserName");
+    print("setUserName: $setUserName");
+
+    if (userId == "") {
+      return false;
+    } else {
+      if (preUserName == setUserName) {
+        print("おなじ名前");
+        return true;
+      } else {
+        int requestId = 14;
+
+        final url = Uri.parse(
+                'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+            .replace(queryParameters: {
+          'request_id': requestId.toString(),
+          'user_id': userId.toString(),
+          'user_name': setUserName,
+        });
+
+        try {
+          final response = await http.get(url);
+
+          if (response.statusCode == 200) {
+            print("成功");
+            return true;
+          } else {
+            print("失敗");
+            print("response.statusCode: ${response.statusCode}");
+            return false;
+          }
+        } catch (error) {
+          throw Exception("ユーザー名変更に失敗しました: ${error}");
+        }
+      }
+    }
+  }
+
+  /// ■ メソッド：updateFavoriteGymsOrSelfIntroduce
+  /// - 自己紹介文、または好きなジム欄を更新する
+  /// - 更新前と、更新後の文章が同じ場合は、DBアクセスせずに終了(true)
+  /// - userIdを取得できていないと、変更失敗とする(false)
+  ///
+  /// 引数
+  /// -
+  ///
+  /// 戻り値
+  /// - true：変更成功
+  /// - false：変更失敗
+  Future<bool> updateFavoriteGymsOrSelfIntroduce(String preDescription,
+      String updateDescription, String title, String userId) async {
+    int requestId;
+
+    if (userId == "") {
+      return false;
+    } else {
+      if (preDescription == updateDescription) {
+        return true;
+      } else {
+        if (title == "自己紹介") {
+          requestId = 15;
+        } else {
+          requestId = 16;
+        }
+
+        final url = Uri.parse(
+                'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+            .replace(queryParameters: {
+          'request_id': requestId.toString(),
+          'user_id': userId.toString(),
+        });
+
+        try {
+          final response = await http.get(url);
+
+          if (response.statusCode == 200) {
+            return true;
+          } else {
+            return false;
+          }
+        } catch (error) {
+          throw Exception("更新に失敗しました: ${error}");
+        }
+      }
     }
   }
 

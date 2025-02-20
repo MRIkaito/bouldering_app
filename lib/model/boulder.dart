@@ -42,11 +42,10 @@ class Boulder {
       birthday: json['birthday'] != null
           ? DateTime.parse(json['birthday'])
           : DateTime.now(), // nullの場合、点在時刻をデフォルト値とする
-      gender: ((json['gender'] == '0') || // 0:未回答 / 1:男性 / 2:女性
-              (json['gender'] == '1') ||
-              (json['gender'] == '2'))
-          ? (int.tryParse((json['gender'])))!
-          : 0,
+      gender: switch (json['gender']) {
+        '0' || '1' || '2' => int.parse(json['gender']),
+        _ => 0
+      },
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(), // nullの場合、現在時刻をデフォルト値とする

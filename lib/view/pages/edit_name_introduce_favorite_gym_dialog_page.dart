@@ -18,6 +18,8 @@ class _editNameIntroduceFavoriteGymDialogPageState
   late AnimationController _controller;
   late Animation<double> _animation;
   final TextEditingController _nicknameController = TextEditingController();
+  String preUserName = "";
+  String userId = "";
 
   @override
   void initState() {
@@ -31,8 +33,12 @@ class _editNameIntroduceFavoriteGymDialogPageState
 
     if ((ref.read(userProvider)?.userName) == null) {
       _nicknameController.text = "";
+      preUserName = "";
+      userId = "";
     } else {
       _nicknameController.text = ref.read(userProvider)!.userName;
+      preUserName = ref.read(userProvider)!.userName;
+      userId = ref.read(userProvider)!.userId;
     }
   }
 
@@ -45,6 +51,8 @@ class _editNameIntroduceFavoriteGymDialogPageState
 
   @override
   Widget build(BuildContext context) {
+    final userNotifier = ref.read(userProvider.notifier);
+
     return FadeTransition(
       opacity: _animation,
       child: AlertDialog(
@@ -62,7 +70,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
               inputFormatters: [
                 LengthLimitingTextInputFormatter(15),
               ],
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: '15文字以内のニックネームを入力',
               ),
@@ -73,6 +81,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 戻る
               TextButton(
                 child: const Text(
                   '戻る',
@@ -83,15 +92,13 @@ class _editNameIntroduceFavoriteGymDialogPageState
                   Navigator.of(context).pop();
                 },
               ),
+              // 決定
               TextButton(
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
                 onPressed: () {
                   // ニックネームを取得し，外部DBに保存する．
-
-                  // 仮実装
-                  String nickname = _nicknameController.text;
-                  print("入力されたニックネーム： $nickname");
-
+                  userNotifier.updateUserName(
+                      preUserName, _nicknameController.text, userId);
                   // 登録完了したら，登録完了ページに遷移
                   Navigator.of(context).pop();
                   showConfirmedDialog(context);

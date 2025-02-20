@@ -1,7 +1,9 @@
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ShowSelfIntroduceFavoriteGimPage extends StatefulWidget {
+class ShowSelfIntroduceFavoriteGimPage extends ConsumerStatefulWidget {
   final String title;
   const ShowSelfIntroduceFavoriteGimPage({Key? key, required this.title})
       : super(key: key);
@@ -12,12 +14,15 @@ class ShowSelfIntroduceFavoriteGimPage extends StatefulWidget {
 }
 
 class _ShowSelfIntroduceFavoriteGimPageState
-    extends State<ShowSelfIntroduceFavoriteGimPage>
+    extends ConsumerState<ShowSelfIntroduceFavoriteGimPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   final TextEditingController _nicknameOrSelfIntroduceController =
       TextEditingController();
+  late String pageTitle;
+  String preDescription = "";
+  String userId = "";
 
   @override
   void initState() {
@@ -28,6 +33,34 @@ class _ShowSelfIntroduceFavoriteGimPageState
     );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+    pageTitle = widget.title;
+
+    // 自己紹介ページ
+    if (pageTitle == "自己紹介") {
+      if ((ref.read(userProvider)?.selfIntroduce) == null) {
+        _nicknameOrSelfIntroduceController.text = "";
+        preDescription = "";
+        userId = "";
+      } else {
+        _nicknameOrSelfIntroduceController.text =
+            ref.read(userProvider)!.selfIntroduce;
+        preDescription = ref.read(userProvider)!.selfIntroduce;
+        userId = ref.read(userProvider)!.userId;
+      }
+
+      // 好きなジムページ
+    } else {
+      if ((ref.read(userProvider)?.favoriteGyms) == null) {
+        _nicknameOrSelfIntroduceController.text = "";
+        preDescription = "";
+        userId = "";
+      } else {
+        _nicknameOrSelfIntroduceController.text =
+            ref.read(userProvider)!.favoriteGyms;
+        preDescription = ref.read(userProvider)!.favoriteGyms;
+        userId = ref.read(userProvider)!.userId;
+      }
+    }
   }
 
   @override
@@ -39,6 +72,8 @@ class _ShowSelfIntroduceFavoriteGimPageState
 
   @override
   Widget build(BuildContext context) {
+    final userNotifier = ref.read(userProvider.notifier);
+
     return FadeTransition(
       opacity: _animation,
       child: AlertDialog(
@@ -71,6 +106,7 @@ class _ShowSelfIntroduceFavoriteGimPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 戻る
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -80,13 +116,19 @@ class _ShowSelfIntroduceFavoriteGimPageState
                   style: TextStyle(color: Colors.black),
                 ),
               ),
+              // 決定
               TextButton(
                 onPressed: () {
-                  String nicknameOrSelfIntroduce =
-                      _nicknameOrSelfIntroduceController.text;
-                  print("入力された${widget.title}： $nicknameOrSelfIntroduce");
+                  // TODO:true, falseに応じた処理を分けて書く必要があると思う...
+                  // true, 下記の処理内容で問題ない
+                  // false, utilityの中の、dialogを表示するやつを使って、
+                  // 登録失敗したことを書く必要がある。
+                  userNotifier.updateFavoriteGymsOrSelfIntroduce(
+                      preDescription,
+                      _nicknameOrSelfIntroduceController.text,
+                      widget.title,
+                      userId);
                   Navigator.of(context).pop();
-                  // 必要に応じて登録完了ページに遷移
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),

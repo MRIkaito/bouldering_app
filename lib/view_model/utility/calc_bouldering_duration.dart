@@ -2,6 +2,7 @@ import 'package:bouldering_app/model/boulder.dart';
 
 /// ■ メソッド
 /// - ボルダリングの開始年月を返す
+/// - userデータやboulStartDateを取得できていない場合は" - 年 - ヶ月"と表記する
 ///
 /// 引数：
 /// - [user] ユーザークラス情報
@@ -23,7 +24,7 @@ String calcBoulderingDuration(Boulder? user) {
       years -= 1;
       months += 12;
     }
-    print("$years年 $monthsか月");
+    print("${years}年 ${months}か月");
     return "$years年 $monthsか月";
   }
 }

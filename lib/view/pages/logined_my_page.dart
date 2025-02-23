@@ -22,6 +22,8 @@ class LoginedMyPage extends ConsumerStatefulWidget {
 /// ■ クラス
 /// - ログインした時のマイページ
 class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
+  String? cachedBoulLogDuration;
+
   // 1. 初期化
   @override
   void initState() {
@@ -51,191 +53,199 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
           ],
         ),
         body: asyncUser.when(
-          error: (err, stack) => const Text("エラーが発生しました"),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          data: (user) => SafeArea(
-            child: NestedScrollView(
-              headerSliverBuilder:
-                  (BuildContext context, bool innerBoxIsScrolled) {
-                return [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ユーザ写真・名前欄
-                          // TODO：下記、URLを渡す処理をUserLogoAndNameに追加する
-                          UserLogoAndName(
-                              userName: (user?.userName == null)
-                                  ? "名無し"
-                                  : user!.userName),
-                          const SizedBox(height: 16),
-
-                          // ボル活
-                          // TODO 1：ログインしているユーザーのツイート情報を渡す必要がある
-                          // TODO 2：ThisMonthBoulLogに、ユーザーのツイート情報をもらう処理を実装する
-                          // TODO 3：SQLで、ツイートを取得する処理を実装する必要がある
-                          const ThisMonthBoulLog(),
-                          const SizedBox(height: 8),
-
-                          // お気に入り・お気にいられ欄
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            error: (err, stack) => const Text("エラーが発生しました"),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            data: (user) {
+              // ボル活歴をキャッシュする
+              cachedBoulLogDuration ??= calcBoulderingDuration(user);
+              return SafeArea(
+                child: NestedScrollView(
+                  headerSliverBuilder:
+                      (BuildContext context, bool innerBoxIsScrolled) {
+                    return [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Button(
-                                onPressedFunction: () => {
-                                  context.push('/FavoriteUser/favorite'),
-                                },
-                                buttonName: "お気に入り",
-                                buttonWidth:
-                                    ((MediaQuery.of(context).size.width) / 2) -
-                                        24,
-                                buttonHeight: 36,
-                                buttonColorCode: 0xFFE3DCE4,
-                                buttonTextColorCode: 0xFF000000,
+                              // ユーザ写真・名前欄
+                              // TODO：下記、URLを渡す処理をUserLogoAndNameに追加する
+                              UserLogoAndName(
+                                  userName: (user?.userName == null)
+                                      ? "名無し"
+                                      : user!.userName),
+                              const SizedBox(height: 16),
+
+                              // ボル活
+                              // TODO 1：ログインしているユーザーのツイート情報を渡す必要がある
+                              // TODO 2：ThisMonthBoulLogに、ユーザーのツイート情報をもらう処理を実装する
+                              // TODO 3：SQLで、ツイートを取得する処理を実装する必要がある
+                              const ThisMonthBoulLog(),
+                              const SizedBox(height: 8),
+
+                              // お気に入り・お気にいられ欄
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Button(
+                                    onPressedFunction: () => {
+                                      context.push('/FavoriteUser/favorite'),
+                                    },
+                                    buttonName: "お気に入り",
+                                    buttonWidth:
+                                        ((MediaQuery.of(context).size.width) /
+                                                2) -
+                                            24,
+                                    buttonHeight: 36,
+                                    buttonColorCode: 0xFFE3DCE4,
+                                    buttonTextColorCode: 0xFF000000,
+                                  ),
+                                  Button(
+                                    onPressedFunction: () => {
+                                      context.push("/FavoriteUser/favoredBy")
+                                    },
+                                    buttonName: "お気に入られ",
+                                    buttonWidth:
+                                        ((MediaQuery.of(context).size.width) /
+                                                2) -
+                                            24,
+                                    buttonHeight: 36,
+                                    buttonColorCode: 0xFFE3DCE4,
+                                    buttonTextColorCode: 0xFF000000,
+                                  ),
+                                ],
                               ),
-                              Button(
-                                onPressedFunction: () =>
-                                    {context.push("/FavoriteUser/favoredBy")},
-                                buttonName: "お気に入られ",
-                                buttonWidth:
-                                    ((MediaQuery.of(context).size.width) / 2) -
-                                        24,
-                                buttonHeight: 36,
-                                buttonColorCode: 0xFFE3DCE4,
-                                buttonTextColorCode: 0xFF000000,
+                              const SizedBox(height: 8),
+
+                              // 自己紹介文
+                              SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  user?.userIntroduce == null
+                                      ? " - "
+                                      : user!.userIntroduce,
+                                  textAlign: TextAlign.left,
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                  maxLines: null,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.4,
+                                    letterSpacing: -0.50,
+                                  ),
+                                ),
                               ),
+                              const SizedBox(height: 12),
+
+                              // 好きなジム欄
+                              const Text(
+                                "好きなジム",
+                                style: TextStyle(
+                                  color: Color(0xFF8D8D8D),
+                                  fontSize: 16,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.4,
+                                  letterSpacing: -0.50,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  user?.favoriteGym == null
+                                      ? " - "
+                                      : user!.favoriteGym,
+                                  textAlign: TextAlign.left,
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                  maxLines: null,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.4,
+                                    letterSpacing: -0.50,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // ボル活歴
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                      'lib/view/assets/date_range.svg'),
+                                  const SizedBox(width: 8),
+                                  Text(cachedBoulLogDuration!),
+                                  // Text(calcBoulderingDuration(user)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // ホームジム
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                      'lib/view/assets/home_gim_icon.svg'),
+                                  const SizedBox(width: 8),
+                                  Text(showGymName(user, gymRef)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                        ),
+                      ),
 
-                          // 自己紹介文
-                          SizedBox(
-                            width: double.infinity,
-                            child: Text(
-                              user?.selfIntroduce == null
-                                  ? "データが有りません．"
-                                  : user!.selfIntroduce,
-                              textAlign: TextAlign.left,
-                              softWrap: true,
-                              overflow: TextOverflow.visible,
-                              maxLines: null,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                height: 1.4,
-                                letterSpacing: -0.50,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // 好きなジム欄
-                          const Text(
-                            "好きなジム",
-                            style: TextStyle(
-                              color: Color(0xFF8D8D8D),
-                              fontSize: 16,
+                      // ボル活・イキタイタブ
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _SliverAppBarDelegate(
+                          const TabBar(
+                            tabs: [
+                              Tab(text: "ボル活"),
+                              Tab(text: "イキタイ"),
+                            ],
+                            labelStyle: TextStyle(
+                              color: Color(0xFF0056FF),
+                              fontSize: 20,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w900,
                               height: 1.4,
                               letterSpacing: -0.50,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: Text(
-                              user?.favoriteGyms == null
-                                  ? ""
-                                  : user!.favoriteGyms,
-                              textAlign: TextAlign.left,
-                              softWrap: true,
-                              overflow: TextOverflow.visible,
-                              maxLines: null,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                height: 1.4,
-                                letterSpacing: -0.50,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          // ボル活歴
-                          Row(
-                            children: [
-                              SvgPicture.asset(
-                                  'lib/view/assets/date_range.svg'),
-                              const SizedBox(width: 8),
-                              Text(calcBoulderingDuration(user)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-
-                          // ホームジム
-                          Row(
-                            children: [
-                              SvgPicture.asset(
-                                  'lib/view/assets/home_gim_icon.svg'),
-                              const SizedBox(width: 8),
-                              Text(showGymName(user, gymRef)),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ボル活・イキタイタブ
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _SliverAppBarDelegate(
-                      const TabBar(
-                        tabs: [
-                          Tab(text: "ボル活"),
-                          Tab(text: "イキタイ"),
-                        ],
-                        labelStyle: TextStyle(
-                          color: Color(0xFF0056FF),
-                          fontSize: 20,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w900,
-                          height: 1.4,
-                          letterSpacing: -0.50,
                         ),
                       ),
-                    ),
+                    ];
+                  },
+                  // タブの中に表示する画面
+                  body: TabBarView(
+                    children: [
+                      ListView.builder(
+                        itemCount: 4,
+                        itemBuilder: (context, index) {
+                          return const BoulLog();
+                        },
+                      ),
+                      ListView.builder(
+                        itemCount: 4,
+                        itemBuilder: (context, index) {
+                          return const GimCard();
+                        },
+                      ),
+                    ],
                   ),
-                ];
-              },
-              // タブの中に表示する画面
-              body: TabBarView(
-                children: [
-                  ListView.builder(
-                    itemCount: 4,
-                    itemBuilder: (context, index) {
-                      return const BoulLog();
-                    },
-                  ),
-                  ListView.builder(
-                    itemCount: 4,
-                    itemBuilder: (context, index) {
-                      return const GimCard();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+                ),
+              );
+            }),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:bouldering_app/view/pages/show_mail_address_confirmed_page.dart';
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +21,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
   String preUserName = "";
   String userId = "";
 
+  // 初期化
   @override
   void initState() {
     super.initState();
@@ -95,13 +96,13 @@ class _editNameIntroduceFavoriteGymDialogPageState
               // 決定
               TextButton(
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
-                onPressed: () {
+                onPressed: () async {
                   // ニックネームを取得し，外部DBに保存する．
-                  userNotifier.updateUserName(
+                  final result = await userNotifier.updateUserName(
                       preUserName, _nicknameController.text, userId);
-                  // 登録完了したら，登録完了ページに遷移
+                  // 登録完了したら，登録完了/失敗ページに遷移
                   Navigator.of(context).pop();
-                  showConfirmedDialog(context);
+                  confirmedDialog(context, result);
                 },
               ),
             ],

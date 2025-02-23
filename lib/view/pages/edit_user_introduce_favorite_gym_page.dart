@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,27 +38,27 @@ class _ShowSelfIntroduceFavoriteGimPageState
 
     // 自己紹介ページ
     if (pageTitle == "自己紹介") {
-      if ((ref.read(userProvider)?.selfIntroduce) == null) {
+      if ((ref.read(userProvider)?.userIntroduce) == null) {
         _nicknameOrSelfIntroduceController.text = "";
         preDescription = "";
         userId = "";
       } else {
         _nicknameOrSelfIntroduceController.text =
-            ref.read(userProvider)!.selfIntroduce;
-        preDescription = ref.read(userProvider)!.selfIntroduce;
+            ref.read(userProvider)!.userIntroduce;
+        preDescription = ref.read(userProvider)!.userIntroduce;
         userId = ref.read(userProvider)!.userId;
       }
 
       // 好きなジムページ
     } else {
-      if ((ref.read(userProvider)?.favoriteGyms) == null) {
+      if ((ref.read(userProvider)?.favoriteGym) == null) {
         _nicknameOrSelfIntroduceController.text = "";
         preDescription = "";
         userId = "";
       } else {
         _nicknameOrSelfIntroduceController.text =
-            ref.read(userProvider)!.favoriteGyms;
-        preDescription = ref.read(userProvider)!.favoriteGyms;
+            ref.read(userProvider)!.favoriteGym;
+        preDescription = ref.read(userProvider)!.favoriteGym;
         userId = ref.read(userProvider)!.userId;
       }
     }
@@ -118,17 +119,15 @@ class _ShowSelfIntroduceFavoriteGimPageState
               ),
               // 決定
               TextButton(
-                onPressed: () {
-                  // TODO:true, falseに応じた処理を分けて書く必要があると思う...
-                  // true, 下記の処理内容で問題ない
-                  // false, utilityの中の、dialogを表示するやつを使って、
-                  // 登録失敗したことを書く必要がある。
-                  userNotifier.updateFavoriteGymsOrSelfIntroduce(
-                      preDescription,
-                      _nicknameOrSelfIntroduceController.text,
-                      widget.title,
-                      userId);
+                onPressed: () async {
+                  final result =
+                      await userNotifier.updateFavoriteGymsOrUserIntroduce(
+                          preDescription,
+                          _nicknameOrSelfIntroduceController.text,
+                          widget.title,
+                          userId);
                   Navigator.of(context).pop();
+                  confirmedDialog(context, result);
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),

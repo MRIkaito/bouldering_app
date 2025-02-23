@@ -1,7 +1,9 @@
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ShowDateSelectionDialogPage extends StatefulWidget {
+class ShowDateSelectionDialogPage extends ConsumerStatefulWidget {
   final String title;
   const ShowDateSelectionDialogPage({Key? key, required this.title})
       : super(key: key);
@@ -12,7 +14,7 @@ class ShowDateSelectionDialogPage extends StatefulWidget {
 }
 
 class _ShowDateSelectionDialogPageState
-    extends State<ShowDateSelectionDialogPage>
+    extends ConsumerState<ShowDateSelectionDialogPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -119,6 +121,8 @@ class _ShowDateSelectionDialogPageState
 
   @override
   Widget build(BuildContext context) {
+    final userRef = ref.read(userProvider);
+
     String formattedDate = isBoulderingDebut
         ? "$_selectedYear年 $_selectedMonth月"
         : "$_selectedYear年 $_selectedMonth月 $_selectedDay日";
@@ -166,6 +170,7 @@ class _ShowDateSelectionDialogPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 戻る
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -175,8 +180,12 @@ class _ShowDateSelectionDialogPageState
                   style: TextStyle(color: Colors.black),
                 ),
               ),
+              // 決定
               TextButton(
                 onPressed: () {
+                  // TODO：下記、適切な名前、引数設定を行う
+                  // userRef!.updateBoulStartDate();
+
                   print(
                       "選択された日付： $_selectedYear-$_selectedMonth-$_selectedDay");
                   Navigator.of(context).pop();

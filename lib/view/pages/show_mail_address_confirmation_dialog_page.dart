@@ -1,16 +1,16 @@
-import 'package:bouldering_app/view/pages/show_mail_address_confirmed_page.dart';
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:flutter/material.dart';
 
-class ShowMailAddressConfirmationDialogPage extends StatefulWidget {
-  const ShowMailAddressConfirmationDialogPage({Key? key}) : super(key: key);
+class MailAddressConfirmationDialogPage extends StatefulWidget {
+  const MailAddressConfirmationDialogPage({Key? key}) : super(key: key);
 
   @override
-  _ShowMailAddressConfirmationDialogPageState createState() =>
-      _ShowMailAddressConfirmationDialogPageState();
+  _MailAddressConfirmationDialogPageState createState() =>
+      _MailAddressConfirmationDialogPageState();
 }
 
-class _ShowMailAddressConfirmationDialogPageState
-    extends State<ShowMailAddressConfirmationDialogPage>
+class _MailAddressConfirmationDialogPageState
+    extends State<MailAddressConfirmationDialogPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -71,6 +71,7 @@ class _ShowMailAddressConfirmationDialogPageState
               TextButton(
                 onPressed: () {
                   // 決定ボタンが押されたときの処理を実装
+                  final result = true; //この部分をDB実装したものの結果をもらうように変更する
 
                   // 仮実装：メールアドレスを取得し，外部DBに保存
                   String email = _emailController.text;
@@ -78,7 +79,7 @@ class _ShowMailAddressConfirmationDialogPageState
 
                   // 登録処理ができたら，登録完了ページに遷移
                   Navigator.of(context).pop();
-                  showConfirmedDialog(context);
+                  confirmedDialog(context, result);
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),
@@ -90,7 +91,7 @@ class _ShowMailAddressConfirmationDialogPageState
   }
 }
 
-void showMailAddressConfirmationDialog(BuildContext context) {
+void mailAddressConfirmationDialog(BuildContext context) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -100,7 +101,7 @@ void showMailAddressConfirmationDialog(BuildContext context) {
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
       return const Center(
-        child: ShowMailAddressConfirmationDialogPage(),
+        child: MailAddressConfirmationDialogPage(),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {

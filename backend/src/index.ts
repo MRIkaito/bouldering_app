@@ -1,15 +1,13 @@
 import * as functions from "firebase-functions";
 import {Pool} from "pg";
-import * as dotenv from "dotenv";
 
-/// ■ 定数
-/// - DBアクセス情報を定義
+// データベース接続情報
 const dbConfig = {
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  user: "postgres",
+  host: "35.185.152.107",
+  database: "test_boulder_app_db",
+  password: "d8@q]kI|HJD&6G|I",
+  port: 5432,
 };
 
 /// ■定数定義
@@ -127,7 +125,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // requestId：3
+// requestId：3
     // ログイン時に(自身の)ユーザーデータを取得する
     //
     // クエリパラメータ：
@@ -137,15 +135,15 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         // クエリパラメータを取得
         const {user_id} = req.query;
 
-        // user_idがないケース
         if(!user_id) {
+          // user_idがnullのケース
           // エラーコード400, user_idが送られてきていない旨を返信して終了
           res.status(400).send("user_idパラメータが必要です");
           return;
         } else {
           // DB接続
           const client = await pool.connect();
-          //
+          // DBからデータ取得
           const result = await client.query(`
             SELECT
               B.user_id,
@@ -158,7 +156,9 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               GI.gym_name,
               B.email,
               B.created_at,
-              B.updated_at
+              B.updated_at,
+              B.birthday,
+              B.gender
             FROM
               boulder AS B
             INNER JOIN
@@ -169,12 +169,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           `,[user_id]);
           // DB接続を解放
           client.release();
+
           // データが見つからないケース
           if(result.rows.length === 0) {
             // エラーコード404, 見つからない旨を返信
             res.status(404).send('データは見つかりませんでした');
             return;
           }
+
           // 結果を返信
           res.status(200).json(result.rows);
         }
@@ -209,7 +211,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               FUR.likee_user_id,
               FUR.created_at,
               B.user_name,
-              B.user_icon_url,
+              B.user_name,
               GI.gym_id,
               GI.gym_name
             FROM
@@ -255,7 +257,6 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         // クエリパラメータを取得
         const {user_id} = req.query;
 
-
         // user_idがないケース
         if(!user_id){
           // エラーコード400, user_idが送られてきていない旨を返信して終了
@@ -270,8 +271,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               FUR.liker_user_id,
               FUR.created_at,
-              B.user_name,  -- 新規追加
-              B.user_icon_url,
+              B.user_name,
+              B.user_name,
               GI.gym_id,
               GI.gym_name
             FROM
@@ -722,7 +723,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           const limit = 20;
           const offset = 0;
 
-          // お気に入りユーザーのツイートを最新順から時系列順に取得
+          // 自分のツイートを最新順から時系列順に取得
           const result = await client.query(`
             SELECT
               BLT.tweet_id,
@@ -736,7 +737,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_icon_url,
               GI.gym_id,
               GI.gym_name,
-              GI.prefecture,
+              GI.prefecture
             FROM
               boul_log_tweet AS BLT
             INNER JOIN
@@ -774,7 +775,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
 
     // request_id: 13
-    // -ジムの情報を取得する
+    // - ジムの情報を取得する
     // - アプリ起動時に実行し，アプリ全体で参照する
     //
     // クエリパラメータ：
@@ -790,9 +791,11 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             gym_id,
             gym_name,
             latitude,
-            longitude
+            longitude,
+            prefecture,
+            city
           FROM
-            gym_info
+            gym_info;
         `);
 
         // DB接続を解放
@@ -813,6 +816,103 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         res.status(500).send("Error querying database");
       }
       break;
+
+    // request_id: 14
+    // - ユーザー名を更新する
+    //
+    // クエリパラメータ：
+    // - user_name：ユーザー名
+    // - user_id：ユーザーID
+    case 14:
+      try{
+        // クエリパラメータを取得
+        const {user_name, user_id} = req.query;
+
+        // user_idがないケース (※user_nameはなくても問題ないためnullチェック無し)
+        if(user_id == null) {
+          // エラーコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータがありません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // ユーザー名を更新
+          const result = await client.query(`
+            UPDATE boulder
+            SET user_name = $1
+            WHERE user_id = $2;
+          `, [user_name, user_id]);
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+
+    // request_id: 15
+    // - 自己紹介，または好きなジム欄の更新
+    //
+    // クエリパラメータ
+    // - description: 自己紹介，または好きなジム
+    // - user_id: ユーザーID
+    // - type: 自己紹介(true)，または好きなジム(false)のいずれかを示す
+    case 15:
+      try{
+        // 結果を受け取る用の変数
+        var result;
+
+        // クエリパラメータを取得
+        const {description, user_id, type} = req.query;
+
+        // user_idがないケース
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          if(type == "true") {
+            result = await client.query(`
+              UPDATE boulder
+              SET user_introduce = $1
+              WHERE user_id = $2;
+            `, [description, user_id]);
+          } else {
+            result = await client.query(`
+              UPDATE boulder
+              SET favorite_gym = $1
+              WHERE user_id = $2;
+            `, [description, user_id]);
+          }
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+
 
     // 無効なIDが送られてきたとき
     default:

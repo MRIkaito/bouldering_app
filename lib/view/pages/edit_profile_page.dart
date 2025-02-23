@@ -1,7 +1,7 @@
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_gender_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/edit_name_introduce_favorite_gym_dialog_page.dart';
-import 'package:bouldering_app/view/pages/show_self_introduce_favorite_gim_page.dart';
+import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -92,9 +92,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '自己紹介',
-                  subtitle: (userRef?.selfIntroduce == null)
+                  subtitle: (userRef?.userIntroduce == null)
                       ? '未設定'
-                      : userRef!.selfIntroduce,
+                      : userRef!.userIntroduce,
                 ),
               ),
 
@@ -105,9 +105,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '好きなジム',
-                  subtitle: (userRef?.favoriteGyms == null)
+                  subtitle: (userRef?.favoriteGym == null)
                       ? '未設定'
-                      : userRef!.favoriteGyms,
+                      : userRef!.favoriteGym,
                 ),
               ),
 
@@ -121,7 +121,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   title: 'ボルダリングデビュー日',
                   subtitle: (userRef?.boulStartDate == null)
                       ? "未設定"
-                      : "${userRef!.boulStartDate.year}-${userRef!.boulStartDate.month}",
+                      : "${userRef!.boulStartDate.year}-${userRef.boulStartDate.month}",
                 ),
               ),
 

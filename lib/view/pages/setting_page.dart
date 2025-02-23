@@ -25,7 +25,7 @@ class SettingPage extends StatelessWidget {
         InkWell(
           onTap: () => {
             // ページ遷移する処理を実装
-            showMailAddressConfirmationDialog(context),
+            mailAddressConfirmationDialog(context),
           },
           child: SettingItem(text: "メールアドレス"),
         ),

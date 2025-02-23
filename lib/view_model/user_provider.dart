@@ -1,4 +1,3 @@
-import 'package:auto_route/annotations.dart';
 import 'package:bouldering_app/model/boulder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,6 +45,7 @@ class UserNotifier extends StateNotifier<Boulder?> {
 
         // fromJsonで、Boulderクラスのデータをすべて取得する
         final userState = Boulder.fromJson(userMap);
+        print("[目的部分]userState確認: $userState");
 
         // 最後に、state(状態)としてデータを取得する
         state = userState;
@@ -94,14 +94,16 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - 変更前・後の名前が同じ場合は、DBアクセスなしで終了(true)
   ///
   /// 引数
-  /// - [userName] 変更後のユーザー名
+  /// - [preUserName] 変更前のユーザー名
+  /// - [setUserName] 変更後のユーザー名
+  /// - [userId] ログインしているユーザーのユーザーID
   ///
   /// 戻り値
   /// - true: ユーザー名変更 成功
   /// - false: ユーザー名変更 失敗
   Future<bool> updateUserName(
       String preUserName, String setUserName, String userId) async {
-    print("userI: $userId");
+    print("userId: $userId");
     print("preUserName: $preUserName");
     print("setUserName: $setUserName");
 
@@ -109,8 +111,7 @@ class UserNotifier extends StateNotifier<Boulder?> {
       return false;
     } else {
       if (preUserName == setUserName) {
-        print("おなじ名前");
-        return true;
+        return true; // 名前の変更完了(※同じ名前のケース)
       } else {
         int requestId = 14;
 
@@ -125,13 +126,13 @@ class UserNotifier extends StateNotifier<Boulder?> {
         try {
           final response = await http.get(url);
 
-          if (response.statusCode == 200) {
-            print("成功");
-            return true;
+          if ((response.statusCode == 200) && (state != null)) {
+            state = state!.copyWith(userName: setUserName); // ユーザー名を状態更新
+            return true; // 名前の変更完了
           } else {
             print("失敗");
             print("response.statusCode: ${response.statusCode}");
-            return false;
+            return false; // 名前の変更失敗
           }
         } catch (error) {
           throw Exception("ユーザー名変更に失敗しました: ${error}");
@@ -146,47 +147,148 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - userIdを取得できていないと、変更失敗とする(false)
   ///
   /// 引数
-  /// -
+  /// - [preDescripiton] 編集前の紹介文、または好きなジム
+  /// - [updateDescription] 編集後の紹介文、または好きなジム
+  /// - [title] 「自己紹介」「好きなジム」のいずれか
+  /// - [userId] ログインしているユーザーのID
   ///
   /// 戻り値
   /// - true：変更成功
   /// - false：変更失敗
-  Future<bool> updateFavoriteGymsOrSelfIntroduce(String preDescription,
+  Future<bool> updateFavoriteGymsOrUserIntroduce(String preDescription,
       String updateDescription, String title, String userId) async {
-    int requestId;
+    int requestId = 15;
+    bool type;
+
+    /* デバック */
+    print("preDescription: $preDescription");
+    print("updateDescription: $updateDescription");
+    print("title: $title");
+    print("userId: $userId");
+
+    // titleによって，typeの値を変更
+    if (title == "自己紹介") {
+      type = true; // 自己紹介
+    } else {
+      type = false; // 好きなジム
+    }
 
     if (userId == "") {
-      return false;
+      return false; // userIdがない場合は変更失敗(false)
     } else {
       if (preDescription == updateDescription) {
-        return true;
+        return true; // 変更前・変更後の値が同じなら，DBアクセス無しでtrue
       } else {
-        if (title == "自己紹介") {
-          requestId = 15;
-        } else {
-          requestId = 16;
-        }
-
         final url = Uri.parse(
                 'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
             .replace(queryParameters: {
           'request_id': requestId.toString(),
+          'description': updateDescription.toString(),
           'user_id': userId.toString(),
+          'type': type.toString()
         });
 
         try {
           final response = await http.get(url);
 
-          if (response.statusCode == 200) {
-            return true;
+          // 自己紹介・又は好きなジムを状態変更
+          if ((response.statusCode == 200) &&
+              (state != null) &&
+              (title == "自己紹介")) {
+            state = state!.copyWith(userIntroduce: updateDescription);
+            return true; // 紹介文の更新成功
+          } else if ((response.statusCode == 200) &&
+              (state != null) &&
+              (title == "好きなジム")) {
+            state = state!.copyWith(favoriteGym: updateDescription);
+            return true; // 好きなジムの更新成功
           } else {
-            return false;
+            print("失敗");
+            print("response.statusCode: ${response.statusCode}");
+            return false; // 紹介文、または好きなジムの更新失敗
           }
         } catch (error) {
           throw Exception("更新に失敗しました: ${error}");
         }
       }
     }
+  }
+
+  /// ■ メソッド：updateBoulStartDate
+  /// - ボルダリングを開始した日程を更新する
+  /// - 更新前と更新後の日程が同じ場合は、DBアクセスせずに終了(true)
+  /// - userIdを取得できていないと、更新失敗とする(false)
+  ///
+  /// 引数
+  /// - [preYear] 更新前の開始年
+  /// - [preMonth] 更新前の開始月
+  /// - [preDay]更新前の開始日
+  /// - [updateYear] 更新後の開始年
+  /// - [updateMonth] 更新後の開始月
+  /// - [updateDay] 更新後の日
+  /// - [userId] ログインしているユーザーのID
+  ///
+  /// 戻り値
+  /// - true：更新成功
+  /// - false：更新失敗
+  Future<bool> updateBoulStartDate(int preYear, int preMonth, int preDay,
+      int updateYear, int updateMonth, int updateDay, String userId) async {
+    int requestId = 16;
+
+    // ユーザーIDなし
+    if (userId.isEmpty) {
+      return false;
+    }
+
+    if ((preYear == updateYear) &&
+        (preMonth == updateMonth) &&
+        (preDay == updateDay)) {
+      return true; // 更新前・更新後が同じ場合は、DBアクセス無し
+    } else {
+      // 年月日を”YYYY-MM-DD"のフォーマット
+      final formattedBoulStartDate =
+          _formatDate(updateYear, updateMonth, updateDay);
+
+      final url = Uri.parse(
+              'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+          .replace(queryParameters: {
+        'request_id': requestId.toString(),
+        'user_id': userId.toString(),
+        'boul_start_date': formattedBoulStartDate.toString(),
+      });
+      try {
+        final response = await http.get(url);
+
+        if (response.statusCode == 200) {
+          // ボル活開始日を更新
+          if ((state != null)) {
+            state = state!.copyWith(
+                boulStartDate: DateTime(updateYear, updateMonth, updateDay));
+          }
+          return true; // 紹介文、または好きなジムの変更成功
+        } else {
+          print("失敗");
+          print("response.statusCode: ${response.statusCode}");
+          return false; // 紹介文、または好きなジムの変更失敗
+        }
+      } catch (error) {
+        throw Exception("更新に失敗しました：${error}");
+      }
+    }
+  }
+
+  /// ■ メソッド
+  /// - 日付をフォーマットする
+  ///
+  /// 引数
+  /// - [year]: 年
+  /// - [month] ：月
+  /// - [day] : 日
+  ///
+  /// 返り値
+  /// - YYYY-MM-DDにフォーマットした日付
+  String _formatDate(int year, int month, int day) {
+    return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 
   /// ■ メソッド：clearUserData

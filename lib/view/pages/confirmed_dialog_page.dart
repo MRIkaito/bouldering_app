@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class ShowConfirmedDialogPage extends StatefulWidget {
-  const ShowConfirmedDialogPage({Key? key}) : super(key: key);
+class ConfirmedDialogPage extends StatefulWidget {
+  final bool result;
+  const ConfirmedDialogPage(this.result, {Key? key}) : super(key: key);
 
   @override
-  _ShowConfirmedDialogPageState createState() =>
-      _ShowConfirmedDialogPageState();
+  _ConfirmedDialogPageState createState() => _ConfirmedDialogPageState();
 }
 
-class _ShowConfirmedDialogPageState extends State<ShowConfirmedDialogPage>
+class _ConfirmedDialogPageState extends State<ConfirmedDialogPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -35,18 +35,29 @@ class _ShowConfirmedDialogPageState extends State<ShowConfirmedDialogPage>
     return FadeTransition(
       opacity: _animation,
       child: AlertDialog(
-        title: const Text(
-          '登録が完了しました',
-          textAlign: TextAlign.center,
-        ),
+        title: widget.result
+            ? const Text(
+                '登録が完了しました',
+                textAlign: TextAlign.center,
+              )
+            : const Text(
+                '登録に失敗しました\n再度試して同じエラーが生じる場合，お手数ですが運営までお問い合わせください',
+                textAlign: TextAlign.center,
+              ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.check_circle_outline,
-              size: (MediaQuery.of(context).size.width) / 3,
-              color: Colors.green,
-            ),
+            widget.result
+                ? Icon(
+                    Icons.check_circle_outline,
+                    size: (MediaQuery.of(context).size.width) / 3,
+                    color: Colors.green,
+                  )
+                : Icon(
+                    Icons.close,
+                    size: (MediaQuery.of(context).size.width) / 3,
+                    color: Colors.red,
+                  ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -64,7 +75,9 @@ class _ShowConfirmedDialogPageState extends State<ShowConfirmedDialogPage>
   }
 }
 
-void showConfirmedDialog(BuildContext context) {
+/// ■ メソッド
+/// - 完了/失敗を示す画面を呼び出すメソッド
+void confirmedDialog(BuildContext context, bool result) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -73,8 +86,8 @@ void showConfirmedDialog(BuildContext context) {
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
-      return const Center(
-        child: ShowConfirmedDialogPage(),
+      return Center(
+        child: ConfirmedDialogPage(result),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {

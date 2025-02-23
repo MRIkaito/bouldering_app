@@ -79,13 +79,15 @@ class AuthNotifier extends StateNotifier<bool> {
   /// 引数：
   /// - [context] ウィジェットツリーの情報
   /// - [email] メールアドレス
-  /// - [パスワード] パスワード
+  /// - [password] パスワード
   Future<void> login(
       BuildContext context, String email, String password) async {
     try {
       // サインイン(ログイン)
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
+
+      print("userId(auth_provider.dart):${userCredential.user!.uid}");
 
       // ユーザー情報取得
       userProviderRef

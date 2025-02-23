@@ -2,8 +2,8 @@ class Boulder {
   final String userId;
   final String userName;
   final String userIconUrl;
-  final String selfIntroduce;
-  final String favoriteGyms;
+  final String userIntroduce;
+  final String favoriteGym;
   final DateTime boulStartDate;
   final int homeGymId;
   final String email;
@@ -16,8 +16,8 @@ class Boulder {
       {required this.userId,
       required this.userName,
       required this.userIconUrl,
-      required this.selfIntroduce,
-      required this.favoriteGyms,
+      required this.userIntroduce,
+      required this.favoriteGym,
       required this.boulStartDate,
       required this.homeGymId,
       required this.email,
@@ -32,8 +32,8 @@ class Boulder {
       userId: json['user_id'] ?? '',
       userName: json['user_name'] ?? '',
       userIconUrl: json['user_icon_url'] ?? '',
-      selfIntroduce: json['self_introduce'] ?? '',
-      favoriteGyms: json['favorite_gym'] ?? '',
+      userIntroduce: json['user_introduce'] ?? '',
+      favoriteGym: json['favorite_gym'] ?? '',
       boulStartDate: json['boul_start_date'] != null
           ? DateTime.parse(json['boul_start_date']) // DateTime.parse を適用
           : DateTime.now(),
@@ -61,8 +61,8 @@ class Boulder {
       'user_id': userId,
       'user_name': userName,
       'user_icon_url': userIconUrl,
-      'self_introduce': selfIntroduce,
-      'favorite_gym': favoriteGyms,
+      'user_introduce': userIntroduce,
+      'favorite_gym': favoriteGym,
       'boul_start_date': boulStartDate,
       'home_gym_id': homeGymId,
       'email': email,
@@ -71,6 +71,44 @@ class Boulder {
       'created_at': createdAt,
       'updated_at': updatedAt
     };
+  }
+
+  /// ■メソッド
+  /// - 状態更新の通知を行うために，Stateに更新した値をコピーする
+  ///
+  /// - 引数
+  /// 各プロパティ値で，更新するもの
+  ///
+  /// - 返り値
+  /// 更新したBoulderクラスの状態(インスタンス)
+  Boulder copyWith({
+    String? userId,
+    String? userName,
+    String? userIconUrl,
+    String? userIntroduce,
+    String? favoriteGym,
+    DateTime? boulStartDate,
+    int? homeGymId,
+    String? email,
+    DateTime? birthday,
+    int? gender,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Boulder(
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userIconUrl: userIconUrl ?? this.userIconUrl,
+      userIntroduce: userIntroduce ?? this.userIntroduce,
+      favoriteGym: favoriteGym ?? this.favoriteGym,
+      boulStartDate: boulStartDate ?? this.boulStartDate,
+      homeGymId: homeGymId ?? this.homeGymId,
+      email: email ?? this.email,
+      birthday: birthday ?? this.birthday,
+      gender: gender ?? this.gender,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
   // ヘルパ関数：List<dynamic> → List<Users>に変換する

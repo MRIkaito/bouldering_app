@@ -30,21 +30,19 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (userRef?.gender == null) {
       gender = "未回答";
-      print("gender(null): $gender");
     } else {
       switch (userRef!.gender) {
         case 0:
           gender = '未回答';
-          print("gender: $gender"); // TODO:ここを通っている
+          // ここを通っている
+          // TODO：下記削除する
+          print("gender: $gender");
         case 1:
           gender = '男性';
-          print("gender: $gender");
         case 2:
           gender = '女性';
-          print("gender: $gender");
         default:
           gender = '未回答';
-          print("gender(ちゃんと値あり): $gender");
       }
     }
 
@@ -80,6 +78,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // 名前
               InkWell(
                 onTap: () => {
+                  // ページ遷移
                   editUsernamePage(context),
                 },
                 child: EditSettingItem(
@@ -93,6 +92,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // 自己紹介
               InkWell(
                 onTap: () => {
+                  // ページ遷移
                   showSelfIntroduceFavoriteGim(context, "自己紹介"),
                 },
                 child: EditSettingItem(
@@ -106,6 +106,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // 好きなジム
               InkWell(
                 onTap: () => {
+                  // ページ遷移
                   showSelfIntroduceFavoriteGim(context, "好きなジム"),
                 },
                 child: EditSettingItem(
@@ -119,21 +120,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // ボルダリングデビュー日
               InkWell(
                 onTap: () => {
-                  // ページ遷移する処理を実装
+                  // ページ遷移
                   showDateSelectionDialog(context, "ボルダリングデビュー日"),
                 },
                 child: EditSettingItem(
                   title: 'ボルダリングデビュー日',
                   subtitle: (userRef?.boulStartDate == null)
                       ? "未設定"
-                      : "${userRef!.boulStartDate.year}-${userRef.boulStartDate.month}",
+                      : "${userRef!.boulStartDate.year}-${userRef.boulStartDate.month}-${userRef.boulStartDate.day}",
                 ),
               ),
 
               // 生年月日
               InkWell(
                 onTap: () => {
-                  // ページ遷移する処理を実装
+                  // ページ遷移
                   showDateSelectionDialog(context, "生年月日"),
                 },
                 child: EditSettingItem(

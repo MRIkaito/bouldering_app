@@ -960,6 +960,61 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
+    // request_id: 17
+    // - ボル活開始日，または生年月日の更新
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - update_date: 更新後の日程
+    // - is_bouldering_debut: ボル活開始日(true), または生年月日(false)のいずれかを示す
+    case 17:
+      try{
+        // 結果を受け取る用の変数
+        var result;
+
+        // クエリパラメータを取得
+        const {user_id, update_date, is_bouldering_date} = req.query;
+
+        // user_idがないケース
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          if(is_bouldering_date == "true") {
+            result = await client.query(`
+              UPDATE boulder
+              SET boul_start_date = $1
+              WHERE user_id = $2;
+            `, [update_date, user_id]);
+          } else {
+            result = await client.query(`
+              UPDATE boulder
+              SET birthday = $1
+              WHERE user_id = $2;
+            `, [update_date, user_id]);
+          }
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
     // 無効なIDが送られてきたとき
     default:
       try {

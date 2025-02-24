@@ -183,6 +183,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                                   SvgPicture.asset(
                                       'lib/view/assets/date_range.svg'),
                                   const SizedBox(width: 8),
+                                  const Text("ボルダリング歴："),
                                   Text(cachedBoulLogDuration!),
                                   // Text(calcBoulderingDuration(user)),
                                 ],
@@ -195,6 +196,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                                   SvgPicture.asset(
                                       'lib/view/assets/home_gim_icon.svg'),
                                   const SizedBox(width: 8),
+                                  const Text("ホームジム："),
                                   Text(showGymName(user, gymRef)),
                                 ],
                               ),

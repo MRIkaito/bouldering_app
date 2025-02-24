@@ -19,7 +19,6 @@ class _editUserNamePageState extends ConsumerState<editUserNamePage>
   String preUserName = "";
   String userId = "";
 
-  // 初期化
   @override
   void initState() {
     super.initState();

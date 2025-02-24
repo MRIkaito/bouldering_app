@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,6 +25,10 @@ class _ShowDateSelectionDialogPageState
   int _selectedMonth = DateTime.now().month;
   int _selectedDay = DateTime.now().day;
 
+  // presetDate：更新前の日付
+  DateTime presetDate = DateTime.now();
+  String userId = "";
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +39,31 @@ class _ShowDateSelectionDialogPageState
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
     isBoulderingDebut = widget.title == "ボルダリングデビュー日";
+
+    // true: "ボルダリングデビュー日" / false:"生年月日"
+    if (isBoulderingDebut) {
+      if ((ref.read(userProvider)?.boulStartDate) == null) {
+        // 初期値で処理継続する
+        // DO NOTHING
+      } else {
+        presetDate = ref.read(userProvider)!.boulStartDate;
+        userId = ref.read(userProvider)!.userId;
+        _selectedYear = presetDate.year;
+        _selectedMonth = presetDate.month;
+        _selectedDay = presetDate.day;
+      }
+    } else {
+      if ((ref.read(userProvider)?.birthday) == null) {
+        // 初期値で処理継続する
+        // DO NOTHING
+      } else {
+        presetDate = ref.read(userProvider)!.birthday;
+        userId = ref.read(userProvider)!.userId;
+        _selectedYear = presetDate.year;
+        _selectedMonth = presetDate.month;
+        _selectedDay = presetDate.day;
+      }
+    }
   }
 
   @override
@@ -58,14 +88,14 @@ class _ShowDateSelectionDialogPageState
                   itemExtent: 32.0,
                   onSelectedItemChanged: (int index) {
                     setState(() {
-                      _selectedYear = 1900 + index;
+                      _selectedYear = 1925 + index;
                     });
                   },
                   children: List<Widget>.generate(
-                    131,
+                    (DateTime.now().year - 1924),
                     (int index) {
                       return Center(
-                        child: Text('${1900 + index}年'),
+                        child: Text('${1925 + index}年'),
                       );
                     },
                   ),
@@ -92,26 +122,26 @@ class _ShowDateSelectionDialogPageState
                 ),
               ),
               // 日ピッカー（ボルダリングデビュー日は日選択なし）
-              if (!isBoulderingDebut)
-                Container(
-                  width: MediaQuery.of(context).size.width / 3,
-                  child: CupertinoPicker(
-                    itemExtent: 32.0,
-                    onSelectedItemChanged: (int index) {
-                      setState(() {
-                        _selectedDay = index + 1;
-                      });
+              // if (!isBoulderingDebut)  // TODO：ボルダリングでも選択できるようにするかけんおつ
+              Container(
+                width: MediaQuery.of(context).size.width / 3,
+                child: CupertinoPicker(
+                  itemExtent: 32.0,
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      _selectedDay = index + 1;
+                    });
+                  },
+                  children: List<Widget>.generate(
+                    31,
+                    (int index) {
+                      return Center(
+                        child: Text('${index + 1}日'),
+                      );
                     },
-                    children: List<Widget>.generate(
-                      31,
-                      (int index) {
-                        return Center(
-                          child: Text('${index + 1}日'),
-                        );
-                      },
-                    ),
                   ),
                 ),
+              ),
             ],
           ),
         );
@@ -121,11 +151,9 @@ class _ShowDateSelectionDialogPageState
 
   @override
   Widget build(BuildContext context) {
-    final userRef = ref.read(userProvider);
+    final userNotifier = ref.read(userProvider.notifier);
 
-    String formattedDate = isBoulderingDebut
-        ? "$_selectedYear年 $_selectedMonth月"
-        : "$_selectedYear年 $_selectedMonth月 $_selectedDay日";
+    String formattedDate = "$_selectedYear年 $_selectedMonth月 $_selectedDay日";
 
     return FadeTransition(
       opacity: _animation,
@@ -151,10 +179,12 @@ class _ShowDateSelectionDialogPageState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // 何年何月の部分
                       Text(
                         formattedDate,
                         style: const TextStyle(fontSize: 18),
                       ),
+                      // カレンダーアイコン
                       const Icon(
                         Icons.calendar_today,
                         color: Colors.grey,
@@ -182,14 +212,19 @@ class _ShowDateSelectionDialogPageState
               ),
               // 決定
               TextButton(
-                onPressed: () {
-                  // TODO：下記、適切な名前、引数設定を行う
-                  // userRef!.updateBoulStartDate();
+                onPressed: () async {
+                  final result = await userNotifier.updateDate(
+                      presetDate.year,
+                      presetDate.month,
+                      presetDate.day,
+                      _selectedYear,
+                      _selectedMonth,
+                      _selectedDay,
+                      userId,
+                      isBoulderingDebut);
 
-                  print(
-                      "選択された日付： $_selectedYear-$_selectedMonth-$_selectedDay");
                   Navigator.of(context).pop();
-                  // 必要に応じて登録完了ページに遷移
+                  confirmedDialog(context, result);
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),

@@ -174,7 +174,7 @@ class UserNotifier extends StateNotifier<Boulder?> {
     }
 
     if (userId == "") {
-      return false; // userIdがない場合は変更失敗(false)
+      return false; // userIdなし：更新失敗(false)
     } else {
       if (preDescription == updateDescription) {
         return true; // 変更前・変更後の値が同じなら，DBアクセス無しでtrue
@@ -280,8 +280,8 @@ class UserNotifier extends StateNotifier<Boulder?> {
     }
   }
 
-  /// ■ メソッド：updateBoulStartDate
-  /// - ボルダリングを開始した日程を更新する
+  /// ■ メソッド：updateDate
+  /// - ボルダリングを開始した日付，あるいは生年月日を更新する
   /// - 更新前と更新後の日程が同じ場合は、DBアクセスせずに終了(true)
   /// - userIdを取得できていないと、更新失敗とする(false)
   ///
@@ -293,15 +293,23 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - [updateMonth] 更新後の開始月
   /// - [updateDay] 更新後の日
   /// - [userId] ログインしているユーザーのID
+  /// - [isBoulderingDebut] (true)ボルダリング開始日 / (false)生年月日 // TODO：この引数を実装する
   ///
   /// 戻り値
   /// - true：更新成功
   /// - false：更新失敗
-  Future<bool> updateBoulStartDate(int preYear, int preMonth, int preDay,
-      int updateYear, int updateMonth, int updateDay, String userId) async {
-    int requestId = 16;
+  Future<bool> updateDate(
+      int preYear,
+      int preMonth,
+      int preDay,
+      int updateYear,
+      int updateMonth,
+      int updateDay,
+      String userId,
+      bool isBoulderingDebut) async {
+    int requestId = 17;
 
-    // ユーザーIDなし
+    // ユーザーIDなし：更新失敗(false)
     if (userId.isEmpty) {
       return false;
     }
@@ -309,33 +317,42 @@ class UserNotifier extends StateNotifier<Boulder?> {
     if ((preYear == updateYear) &&
         (preMonth == updateMonth) &&
         (preDay == updateDay)) {
-      return true; // 更新前・更新後が同じ場合は、DBアクセス無し
+      return true; // 更新前・更新後が同じ場合は、更新成功とする(DBアクセス無し)
     } else {
-      // 年月日を”YYYY-MM-DD"のフォーマット
-      final formattedBoulStartDate =
-          _formatDate(updateYear, updateMonth, updateDay);
+      // 年月日を”YYYY-MM-DD"(DATETIME型)にフォーマット
+      final formattedDate = _formatDate(updateYear, updateMonth, updateDay);
 
       final url = Uri.parse(
               'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
           .replace(queryParameters: {
         'request_id': requestId.toString(),
         'user_id': userId.toString(),
-        'boul_start_date': formattedBoulStartDate.toString(),
+        'update_date': formattedDate.toString(),
+        'is_bouldering_debut': isBoulderingDebut.toString(),
       });
+
       try {
         final response = await http.get(url);
 
-        if (response.statusCode == 200) {
+        if ((response.statusCode == 200) &&
+            (state != null) &&
+            (isBoulderingDebut == true)) {
           // ボル活開始日を更新
-          if ((state != null)) {
-            state = state!.copyWith(
-                boulStartDate: DateTime(updateYear, updateMonth, updateDay));
-          }
-          return true; // 紹介文、または好きなジムの変更成功
+          state = state!.copyWith(
+              boulStartDate: DateTime(updateYear, updateMonth, updateDay));
+
+          return true; // ボル活開始日の更新成功
+        } else if ((response.statusCode == 200) &&
+            (state != null) &&
+            (isBoulderingDebut == false)) {
+          // 生年月日を更新
+          state = state!
+              .copyWith(birthday: DateTime(updateYear, updateMonth, updateDay));
+          return true; // 生年月日の更新成功
         } else {
           print("失敗");
           print("response.statusCode: ${response.statusCode}");
-          return false; // 紹介文、または好きなジムの変更失敗
+          return false; // ボル活開始日または生年月日の変更失敗
         }
       } catch (error) {
         throw Exception("更新に失敗しました：${error}");

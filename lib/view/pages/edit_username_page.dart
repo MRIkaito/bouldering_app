@@ -4,20 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class editNameIntroduceFavoriteGymDialogPage extends ConsumerStatefulWidget {
-  const editNameIntroduceFavoriteGymDialogPage({Key? key}) : super(key: key);
+class editUserNamePage extends ConsumerStatefulWidget {
+  const editUserNamePage({Key? key}) : super(key: key);
 
   @override
-  _editNameIntroduceFavoriteGymDialogPageState createState() =>
-      _editNameIntroduceFavoriteGymDialogPageState();
+  _editUserNamePageState createState() => _editUserNamePageState();
 }
 
-class _editNameIntroduceFavoriteGymDialogPageState
-    extends ConsumerState<editNameIntroduceFavoriteGymDialogPage>
+class _editUserNamePageState extends ConsumerState<editUserNamePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   String preUserName = "";
   String userId = "";
 
@@ -33,11 +31,11 @@ class _editNameIntroduceFavoriteGymDialogPageState
     _controller.forward();
 
     if ((ref.read(userProvider)?.userName) == null) {
-      _nicknameController.text = "";
+      _usernameController.text = "";
       preUserName = "";
       userId = "";
     } else {
-      _nicknameController.text = ref.read(userProvider)!.userName;
+      _usernameController.text = ref.read(userProvider)!.userName;
       preUserName = ref.read(userProvider)!.userName;
       userId = ref.read(userProvider)!.userId;
     }
@@ -46,7 +44,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
   @override
   void dispose() {
     _controller.dispose();
-    _nicknameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -66,7 +64,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
           children: [
             const SizedBox(height: 16),
             TextField(
-              controller: _nicknameController,
+              controller: _usernameController,
               keyboardType: TextInputType.text,
               inputFormatters: [
                 LengthLimitingTextInputFormatter(15),
@@ -99,7 +97,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
                 onPressed: () async {
                   // ニックネームを取得し，外部DBに保存する．
                   final result = await userNotifier.updateUserName(
-                      preUserName, _nicknameController.text, userId);
+                      preUserName, _usernameController.text, userId);
                   // 登録完了したら，登録完了/失敗ページに遷移
                   Navigator.of(context).pop();
                   confirmedDialog(context, result);
@@ -113,7 +111,7 @@ class _editNameIntroduceFavoriteGymDialogPageState
   }
 }
 
-void editNameIntroduceFavoriteGymPage(BuildContext context) {
+void editUsernamePage(BuildContext context) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -123,7 +121,7 @@ void editNameIntroduceFavoriteGymPage(BuildContext context) {
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
       return const Center(
-        child: editNameIntroduceFavoriteGymDialogPage(),
+        child: editUserNamePage(),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {

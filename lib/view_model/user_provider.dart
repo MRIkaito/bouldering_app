@@ -214,6 +214,72 @@ class UserNotifier extends StateNotifier<Boulder?> {
     }
   }
 
+  /// ■ メソッド：updateupdateGender
+  /// - 性別を変更する
+  /// - 更新前と、更新後の性別選択が同じ場合は、DBアクセスせずに終了(true)
+  /// - userIdを取得できていないと、変更失敗とする(false)
+  ///
+  /// 引数
+  /// - [presetGender] 更新前に選択していた性別("男性", "女性", "未選択")
+  /// - [updateGender]更新後の性別("男性", "女性", "未選択")
+  /// - [userId] ログインしているユーザーのID
+  ///
+  /// 戻り値
+  /// - true：変更成功
+  /// - false：変更失敗
+  Future<bool> updateGender(
+      String presetGender, String updateGender, String userId) async {
+    int requestId = 16;
+    int requestGender = 0;
+
+    // 性別ごとに，数値に置き換え(DBが性別を数値で管理しているため)
+    // 男性：1, 女性:2, 未回答:0
+    if (updateGender == "男性") {
+      requestGender = 1;
+    } else if (updateGender == "女性") {
+      requestGender = 2;
+    } else {
+      // DO NOTHING
+    }
+
+    /* デバック */
+    print("presetGender: $presetGender");
+    print("updageGender: $updateGender");
+    print("userId: $userId");
+
+    if (userId == "") {
+      return false; // userIdがない場合は変更失敗(false)
+    } else {
+      if (presetGender == updateGender) {
+        return true; // 変更前・変更後の値が同じなら，DBアクセス無しでtrue
+      } else {
+        final url = Uri.parse(
+                'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+            .replace(queryParameters: {
+          'request_id': requestId.toString(),
+          'gender': requestGender.toString(),
+          'user_id': userId.toString(),
+        });
+
+        try {
+          final response = await http.get(url);
+
+          // 性別を更新
+          if ((response.statusCode == 200) && (state != null)) {
+            state = state!.copyWith(gender: requestGender);
+            return true; // 紹介文の更新成功
+          } else {
+            print("失敗");
+            print("response.statusCode: ${response.statusCode}");
+            return false; // 紹介文、または好きなジムの更新失敗
+          }
+        } catch (error) {
+          throw Exception("更新に失敗しました: ${error}");
+        }
+      }
+    }
+  }
+
   /// ■ メソッド：updateBoulStartDate
   /// - ボルダリングを開始した日程を更新する
   /// - 更新前と更新後の日程が同じ場合は、DBアクセスせずに終了(true)

@@ -1,6 +1,6 @@
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
-import 'package:bouldering_app/view/pages/show_gender_selection_dialog_page.dart';
-import 'package:bouldering_app/view/pages/edit_name_introduce_favorite_gym_dialog_page.dart';
+import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
+import 'package:bouldering_app/view/pages/edit_username_page.dart';
 import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
@@ -30,16 +30,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (userRef?.gender == null) {
       gender = "未回答";
+      print("gender(null): $gender");
     } else {
       switch (userRef!.gender) {
         case 0:
           gender = '未回答';
+          print("gender: $gender"); // TODO:ここを通っている
         case 1:
           gender = '男性';
+          print("gender: $gender");
         case 2:
           gender = '女性';
+          print("gender: $gender");
         default:
           gender = '未回答';
+          print("gender(ちゃんと値あり): $gender");
       }
     }
 
@@ -75,7 +80,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // 名前
               InkWell(
                 onTap: () => {
-                  editNameIntroduceFavoriteGymPage(context),
+                  editUsernamePage(context),
                 },
                 child: EditSettingItem(
                   title: 'ニックネーム',
@@ -133,8 +138,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '生年月日(非公開)',
-                  // TODO：今はboulStartDateにしているが、birthdayカラムをDBに追加して
-                  // TODO：boulStartDate→birthdayへ変更する
                   subtitle: (userRef?.birthday == null)
                       ? "未設定"
                       : "${userRef!.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
@@ -145,11 +148,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               InkWell(
                 onTap: () => {
                   // ページ遷移する処理を実装
-                  showGenderSelectionDialog(context, "性別"),
+                  genderSelectionDialog(context, "性別"),
                 },
                 child: EditSettingItem(
                   title: '性別 (非公開)',
-                  // TODO：userクラスに，性別を格納するように変更する必要有り
                   subtitle: gender,
                 ),
               ),

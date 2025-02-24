@@ -12,19 +12,20 @@ class Boulder {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Boulder(
-      {required this.userId,
-      required this.userName,
-      required this.userIconUrl,
-      required this.userIntroduce,
-      required this.favoriteGym,
-      required this.boulStartDate,
-      required this.homeGymId,
-      required this.email,
-      required this.birthday,
-      required this.gender,
-      required this.createdAt,
-      required this.updatedAt});
+  Boulder({
+    required this.userId,
+    required this.userName,
+    required this.userIconUrl,
+    required this.userIntroduce,
+    required this.favoriteGym,
+    required this.boulStartDate,
+    required this.homeGymId,
+    required this.email,
+    required this.birthday,
+    required this.gender,
+    required this.createdAt,
+    required this.updatedAt,
+  });
 
   // JSON形式からUserクラスへの変換
   factory Boulder.fromJson(Map<String, dynamic> json) {
@@ -42,10 +43,18 @@ class Boulder {
       birthday: json['birthday'] != null
           ? DateTime.parse(json['birthday'])
           : DateTime.now(), // nullの場合、点在時刻をデフォルト値とする
-      gender: switch (json['gender']) {
-        '0' || '1' || '2' => int.parse(json['gender']),
-        _ => 0
-      },
+      gender: (json['gender'] is String)
+          ? (json['gender'] == '0' ||
+                  json['gender'] == '1' ||
+                  json['gender'] == '2')
+              ? int.parse(json['gender']) // 0, 1, 2 なら変換
+              : 0 // それ以外の文字列は 0
+          : (json['gender'] is int &&
+                  (json['gender'] == 0 ||
+                      json['gender'] == 1 ||
+                      json['gender'] == 2))
+              ? json['gender'] // 0, 1, 2 の整数ならそのまま使う
+              : 0, // それ以外(nullもここに該当)
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(), // nullの場合、現在時刻をデフォルト値とする

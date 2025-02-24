@@ -1,21 +1,26 @@
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ShowGenderSelectionDialogPage extends StatefulWidget {
+class GenderSelectionDialogPage extends ConsumerStatefulWidget {
   final String title;
-  const ShowGenderSelectionDialogPage({Key? key, required this.title})
+  const GenderSelectionDialogPage({Key? key, required this.title})
       : super(key: key);
 
   @override
-  _ShowGenderSelectionDialogPageState createState() =>
-      _ShowGenderSelectionDialogPageState();
+  _GenderSelectionDialogPageState createState() =>
+      _GenderSelectionDialogPageState();
 }
 
-class _ShowGenderSelectionDialogPageState
-    extends State<ShowGenderSelectionDialogPage>
+class _GenderSelectionDialogPageState
+    extends ConsumerState<GenderSelectionDialogPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   String? _selectedGender = '未回答';
+  String presetGender = "未回答"; // 更新前の性別
+  String userId = "";
 
   @override
   void initState() {
@@ -26,6 +31,16 @@ class _ShowGenderSelectionDialogPageState
     );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+
+    if ((ref.read(userProvider)?.gender) == null) {
+      _selectedGender = "未回答";
+      presetGender = "未回答";
+      userId = "";
+    } else {
+      _selectedGender = _convertGenderCode(ref.read(userProvider)!.gender);
+      presetGender = _convertGenderCode(ref.read(userProvider)!.gender);
+      userId = ref.read(userProvider)!.userId;
+    }
   }
 
   @override
@@ -36,6 +51,8 @@ class _ShowGenderSelectionDialogPageState
 
   @override
   Widget build(BuildContext context) {
+    final userNotifier = ref.read(userProvider.notifier);
+
     return FadeTransition(
       opacity: _animation,
       child: AlertDialog(
@@ -48,6 +65,7 @@ class _ShowGenderSelectionDialogPageState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // ラジオボタン：男性
               RadioListTile<String>(
                 title: const Text('男性',
                     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -59,6 +77,7 @@ class _ShowGenderSelectionDialogPageState
                   });
                 },
               ),
+              // ラジオボタン：女性
               RadioListTile<String>(
                 title: const Text('女性',
                     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -70,6 +89,7 @@ class _ShowGenderSelectionDialogPageState
                   });
                 },
               ),
+              // ラジオボタン：未回答
               RadioListTile<String>(
                 title: const Text('未回答',
                     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -88,6 +108,7 @@ class _ShowGenderSelectionDialogPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 戻る
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -97,11 +118,14 @@ class _ShowGenderSelectionDialogPageState
                   style: TextStyle(color: Colors.black),
                 ),
               ),
+              // 決定
               TextButton(
-                onPressed: () {
-                  print("選択された性別： $_selectedGender");
+                onPressed: () async {
+                  final result = await userNotifier.updateGender(
+                      presetGender, (_selectedGender ?? "未回答"), userId);
+
                   Navigator.of(context).pop();
-                  // 必要に応じて登録完了ページに遷移
+                  confirmedDialog(context, result);
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),
@@ -113,7 +137,7 @@ class _ShowGenderSelectionDialogPageState
   }
 }
 
-void showGenderSelectionDialog(BuildContext context, String title) {
+void genderSelectionDialog(BuildContext context, String title) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -123,7 +147,7 @@ void showGenderSelectionDialog(BuildContext context, String title) {
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
       return Center(
-        child: ShowGenderSelectionDialogPage(title: title),
+        child: GenderSelectionDialogPage(title: title),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -136,4 +160,27 @@ void showGenderSelectionDialog(BuildContext context, String title) {
       );
     },
   );
+}
+
+/// ■ メソッド
+/// - 性別ごとのコードによって，性別（文字列）を返す
+///
+/// ・引数
+/// - [genderCode] 0, 1, 2のいずれか
+/// - 0: 未回答, 1: 男性, 2: 女性
+/// - 上記医いずれかの数値でなければ，"未回答"と同様の扱いとする
+///
+/// ・返り値
+/// "未回答", "男性", "女性"のいずれかを返す
+String _convertGenderCode(int genderCode) {
+  switch (genderCode) {
+    case 0:
+      return "未回答";
+    case 1:
+      return "男性";
+    case 2:
+      return "女性";
+    default:
+      return "未回答";
+  }
 }

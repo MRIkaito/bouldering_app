@@ -858,6 +858,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         console.error("データ更新エラー", error);
         res.status(500).send("サーバーエラーが発生しました");
       }
+      break;
 
     // request_id: 15
     // - 自己紹介，または好きなジム欄の更新
@@ -912,7 +913,52 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         console.error("データ更新エラー", error);
         res.status(500).send("サーバーエラーが発生しました");
       }
+      break;
 
+    // request_id: 16
+    // - 性別を更新する
+    //
+    // クエリパラメータ
+    // - gender: 男性("1") , 女性("2"), 未選択("0")
+    // - user_id: ユーザーID
+    case 16:
+      try{
+        // クエリパラメータを取得
+        const {gender, user_id} = req.query;
+        // genderカラムはDBでINTEGER型
+        // → そのため数値にキャスト
+        const castedGender = gender ? parseInt(gender as string, 10) : 0;
+        // user_idがないケース
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          result = await client.query(`
+            UPDATE boulder
+            SET gender = $1
+            WHERE user_id = $2;
+          `, [castedGender, user_id]);
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
 
     // 無効なIDが送られてきたとき
     default:

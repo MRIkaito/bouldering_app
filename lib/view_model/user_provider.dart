@@ -374,6 +374,50 @@ class UserNotifier extends StateNotifier<Boulder?> {
     return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 
+  /// ■ メソッド：updateHomeGym
+  /// - ホームジムを更新する
+  /// - userIdを取得できていないと、更新失敗とする(false)
+  /// - 更新前のジムIDと更新後のジムIDを比較し、同じ場合はtrue(DBアクセスなし)とする処理はフロントで実装
+  ///
+  /// 引数
+  /// - [updateGymId] 更新後のジムID
+  /// - [userId] ユーザーID
+  ///
+  /// 戻り値
+  /// - true：更新成功
+  /// - false：更新失敗
+  Future<bool> updateHomeGym(int updateGymId, String userId) async {
+    int requestId = 18;
+
+    // ユーザーID無し：更新失敗(false)
+    if (userId.isEmpty) {
+      return false;
+    }
+
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': requestId.toString(),
+      'user_id': userId.toString(),
+      'home_gym_id': updateGymId.toString(),
+    });
+
+    try {
+      final response = await http.get(url);
+
+      if ((response.statusCode == 200) && (state != null)) {
+        state = state!.copyWith(homeGymId: updateGymId);
+        return true;
+      } else {
+        print("ホームジムID更新失敗");
+        print("response.statusCode: ${response.statusCode}");
+        return false;
+      }
+    } catch (error) {
+      throw Exception("更新に失敗しました：${error}");
+    }
+  }
+
   /// ■ メソッド：clearUserData
   /// - ユーザ─情報をクリアする(state = null)
   /// - ログアウト時に使用する

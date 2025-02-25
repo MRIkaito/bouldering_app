@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/edit_username_page.dart';
 import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
+import 'package:bouldering_app/view/components/edit_setting_item.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:bouldering_app/view/components/edit_setting_item.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -27,6 +28,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final userRef = ref.watch(userProvider);
     final gymRef = ref.watch(gymProvider);
     final String gender;
+    final String homeGymName;
 
     if (userRef?.gender == null) {
       gender = "未回答";
@@ -44,6 +46,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         default:
           gender = '未回答';
       }
+    }
+
+    if (userRef?.homeGymId == null) {
+      homeGymName = "選択なし";
+    } else {
+      // homdGymIdの名前を設定する
     }
 
     return Scaffold(
@@ -128,6 +136,22 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   subtitle: (userRef?.boulStartDate == null)
                       ? "未設定"
                       : "${userRef!.boulStartDate.year}-${userRef.boulStartDate.month}-${userRef.boulStartDate.day}",
+                ),
+              ),
+
+              // ホームジム
+              InkWell(
+                onTap: () => {
+                  // ページ遷移
+                  selectHomeGymDialog(context, "ホームジム",
+                      gymRef[userRef.homeGymId]!.gymName ?? "選択無し"),
+                },
+                child: EditSettingItem(
+                  title: 'ホームジム',
+                  subtitle: ((userRef?.homeGymId == null) &&
+                          ((gymRef[userRef!.homeGymId]?.gymName) == null))
+                      ? "選択無し"
+                      : gymRef[userRef!.homeGymId]!.gymName,
                 ),
               ),
 

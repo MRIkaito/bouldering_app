@@ -1015,7 +1015,98 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // 無効なIDが送られてきたとき
+    // request_id: 18
+    // - ホームジムIDを更新する
+    // - (エラーハンドリング)ジムID < 0 のケースでは、更新失敗(false)とする
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - home_gym_id: 更新後のホームジムID
+    case 18:
+      try{
+        // クエリパラメータを取得
+        const {user_id, home_gym_id} = req.query;
+        const casted_home_gym_id = parseInt(home_gym_id);
+
+        if(user_id == null) {    // user_idがないケース
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else if(casted_home_gym_id < 0) {    // home_gym_idに該当するジムがないケース
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        }
+        else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          const result = await client.query(`
+              UPDATE boulder
+              SET home_gym_id = $1
+              WHERE user_id = $2;
+            `, [casted_home_gym_id, user_id]);
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // request_id: 19
+    // - ログインユーザーの当月のツイート情報（未定）を取得する
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    case 19:
+      try{
+        // クエリパラメータを取得
+        const {user_id} = req.query;
+
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          const result = await client.query(`
+              UPDATE boulder
+              SET home_gym_id = $1
+              WHERE user_id = $2;
+            `, [casted_home_gym_id, user_id]);
+
+          // DB接続を解放
+          client.release();
+
+          if(!result.rowCount) {
+            res.status(400).send("データ更新に失敗しました");
+            return;
+          }
+          res.status(200).send("データが正常に更新されました");
+          return;
+        }
+      } catch(error) {
+        console.error("データ更新エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // default
+    // - request_idなし
     default:
       try {
         // gym_idがないとき，エラーコード400とgym_idがない旨を返信して終了
@@ -1028,3 +1119,38 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
   }
 });
+
+/*
+今月のボル活
+●ボル活
+SELECT SUM(daily_gym_count) AS total_visits
+FROM (
+    SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
+    FROM your_table
+    WHERE user_id = 1
+      AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+      AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+    GROUP BY visited_date
+) AS daily_counts;
+
+
+●施設数
+SELECT COUNT(DISTINCT gym_id) AS total_gym_count
+FROM your_table
+WHERE user_id = 1
+  AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+  AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE);
+
+
+●ペース
+SELECT TRUNC(SUM(daily_gym_count) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
+FROM (
+    SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
+    FROM your_table
+    WHERE user_id = 1
+      AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+      AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+    GROUP BY visited_date
+) AS daily_counts;
+
+*/

@@ -24,7 +24,7 @@ class LoginedMyPage extends ConsumerStatefulWidget {
 class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
   String? cachedBoulLogDuration;
 
-  // 1. 初期化
+  // 初期化
   @override
   void initState() {
     super.initState();
@@ -185,7 +185,6 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                                   const SizedBox(width: 8),
                                   const Text("ボルダリング歴："),
                                   Text(cachedBoulLogDuration!),
-                                  // Text(calcBoulderingDuration(user)),
                                 ],
                               ),
                               const SizedBox(height: 8),

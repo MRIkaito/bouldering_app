@@ -1065,14 +1065,18 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
 
     // request_id: 19
-    // - ログインユーザーの当月のツイート情報（未定）を取得する
+    // - 指定した月のボル活の回数を取得する
+    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
+    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
     //
     // クエリパラメータ
     // - user_id: ユーザーID
+    // - months_ago : 何か月前のデータを取得するかを指定する
     case 19:
       try{
         // クエリパラメータを取得
-        const {user_id} = req.query;
+        const {user_id, months_ago} = req.query;
+        const casted_months_ago = parseInt(months_ago);
 
         if(user_id == null) {
           // Errorコード400, user_idがない旨を返信して終了
@@ -1084,26 +1088,250 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // 更新処理
           const result = await client.query(`
-              UPDATE boulder
-              SET home_gym_id = $1
-              WHERE user_id = $2;
-            `, [casted_home_gym_id, user_id]);
+            SELECT COALESCE(SUM(daily_gym_count),0) AS total_visits
+            FROM (
+              SELECT DATE(visited_date) AS visit_day, COUNT(DISTINCT gym_id) AS daily_gym_count
+              FROM boul_log_tweet
+              WHERE user_id = $1
+                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+              GROUP BY visit_day
+            ) AS daily_counts;
+            `, [user_id, casted_months_ago]);
 
           // DB接続を解放
           client.release();
 
-          if(!result.rowCount) {
-            res.status(400).send("データ更新に失敗しました");
+          // データを見つけられなかったケース
+          if(result.rows.length === 0) {
+            // エラーコード404, 見つからない旨を返信
+            res.status(404).send("データは見つかりませんでした");
             return;
           }
-          res.status(200).send("データが正常に更新されました");
+
+          // 結果を返信
+          res.status(200).json(result.rows);
           return;
         }
       } catch(error) {
-        console.error("データ更新エラー", error);
-        res.status(500).send("サーバーエラーが発生しました");
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
       }
       break;
+
+    // request_id: 20
+    // - 指定した月の、訪問したジム施設数を取得する
+    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
+    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - months_ago : 何か月前のデータを取得するかを指定する
+    case 20:
+      try{
+        // クエリパラメータを取得
+        const {user_id, months_ago} = req.query;
+        const casted_months_ago = parseInt(months_ago);
+
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          const result = await client.query(`
+          SELECT COUNT(DISTINCT gym_id) AS total_gym_count
+            FROM boul_log_tweet
+            WHERE user_id = $1
+              AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+              AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month';
+          `, [user_id, casted_months_ago]);
+
+          // DB接続を解放
+          client.release();
+
+          // データを見つけられなかったケース
+          if(result.rows.length === 0) {
+            // エラーコード404, 見つからない旨を返信
+            res.status(404).send("データは見つかりませんでした");
+            return;
+          }
+
+          // 結果を返信
+          res.status(200).json(result.rows);
+          return;
+        }
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
+    // request_id: 21
+    // - 指定した月の、週あたりにボルダリング活動した回数を取得(GET)する
+    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
+    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - months_ago : 何か月前のデータを取得するかを指定する
+    case 21:
+      try{
+        // クエリパラメータを取得
+        const {user_id, months_ago} = req.query;
+        const casted_months_ago = parseInt(months_ago);
+
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 更新処理
+          const result = await client.query(`
+          SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
+          FROM (
+            SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
+            FROM boul_log_tweet
+            WHERE user_id = $1
+              AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+              AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+            GROUP BY visited_date
+          ) AS daily_counts;
+          `, [user_id, casted_months_ago]);
+
+          // DB接続を解放
+          client.release();
+
+          // データを見つけられなかったケース
+          if(result.rows.length === 0) {
+            // エラーコード404, 見つからない旨を返信
+            res.status(404).send("データは見つかりませんでした");
+            return;
+          }
+
+          // 結果を返信
+          res.status(200).json(result.rows);
+          return;
+        }
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
+    // request_id: 22
+    // - 指定した月の「ボル活回数」「訪問したジム施設数」「週当たりのボルダリング活動数」を取得する
+    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
+    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - months_ago : 何か月前のデータを取得するかを指定する
+    // - months_ago : 何か月前のデータを取得するかを指定する
+    case 22:
+      try{
+        // クエリパラメータを取得
+        const {user_id, months_ago} = req.query;
+        const casted_months_ago = parseInt(months_ago);
+
+        if(user_id == null) {
+          // Errorコード400, user_idがない旨を返信して終了
+          res.status(400).send("user_idパラメータが有りません");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // 1. ボル活回数
+          const boulActivityCountsQuery = `
+            SELECT COALESCE(SUM(daily_gym_count),0) AS total_visits
+                FROM (
+                  SELECT DATE(visited_date) AS visit_day, COUNT(DISTINCT gym_id) AS daily_gym_count
+                  FROM boul_log_tweet
+                  WHERE user_id = $1
+                    AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+                    AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+                  GROUP BY visit_day
+                ) AS daily_counts;
+          `;
+          const boulActivityCountsResult = await client.query(boulActivityCountsQuery, [user_id, casted_months_ago]);
+          const totalVisits = boulActivityCountsResult.rows[0]?.total_visits ?? 0;
+
+          // 2. 訪問施設数
+          const visitedGymCountsQuery = `
+            SELECT COUNT(DISTINCT gym_id) AS total_gym_count
+              FROM boul_log_tweet
+              WHERE user_id = $1
+                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month';
+          `;
+          const visitedGymCountsResult = await client.query(visitedGymCountsQuery, [user_id, casted_months_ago]);
+          const totalGyms = visitedGymCountsResult.rows[0]?.total_gym_count ?? 0;
+
+          // 3. 週平均回数
+          const weeklyVisitRateQuery = `
+            SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
+            FROM (
+              SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
+              FROM boul_log_tweet
+              WHERE user_id = $1
+                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+              GROUP BY visited_date
+            ) AS daily_counts;
+          `;
+          const weeklyVisitRateResult = await client.query(weeklyVisitRateQuery, [user_id, casted_months_ago]);
+          const weeklyVisitRate = weeklyVisitRateResult.rows[0]?.weekly_visit_rate ?? 0;
+
+          // 4. TOP5 の訪問ジム
+          const topGymsQuery = `
+            SELECT G.gym_name, B.gym_id, COUNT(*) AS visit_count, MAX(B.visited_date) AS latest_visit
+            FROM boul_log_tweet B
+            INNER JOIN gym_info G ON B.gym_id = G.gym_id
+            WHERE B.user_id = $1
+              AND B.visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
+              AND B.visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+            GROUP BY B.gym_id, G.gym_name
+            ORDER BY visit_count DESC, latest_visit DESC
+            LIMIT 5;
+          `;
+          const topGymsResult = await client.query(topGymsQuery, [user_id, casted_months_ago]);
+          const topGyms = topGymsResult.rows.map(row => ({
+            gym_id: row.gym_id,
+            gym_name: row.gym_name,
+            visit_count: row.visit_count
+          }));
+
+          // TOP5 に満たない場合、「-」を追加
+          while (topGyms.length < 5) {
+            topGyms.push({ gym_name: "-", visit_count: "-" });
+          }
+
+          // DB接続を解放
+          client.release();
+
+          // まとめてJSON で返す
+          res.status(200).json({
+            total_visits: totalVisits,
+            total_gym_count: totalGyms,
+            weekly_visit_rate: weeklyVisitRate,
+            top_gyms: topGyms
+          });
+
+          return;
+        }
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
 
     // default
     // - request_idなし
@@ -1119,38 +1347,3 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
   }
 });
-
-/*
-今月のボル活
-●ボル活
-SELECT SUM(daily_gym_count) AS total_visits
-FROM (
-    SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
-    FROM your_table
-    WHERE user_id = 1
-      AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-      AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE)
-    GROUP BY visited_date
-) AS daily_counts;
-
-
-●施設数
-SELECT COUNT(DISTINCT gym_id) AS total_gym_count
-FROM your_table
-WHERE user_id = 1
-  AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-  AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE);
-
-
-●ペース
-SELECT TRUNC(SUM(daily_gym_count) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
-FROM (
-    SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
-    FROM your_table
-    WHERE user_id = 1
-      AND EXTRACT(YEAR FROM visited_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-      AND EXTRACT(MONTH FROM visited_date) = EXTRACT(MONTH FROM CURRENT_DATE)
-    GROUP BY visited_date
-) AS daily_counts;
-
-*/

@@ -1,3 +1,4 @@
+import 'package:bouldering_app/model/bouldering_stats.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -157,5 +158,50 @@ class StaticsReportViewModel {
     }
 
     return boulCountsPerWeek;
+  }
+
+  /// ■ メソッド
+  /// - 指定した月の「ボル活回数」「訪問ジム数」「週当たりボル活回数」を取得する
+  ///
+  /// 引数
+  /// - [userId] ユーザーID
+  /// - [monthsAgo] 当月基準で何か月前のデータを取得するかを指定する
+  /// * 当月のデータを取得する場合は0を指定する
+  ///
+  /// 戻り値
+  /// 指定した月の「ボル活回数」「訪問ジム数」「週当たりボル活回数」
+  Future<BoulderingStats> fetchBoulActivityStats(
+      String userId, int monthsAgo) async {
+    const int requestId = 23;
+
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': requestId.toString(),
+      'user_id': userId,
+      'months_ago': monthsAgo.toString(),
+    });
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> boulActivityDataList = jsonDecode(response.body);
+
+        if (boulActivityDataList.length == 1) {
+          // List要素は1つのみなので[0]でアクセス
+          final Map<String, dynamic> boulActivityDataMap =
+              boulActivityDataList[0];
+
+          return BoulderingStats.fromJson(boulActivityDataMap);
+        } else {
+          throw Exception("不正なレスポンス形式");
+        }
+      } else {
+        throw Exception("データ取得に失敗しました (Status Code: ${response.statusCode})");
+      }
+    } catch (error) {
+      throw Exception("更新に失敗しました: ${error.toString()}");
+    }
   }
 }

@@ -81,7 +81,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                               // TODO 1：ログインしているユーザーのツイート情報を渡す必要がある
                               // TODO 2：ThisMonthBoulLogに、ユーザーのツイート情報をもらう処理を実装する
                               // TODO 3：SQLで、ツイートを取得する処理を実装する必要がある
-                              const ThisMonthBoulLog(),
+                              ThisMonthBoulLog(
+                                  userId: user!.userId), // TODO:nullチェックを確認
                               const SizedBox(height: 8),
 
                               // お気に入り・お気にいられ欄

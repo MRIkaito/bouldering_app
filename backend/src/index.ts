@@ -1308,7 +1308,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             visit_count: row.visit_count
           }));
 
-          // TOP5 に満たない場合、「-」を追加
+          // TOP5 に満たない場合、gym_name(ジム名),visit_count(訪問回数)共に「-」を追加
           while (topGyms.length < 5) {
             topGyms.push({ gym_name: "-", visit_count: "-" });
           }

@@ -116,7 +116,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                           GoRoute(
                             path: 'Logined',
                             pageBuilder: (context, state) =>
-                                // final user = state.extra as
                                 const NoTransitionPage(child: LoginedMyPage()),
                           ),
                         ]),
@@ -133,11 +132,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               fullscreenDialog: true, child: FacilityInfoPage()),
         ),
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/StaticsReport',
-          pageBuilder: (context, state) => const MaterialPage(
-              fullscreenDialog: true, child: StaticsReportPage()),
-        ),
+            parentNavigatorKey: _rootNavigatorKey,
+            path: '/StaticsReport/:userId',
+            pageBuilder: (context, state) {
+              // 遷移先にuserIdを渡す
+              final String userId = state.pathParameters['userId'] ?? '';
+              return MaterialPage(
+                  fullscreenDialog: true,
+                  child: StaticsReportPage(userId: userId));
+            }),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/Setting',
@@ -154,20 +157,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               return MaterialPage(
                   fullscreenDialog: true, child: FavoriteUserPage(type: type));
             }),
-        /*
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/FavoriteUser',
-          pageBuilder: (context, state) => const MaterialPage(
-              fullscreenDialog: true, child: FavoriteUserPage()),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/FavoredByUser',
-          pageBuilder: (context, state) => const MaterialPage(
-              fullscreenDialog: true, child: FavoredByUserPage()),
-        ),
-        */
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/EditProfile',

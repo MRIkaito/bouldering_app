@@ -1,17 +1,33 @@
+import 'package:bouldering_app/model/bouldering_stats.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class StaticsReport extends StatelessWidget {
-  // 何年, 何月, ボル活回数, 施設数, １から5位の施設名，1から5位の訪問回数
-  // 背景色
-  // 上記のパラメータをコンストラクタ引数に取るよう後で編集
-  const StaticsReport({super.key, this.backgroundColor = 0xFF0056FF});
+/// ■ クラス
+/// 統計情報を表示するクラス
+/// 必須)「何年何月」「ボル活回数」「施設数」「週当たりボル活回数」「1～5位までの施設名・訪問回数」をもらう必要がある
+/// 任意)「背景色」は前月のみもらう
+class StaticsReport extends ConsumerWidget {
+  const StaticsReport({
+    super.key,
+    required this.date,
+    required this.boulActivityCounts,
+    required this.boulGymCounts,
+    required this.boulActivityCountsPerWeek,
+    required this.top5GymStats,
+    this.backgroundColor = 0xFF0056FF,
+  });
+  final DateTime date;
+  final int boulActivityCounts;
+  final int boulGymCounts;
+  final int boulActivityCountsPerWeek;
+  final BoulderingStats top5GymStats;
   final int backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: 344,
-      height: 328, // 見た目をバランスよく表示するために高さを調整しました
+      height: 328,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
         color: Color(backgroundColor),
@@ -26,7 +42,7 @@ class StaticsReport extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '今月のボル活 - 2024.9 -',
+                '今月のボル活 - ${}.${} -', // TODO：値もらう
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -41,9 +57,9 @@ class StaticsReport extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatsItem('ボル活', '2', '回'),
-              _buildStatsItem('施設数', '2', '施設'),
-              _buildStatsItem('ペース', '1', '週あたり回数'),
+              _buildStatsItem('ボル活', boulActivityCounts.toString(), '回'), // TODO：値もらう
+              _buildStatsItem('施設数',  boulGymCounts.toString(), '施設'), // TODO：値もらう
+              _buildStatsItem('ペース', boulActivityCountsPerWeek.toString(), '週あたり回数'), // TODO：値もらう
             ],
           ),
           const SizedBox(height: 8),
@@ -68,11 +84,11 @@ class StaticsReport extends StatelessWidget {
             child: ListView(
               physics: const NeverScrollableScrollPhysics(), // スクロール表示をオフ
               children: [
-                _buildTop5Item('フォークボルダリングジム', '1 回'),
-                _buildTop5Item('フォークボルダリングジム', '- 回'),
-                _buildTop5Item('フォークボルダリングジム', '- 回'),
-                _buildTop5Item('フォークボルダリングジム', '- 回'),
-                _buildTop5Item('フォークボルダリングジム', '- 回'),
+                _buildTop5Item('フォークボルダリングジム', '1 回'), // TODO：値もらう
+                _buildTop5Item('フォークボルダリングジム', '- 回'), // TODO： 値もらう
+                _buildTop5Item('フォークボルダリングジム', '- 回'), // TODO： 値もらう
+                _buildTop5Item('フォークボルダリングジム', '- 回'), // TODO： 値もらう
+                _buildTop5Item('フォークボルダリングジム', '- 回'), // TODO： 値もらう
               ],
             ),
           ),

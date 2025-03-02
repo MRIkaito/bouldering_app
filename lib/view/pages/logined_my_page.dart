@@ -56,8 +56,9 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
             error: (err, stack) => const Text("エラーが発生しました"),
             loading: () => const Center(child: CircularProgressIndicator()),
             data: (user) {
-              // ボル活歴をキャッシュする
+              // ボル活歴をキャッシュ
               cachedBoulLogDuration ??= calcBoulderingDuration(user);
+
               return SafeArea(
                 child: NestedScrollView(
                   headerSliverBuilder:
@@ -72,17 +73,14 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                               // ユーザ写真・名前欄
                               // TODO：下記、URLを渡す処理をUserLogoAndNameに追加する
                               UserLogoAndName(
-                                  userName: (user?.userName == null)
-                                      ? "名無し"
-                                      : user!.userName),
+                                  userName: user?.userName ?? "名無し"),
                               const SizedBox(height: 16),
 
                               // ボル活
-                              // TODO 1：ログインしているユーザーのツイート情報を渡す必要がある
-                              // TODO 2：ThisMonthBoulLogに、ユーザーのツイート情報をもらう処理を実装する
-                              // TODO 3：SQLで、ツイートを取得する処理を実装する必要がある
                               ThisMonthBoulLog(
-                                  userId: user!.userId), // TODO:nullチェックを確認
+                                userId: user!.userId,
+                                monthsAgo: 0,
+                              ), // TODO:nullチェックを確認
                               const SizedBox(height: 8),
 
                               // お気に入り・お気にいられ欄

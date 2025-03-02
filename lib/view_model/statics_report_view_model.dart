@@ -1,4 +1,5 @@
 import 'package:bouldering_app/model/bouldering_stats.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -172,7 +173,9 @@ class StaticsReportViewModel {
   /// 指定した月の「ボル活回数」「訪問ジム数」「週当たりボル活回数」
   Future<BoulderingStats> fetchBoulActivityStats(
       String userId, int monthsAgo) async {
-    const int requestId = 23;
+    const int requestId = 22;
+
+    print("【deubg】送信する userId: $userId, monthsAgo: $monthsAgo ");
 
     final url = Uri.parse(
             'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
@@ -184,24 +187,28 @@ class StaticsReportViewModel {
 
     try {
       final response = await http.get(url);
+      print("【Debug】response.statusCode: ${response.statusCode}");
+      print("【Debug】response.body: ${response.body}");
 
       if (response.statusCode == 200) {
-        final List<dynamic> boulActivityDataList = jsonDecode(response.body);
-
-        if (boulActivityDataList.length == 1) {
-          // List要素は1つのみなので[0]でアクセス
-          final Map<String, dynamic> boulActivityDataMap =
-              boulActivityDataList[0];
-
-          return BoulderingStats.fromJson(boulActivityDataMap);
-        } else {
-          throw Exception("不正なレスポンス形式");
-        }
+        final Map<String, dynamic> boulActivityDataMap =
+            jsonDecode(response.body);
+        print("エラー確認1");
+        return BoulderingStats.fromJson(boulActivityDataMap);
       } else {
         throw Exception("データ取得に失敗しました (Status Code: ${response.statusCode})");
       }
     } catch (error) {
+      print("更新に失敗しました: ${error.toString()}");
       throw Exception("更新に失敗しました: ${error.toString()}");
     }
   }
 }
+
+/// 統計データを取得する FutureProvider
+final boulActivityStatsProvider =
+    FutureProvider.family<BoulderingStats, ({String userId, int monthsAgo})>(
+        (ref, params) async {
+  return StaticsReportViewModel()
+      .fetchBoulActivityStats(params.userId, params.monthsAgo);
+});

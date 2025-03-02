@@ -1026,7 +1026,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       try{
         // クエリパラメータを取得
         const {user_id, home_gym_id} = req.query;
-        const casted_home_gym_id = parseInt(home_gym_id);
+        const casted_home_gym_id = (typeof home_gym_id === "string") ? parseInt(home_gym_id, 10) : 0;
 
         if(user_id == null) {    // user_idがないケース
           // Errorコード400, user_idがない旨を返信して終了
@@ -1076,7 +1076,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       try{
         // クエリパラメータを取得
         const {user_id, months_ago} = req.query;
-        const casted_months_ago = parseInt(months_ago);
+        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago, 10) : 0;
 
         if(user_id == null) {
           // Errorコード400, user_idがない旨を返信して終了
@@ -1131,7 +1131,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       try{
         // クエリパラメータを取得
         const {user_id, months_ago} = req.query;
-        const casted_months_ago = parseInt(months_ago);
+        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago, 10) : 0;
+        // const casted_months_ago = parseInt(months_ago);
 
         if(user_id == null) {
           // Errorコード400, user_idがない旨を返信して終了
@@ -1182,7 +1183,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       try{
         // クエリパラメータを取得
         const {user_id, months_ago} = req.query;
-        const casted_months_ago = parseInt(months_ago);
+        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago) : 0;
 
         if(user_id == null) {
           // Errorコード400, user_idがない旨を返信して終了
@@ -1238,7 +1239,15 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       try{
         // クエリパラメータを取得
         const {user_id, months_ago} = req.query;
-        const casted_months_ago = parseInt(months_ago);
+        const casted_months_ago = Number(months_ago) || 0;
+
+        // months_agoを基準に開始日・終了日を計算
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - casted_months_ago);
+        startDate.setDate(1);   // その月の1日
+
+        const endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + 1); // 翌月の1日
 
         if(user_id == null) {
           // Errorコード400, user_idがない旨を返信して終了
@@ -1255,12 +1264,12 @@ exports.getData = functions.https.onRequest(async (req, res) => {
                   SELECT DATE(visited_date) AS visit_day, COUNT(DISTINCT gym_id) AS daily_gym_count
                   FROM boul_log_tweet
                   WHERE user_id = $1
-                    AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-                    AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+                    AND visited_date >= $2
+                    AND visited_date < $3
                   GROUP BY visit_day
                 ) AS daily_counts;
           `;
-          const boulActivityCountsResult = await client.query(boulActivityCountsQuery, [user_id, casted_months_ago]);
+          const boulActivityCountsResult = await client.query(boulActivityCountsQuery, [user_id, startDate.toISOString(), endDate.toISOString()]);
           const totalVisits = boulActivityCountsResult.rows[0]?.total_visits ?? 0;
 
           // 2. 訪問施設数
@@ -1268,25 +1277,25 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT COUNT(DISTINCT gym_id) AS total_gym_count
               FROM boul_log_tweet
               WHERE user_id = $1
-                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month';
+                AND visited_date >= $2
+                AND visited_date < $3;
           `;
-          const visitedGymCountsResult = await client.query(visitedGymCountsQuery, [user_id, casted_months_ago]);
+          const visitedGymCountsResult = await client.query(visitedGymCountsQuery, [user_id, startDate.toISOString(), endDate.toISOString()]);
           const totalGyms = visitedGymCountsResult.rows[0]?.total_gym_count ?? 0;
 
           // 3. 週平均回数
           const weeklyVisitRateQuery = `
-            SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
+            SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0) :: numeric / (EXTRACT(DAY FROM CURRENT_DATE):: numeric / 7), 1) AS weekly_visit_rate
             FROM (
               SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
               FROM boul_log_tweet
               WHERE user_id = $1
-                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+                AND visited_date >= $2
+                AND visited_date < $3
               GROUP BY visited_date
             ) AS daily_counts;
           `;
-          const weeklyVisitRateResult = await client.query(weeklyVisitRateQuery, [user_id, casted_months_ago]);
+          const weeklyVisitRateResult = await client.query(weeklyVisitRateQuery, [user_id, startDate.toISOString(), endDate.toISOString()]);
           const weeklyVisitRate = weeklyVisitRateResult.rows[0]?.weekly_visit_rate ?? 0;
 
           // 4. TOP5 の訪問ジム
@@ -1295,13 +1304,13 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             FROM boul_log_tweet B
             INNER JOIN gym_info G ON B.gym_id = G.gym_id
             WHERE B.user_id = $1
-              AND B.visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-              AND B.visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
+              AND B.visited_date >= $2
+              AND B.visited_date < $3
             GROUP BY B.gym_id, G.gym_name
             ORDER BY visit_count DESC, latest_visit DESC
             LIMIT 5;
           `;
-          const topGymsResult = await client.query(topGymsQuery, [user_id, casted_months_ago]);
+          const topGymsResult = await client.query(topGymsQuery, [user_id, startDate.toISOString(), endDate.toISOString()]);
           const topGyms = topGymsResult.rows.map(row => ({
             gym_id: row.gym_id,
             gym_name: row.gym_name,
@@ -1310,7 +1319,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // TOP5 に満たない場合、gym_name(ジム名),visit_count(訪問回数)共に「-」を追加
           while (topGyms.length < 5) {
-            topGyms.push({ gym_name: "-", visit_count: "-" });
+            topGyms.push({ gym_id: "0", gym_name: "-", visit_count: "-" });
           }
 
           // DB接続を解放

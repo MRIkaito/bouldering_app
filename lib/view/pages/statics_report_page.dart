@@ -1,7 +1,5 @@
 import 'package:bouldering_app/model/bouldering_stats.dart';
-import 'package:bouldering_app/view/components/statics_report.dart';
 import 'package:bouldering_app/view_model/statics_report_view_model.dart';
-import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

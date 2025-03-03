@@ -20,28 +20,29 @@ class SettingPage extends StatelessWidget {
           onTap: () => {
             context.push("/EditProfile"),
           },
-          child: SettingItem(text: "プロフィール編集"),
+          child: const SettingItem(text: "プロフィール編集"),
         ),
         InkWell(
           onTap: () => {
             // ページ遷移する処理を実装
             mailAddressConfirmationDialog(context),
           },
-          child: SettingItem(text: "メールアドレス"),
+          child: const SettingItem(text: "メールアドレス変更"),
         ),
+        // TODO；パスワード変更の欄もいれる
         InkWell(
           onTap: () => {
             // ページ遷移する処理を実装
             showLogoutConfirmationDialog(context), // 退会ダイアログを表示
           },
-          child: SettingItem(text: "ログアウト"),
+          child: const SettingItem(text: "ログアウト"),
         ),
         InkWell(
           onTap: () => {
             // ページ遷移する処理を実装
             showExitConfirmationDialog(context), // 退会ダイアログを表示
           },
-          child: SettingItem(text: "退会"),
+          child: const SettingItem(text: "退会"),
         ),
       ])),
     );

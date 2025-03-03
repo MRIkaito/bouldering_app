@@ -1,4 +1,6 @@
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/utility/show_popup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MailAddressConfirmationDialogPage extends StatefulWidget {
@@ -15,6 +17,7 @@ class _MailAddressConfirmationDialogPageState
   late AnimationController _controller;
   late Animation<double> _animation;
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -31,6 +34,7 @@ class _MailAddressConfirmationDialogPageState
   void dispose() {
     _controller.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -43,14 +47,28 @@ class _MailAddressConfirmationDialogPageState
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('メールアドレスを変更したい場合は，下記フォームに入力してください'),
+            const Text('メールアドレスを変更したい場合は，下記メールアドレス・パスワードを入力してください'),
+
             const SizedBox(height: 16),
+            // メールアドレス入力フォーム
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: 'example@gmail.com',
+                hintText: 'メールアドレス',
+              ),
+            ),
+            const SizedBox(height: 2),
+
+            // パスワード入力フォーム
+            TextField(
+              controller: _passwordController,
+              keyboardType: TextInputType.visiblePassword,
+              obscureText: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'パスワード',
               ),
             ),
           ],
@@ -59,6 +77,7 @@ class _MailAddressConfirmationDialogPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 戻る
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -68,18 +87,31 @@ class _MailAddressConfirmationDialogPageState
                   style: TextStyle(color: Colors.black),
                 ),
               ),
+              // 決定
               TextButton(
-                onPressed: () {
-                  // 決定ボタンが押されたときの処理を実装
-                  final result = true; //この部分をDB実装したものの結果をもらうように変更する
-
-                  // 仮実装：メールアドレスを取得し，外部DBに保存
+                onPressed: () async {
+                  // 仮実装：final result = の部分は、awaitを使うと、
+                  // メールアドレスを押下するまで、次に進まないかもしれない
                   String email = _emailController.text;
-                  print('入力されたメールアドレス: $email');
+                  String password = _passwordController.text;
+                  final resultNo = await updateEmail(context, email, password);
 
-                  // 登録処理ができたら，登録完了ページに遷移
-                  Navigator.of(context).pop();
-                  confirmedDialog(context, result);
+                  if (resultNo == 0) {
+                    Navigator.of(context).pop();
+                    confirmedDialog(context, true,
+                        message: "確認メールを送信しました．リンクをクリックして確認してください．");
+                  } else if (resultNo == 1) {
+                    Navigator.of(context).pop();
+                    confirmedDialog(context, false,
+                        message: "ログインが正常にできておりませんでした．もう一度ログインしなおして，お試しください．");
+                  } else if (resultNo == 2) {
+                    Navigator.of(context).pop();
+                    confirmedDialog(context, false,
+                        message:
+                            "メールアドレス更新中にエラーが発生しました．再度お試しいただき，同じエラーが発生する場合，運営までお問い合わせください．");
+                  }
+
+                  // 登録処理後の完了/未完ページに遷移
                 },
                 child: const Text('決定', style: TextStyle(color: Colors.red)),
               ),
@@ -114,4 +146,51 @@ void mailAddressConfirmationDialog(BuildContext context) {
       );
     },
   );
+}
+
+/// ■ メソッド
+/// - メールアドレスを更新するメソッド
+///
+/// 引数
+/// - [context] ウィジェットツリー情報
+/// - [newEmail] あたらしく登録するメールアドレス
+///
+/// 返り値
+/// - 0: 確認メールを送信しました．リンクをクリックして確認してください．
+/// - 1: ログインが正常にできておりませんでした．もう一度ログインしなおして，お試しください．
+/// - 2: メールアドレス更新中にエラーが発生しました．再度お試しいただき，同じエラーが発生する場合，運営までお問い合わせください．
+Future<int> updateEmail(
+    BuildContext context, String newEmail, String password) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text("ユーザーがログインしていません")),
+    // );
+    return 1;
+  }
+
+  try {
+    // Firebaseは最近ログインしていないとメール変更を許可しない
+    // → 再認証実施
+    final credential = EmailAuthProvider.credential(
+      email: user.email!, // ここは変更前のメールアドレスを設定
+      password: password,
+    );
+
+    // 再認証実施
+    await user.reauthenticateWithCredential(credential);
+    // メールアドレス更新処理
+    await user.verifyBeforeUpdateEmail(newEmail);
+
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text("確認メールを送信しました。メール内のリンクをクリックしてください")),
+    // );
+    return 0;
+  } catch (e) {
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text("エラーが発生しました: $e")),
+    // );
+    return 2;
+  }
 }

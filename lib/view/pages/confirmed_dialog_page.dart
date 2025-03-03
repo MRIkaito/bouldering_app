@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 class ConfirmedDialogPage extends StatefulWidget {
   final bool result;
-  const ConfirmedDialogPage(this.result, {Key? key}) : super(key: key);
+  final String? message; // カスタムメッセージを受け取る
+
+  const ConfirmedDialogPage(this.result, {Key? key, this.message})
+      : super(key: key);
 
   @override
   _ConfirmedDialogPageState createState() => _ConfirmedDialogPageState();
@@ -35,15 +38,13 @@ class _ConfirmedDialogPageState extends State<ConfirmedDialogPage>
     return FadeTransition(
       opacity: _animation,
       child: AlertDialog(
-        title: widget.result
-            ? const Text(
-                '登録が完了しました',
-                textAlign: TextAlign.center,
-              )
-            : const Text(
-                '登録に失敗しました\n再度試して同じエラーが生じる場合，お手数ですが運営までお問い合わせください',
-                textAlign: TextAlign.center,
-              ),
+        title: Text(
+          widget.message ?? // メッセージが渡されていればそれを表示、なければ下記デフォルトメッセージを表示
+              (widget.result
+                  ? '登録が完了しました'
+                  : '登録に失敗しました\n再度試して同じエラーが生じる場合，お手数ですが運営までお問い合わせください'),
+          textAlign: TextAlign.center,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -77,7 +78,7 @@ class _ConfirmedDialogPageState extends State<ConfirmedDialogPage>
 
 /// ■ メソッド
 /// - 完了/失敗を示す画面を呼び出すメソッド
-void confirmedDialog(BuildContext context, bool result) {
+void confirmedDialog(BuildContext context, bool result, {String? message}) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -87,7 +88,7 @@ void confirmedDialog(BuildContext context, bool result) {
     pageBuilder: (BuildContext buildContext, Animation animation,
         Animation secondaryAnimation) {
       return Center(
-        child: ConfirmedDialogPage(result),
+        child: ConfirmedDialogPage(result, message: message),
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {

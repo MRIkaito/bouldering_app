@@ -61,7 +61,7 @@ class _ConfirmedDialogPageState extends State<ConfirmedDialogPage>
                   ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(true); // trueを返す
               },
               child: const Text(
                 '戻る',
@@ -78,8 +78,9 @@ class _ConfirmedDialogPageState extends State<ConfirmedDialogPage>
 
 /// ■ メソッド
 /// - 完了/失敗を示す画面を呼び出すメソッド
-void confirmedDialog(BuildContext context, bool result, {String? message}) {
-  showGeneralDialog(
+Future<bool> confirmedDialog(BuildContext context, bool result,
+    {String? message}) {
+  return showGeneralDialog<bool>(
     context: context,
     barrierDismissible: true,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
@@ -100,5 +101,5 @@ void confirmedDialog(BuildContext context, bool result, {String? message}) {
         ),
       );
     },
-  );
+  ).then((value) => value ?? false);
 }

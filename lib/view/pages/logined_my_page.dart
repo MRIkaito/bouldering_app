@@ -78,9 +78,9 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
 
                               // ボル活
                               ThisMonthBoulLog(
-                                userId: user!.userId,
+                                userId: user?.userId,
                                 monthsAgo: 0,
-                              ), // TODO:nullチェックを確認
+                              ),
                               const SizedBox(height: 8),
 
                               // お気に入り・お気にいられ欄

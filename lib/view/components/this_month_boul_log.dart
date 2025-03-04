@@ -4,15 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class ThisMonthBoulLog extends ConsumerWidget {
-  final String userId;
+  final String? userId;
   final int monthsAgo;
   const ThisMonthBoulLog(
       {super.key, required this.userId, required this.monthsAgo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // userIdがnullの場合，ローディングを表示
+    if (userId == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final asyncBoulActivityStats = ref.watch(
-        boulActivityStatsProvider((userId: userId, monthsAgo: monthsAgo)));
+        boulActivityStatsProvider((userId: userId!, monthsAgo: monthsAgo)));
 
     return asyncBoulActivityStats.when(
       loading: () => const Center(child: CircularProgressIndicator()),

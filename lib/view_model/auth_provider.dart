@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,7 +123,7 @@ class AuthNotifier extends StateNotifier<bool> {
   /// 引数：
   /// - [context] ウィジェットツリーの情報
   /// - [email] メールアドレス
-  /// - [パスワード] パスワード
+  /// - [password] パスワード
   Future<void> signUp(
       BuildContext context, String email, String password) async {
     // パスワードが指定の条件を満たしていなければ終了する
@@ -178,11 +179,102 @@ class AuthNotifier extends StateNotifier<bool> {
       await _auth.signOut();
       // 状態をログアウトに変更
       state = false;
-      // 取得してたユーザー情報(状態)をクリアする
+      // 取得していたユーザー情報(状態)をクリア
       userProviderRef.read(userProvider.notifier).clearUserData();
     } catch (e) {
       throw Exception("ログアウトに失敗しました：\$e");
     }
+  }
+
+  /// ■ メソッド
+  /// - 退会処理
+  /// - 退会時にユーザー情報(状態)をクリアにする
+  ///
+  /// 引数
+  /// - [context] ウィジェットツリー情報
+  /// - [password] パスワード
+  Future<void> deleteUserAccount(BuildContext context, String password) async {
+    Map<String, dynamic> resultMessage = {
+      "result": true,
+      "message": "",
+    };
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      resultMessage["result"] = false;
+      resultMessage["message"] = "ユーザーが見つかりません";
+      confirmedDialog(
+        context,
+        resultMessage["result"],
+        message: resultMessage["message"],
+      );
+      return;
+    }
+
+    try {
+      // 再認証
+      final authCredential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(authCredential);
+
+      // アカウント削除
+      await user.delete();
+
+      // ログアウト
+      await _auth.signOut();
+      // 状態をログアウトに変更
+      state = false;
+
+      // 取得していたユーザー情報(状態)をクリア
+      userProviderRef.read(userProvider.notifier).clearUserData();
+
+      resultMessage["result"] = true;
+      resultMessage["message"] = "アカウントを削除しました";
+    } on FirebaseAuthException catch (error) {
+      resultMessage["result"] = false;
+      resultMessage["message"] = "エラーが発生しました";
+
+      switch (error.code) {
+        case "wrong-password":
+          resultMessage["message"] = "パスワードが間違っています";
+          break;
+
+        case "user-not-found":
+          resultMessage["message"] = "ユーザーが見つかりません";
+          break;
+
+        case "too-many-requests":
+          resultMessage["message"] = "リクエストが多すぎます。しばらくお待ちください";
+          break;
+
+        default:
+          resultMessage["message"] = "エラー：${error.message}";
+      }
+    } catch (error) {
+      resultMessage["result"] = false;
+      resultMessage["message"] = "エラーが発生しました";
+    }
+
+    // 結果ダイアログを表示し，”戻る" ボタンが押下されたら処理を続行
+    bool confirmed = await confirmedDialog(
+      context,
+      resultMessage["result"],
+      message: resultMessage["message"],
+    );
+
+    if (confirmed && resultMessage["result"] == true) {
+      // ダイアログを閉じてから pop する
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+
+      // 未ログイン画面に遷移
+      context.go("/Unlogined");
+    }
+
+    return;
   }
 }
 

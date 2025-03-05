@@ -158,7 +158,16 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               });
                             },
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'パスワードは下記の条件を満たしてください\n・英大文字/英小文字/数字を1つずつ使用する\n・最低8文字以上',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
                           Button(
                               buttonName: "新規登録",
                               onPressedFunction: () async {

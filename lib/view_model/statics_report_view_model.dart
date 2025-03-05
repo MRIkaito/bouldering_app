@@ -193,7 +193,7 @@ class StaticsReportViewModel {
       if (response.statusCode == 200) {
         final Map<String, dynamic> boulActivityDataMap =
             jsonDecode(response.body);
-        print("エラー確認1");
+
         return BoulderingStats.fromJson(boulActivityDataMap);
       } else {
         throw Exception("データ取得に失敗しました (Status Code: ${response.statusCode})");

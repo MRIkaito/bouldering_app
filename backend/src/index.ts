@@ -161,7 +161,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.gender
             FROM
               boulder AS B
-            INNER JOIN
+            LEFT JOIN
               gym_info AS GI
               ON B.home_gym_id = GI.gym_id
             WHERE
@@ -658,8 +658,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             user_id,
             user_name,
             user_icon_url, -- カラム名確認
-            self_introduce,
-            favorite_gyms,
+            user_introduce,
+            favorite_gym,
             boul_start_date,
             home_gym_id,
             email,
@@ -671,8 +671,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             $1,
             '駆け出しボルダー',
             NULL,
-            設定から自己紹介を記入しましょう！,
-            設定から好きなジムを記入しましょう！,
+            '設定から自己紹介を記入しましょう！',
+            '設定から好きなジムを記入しましょう！',
             CURRENT_TIMESTAMP,
             NULL,
             $2,
@@ -687,8 +687,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // 挿入が成功されたかを確認する
           // TO DO：
-          if((result.rowCount ?? 0) === 0)  {
-            res.status(201).send("データが正常に挿入されました");
+          if((result.rowCount ?? 0) > 0)  {
+            res.status(200).send("データが正常に挿入されました");
           } else {
             res.status(400).send("データ挿入に失敗しました");
           }

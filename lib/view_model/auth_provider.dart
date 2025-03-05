@@ -63,18 +63,6 @@ class AuthNotifier extends StateNotifier<bool> {
   }
 
   /// ■ メソッド
-  /// - パスワードが指定の条件を満たしているかを確認するメソッド
-  /// - 条件：英大文字/英小文字/数字を1つずつ使用すること
-  /// - 条件(続き)：パスワードは最低8文字以上であること
-  /// - 条件を満たしていれば, trueを返す
-  /// - 条件を満たしていなければ，falseを返す
-  bool _isStrongPassword(String password) {
-    final RegExp strongPasswordRegExp =
-        RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d@\$!%*?&]{8,}\$');
-    return strongPasswordRegExp.hasMatch(password);
-  }
-
-  /// ■ メソッド
   /// - ログイン処理
   ///
   /// 引数：
@@ -87,8 +75,6 @@ class AuthNotifier extends StateNotifier<bool> {
       // サインイン(ログイン)
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-
-      print("userId(auth_provider.dart):${userCredential.user!.uid}");
 
       // ユーザー情報取得
       userProviderRef
@@ -135,11 +121,11 @@ class AuthNotifier extends StateNotifier<bool> {
       // ユーザーを新規登録して，ログイン情報を取得する
       final userCredential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      // ユーザーを新規登録して，ログイン状態になったかを確認する
+      // ユーザー新規登録(登録:true/登録失敗:false)
       final isSignedUp = await userProviderRef
           .read(userProvider.notifier)
           .insertNewUserData(userCredential.user!.uid, email);
-      // ログインされていなければ，サインアップ(新規登録)画面でエラーの旨を表示する(終了)
+      // ログインされていなければ新規登録画面でエラー表示(終了)
       if (!isSignedUp) {
         showPopup(context, otherErrorTitle, otherErrorMessage);
         return;
@@ -168,6 +154,18 @@ class AuthNotifier extends StateNotifier<bool> {
             errorMap[e.code]?[1] ?? otherErrorMessage);
       }
     }
+  }
+
+  /// ■ メソッド
+  /// - パスワードが指定の条件を満たしているかを確認するメソッド
+  /// - 条件：英大文字/英小文字/数字を1つずつ使用すること
+  /// - 条件(続き)：パスワードは最低8文字以上であること
+  /// - 条件を満たしていれば, trueを返す
+  /// - 条件を満たしていなければ，falseを返す
+  bool _isStrongPassword(String password) {
+    final RegExp strongPasswordRegExp =
+        RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d@\$!%*?&]{8,}$');
+    return strongPasswordRegExp.hasMatch(password);
   }
 
   /// ■ メソッド

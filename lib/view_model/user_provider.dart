@@ -45,7 +45,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
 
         // fromJsonで、Boulderクラスのデータをすべて取得する
         final userState = Boulder.fromJson(userMap);
-        print("[目的部分]userState確認: $userState");
 
         // 最後に、state(状態)としてデータを取得する
         state = userState;
@@ -103,10 +102,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - false: ユーザー名変更 失敗
   Future<bool> updateUserName(
       String preUserName, String setUserName, String userId) async {
-    print("userId: $userId");
-    print("preUserName: $preUserName");
-    print("setUserName: $setUserName");
-
     if (userId == "") {
       return false;
     } else {
@@ -130,8 +125,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
             state = state!.copyWith(userName: setUserName); // ユーザー名を状態更新
             return true; // 名前の変更完了
           } else {
-            print("失敗");
-            print("response.statusCode: ${response.statusCode}");
             return false; // 名前の変更失敗
           }
         } catch (error) {
@@ -159,12 +152,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
       String updateDescription, String title, String userId) async {
     int requestId = 15;
     bool type;
-
-    /* デバック */
-    print("preDescription: $preDescription");
-    print("updateDescription: $updateDescription");
-    print("title: $title");
-    print("userId: $userId");
 
     // titleによって，typeの値を変更
     if (title == "自己紹介") {
@@ -203,8 +190,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
             state = state!.copyWith(favoriteGym: updateDescription);
             return true; // 好きなジムの更新成功
           } else {
-            print("失敗");
-            print("response.statusCode: ${response.statusCode}");
             return false; // 紹介文、または好きなジムの更新失敗
           }
         } catch (error) {
@@ -242,11 +227,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
       // DO NOTHING
     }
 
-    /* デバック */
-    print("presetGender: $presetGender");
-    print("updageGender: $updateGender");
-    print("userId: $userId");
-
     if (userId == "") {
       return false; // userIdがない場合は変更失敗(false)
     } else {
@@ -269,8 +249,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
             state = state!.copyWith(gender: requestGender);
             return true; // 紹介文の更新成功
           } else {
-            print("失敗");
-            print("response.statusCode: ${response.statusCode}");
             return false; // 紹介文、または好きなジムの更新失敗
           }
         } catch (error) {
@@ -350,8 +328,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
               .copyWith(birthday: DateTime(updateYear, updateMonth, updateDay));
           return true; // 生年月日の更新成功
         } else {
-          print("失敗");
-          print("response.statusCode: ${response.statusCode}");
           return false; // ボル活開始日または生年月日の変更失敗
         }
       } catch (error) {
@@ -409,8 +385,6 @@ class UserNotifier extends StateNotifier<Boulder?> {
         state = state!.copyWith(homeGymId: updateGymId);
         return true;
       } else {
-        print("ホームジムID更新失敗");
-        print("response.statusCode: ${response.statusCode}");
         return false;
       }
     } catch (error) {
@@ -438,10 +412,6 @@ final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
   final userNotifier = ref.read(userProvider.notifier);
   final userState = ref.watch(userProvider);
   final userId = FirebaseAuth.instance.currentUser?.uid;
-
-  print("userNotifier: ${userNotifier}");
-  print("user: ${userState}");
-  print("userId: ${userId}");
 
   // user(状態)を取得できておらず，またuserIdは取得できているときに
   // 改めてuser(状態)を取得する

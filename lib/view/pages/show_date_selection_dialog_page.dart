@@ -21,11 +21,15 @@ class _ShowDateSelectionDialogPageState
   late Animation<double> _animation;
   late bool isBoulderingDebut;
 
+  late FixedExtentScrollController _yearController;
+  late FixedExtentScrollController _monthController;
+  late FixedExtentScrollController _dayController;
+
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
   int _selectedDay = DateTime.now().day;
+  int _maxDays = 31;
 
-  // presetDate：更新前の日付
   DateTime presetDate = DateTime.now();
   String userId = "";
 
@@ -40,12 +44,8 @@ class _ShowDateSelectionDialogPageState
     _controller.forward();
     isBoulderingDebut = widget.title == "ボルダリングデビュー日";
 
-    // true: "ボルダリングデビュー日" / false:"生年月日"
     if (isBoulderingDebut) {
-      if ((ref.read(userProvider)?.boulStartDate) == null) {
-        // 初期値で処理継続する
-        // DO NOTHING
-      } else {
+      if ((ref.read(userProvider)?.boulStartDate) != null) {
         presetDate = ref.read(userProvider)!.boulStartDate;
         userId = ref.read(userProvider)!.userId;
         _selectedYear = presetDate.year;
@@ -53,10 +53,7 @@ class _ShowDateSelectionDialogPageState
         _selectedDay = presetDate.day;
       }
     } else {
-      if ((ref.read(userProvider)?.birthday) == null) {
-        // 初期値で処理継続する
-        // DO NOTHING
-      } else {
+      if ((ref.read(userProvider)?.birthday) != null) {
         presetDate = ref.read(userProvider)!.birthday;
         userId = ref.read(userProvider)!.userId;
         _selectedYear = presetDate.year;
@@ -64,86 +61,141 @@ class _ShowDateSelectionDialogPageState
         _selectedDay = presetDate.day;
       }
     }
+
+    _maxDays = _getDaysInMonth(_selectedYear, _selectedMonth);
+
+    _yearController =
+        FixedExtentScrollController(initialItem: _selectedYear - 1925);
+    _monthController =
+        FixedExtentScrollController(initialItem: _selectedMonth - 1);
+    _dayController = FixedExtentScrollController(initialItem: _selectedDay - 1);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _yearController.dispose();
+    _monthController.dispose();
+    _dayController.dispose();
     super.dispose();
+  }
+
+  /// うるう年や月に応じた日数を正しく取得
+  int _getDaysInMonth(int year, int month) {
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  void _updateDayPicker() {
+    setState(() {
+      int newMaxDays = _getDaysInMonth(_selectedYear, _selectedMonth);
+
+      if (_selectedDay > newMaxDays) {
+        _selectedDay = newMaxDays;
+      }
+
+      // 新しい日ピッカーを適用するため、強制的に rebuild
+      if (_maxDays != newMaxDays) {
+        _maxDays = newMaxDays;
+        _dayController.dispose();
+        _dayController =
+            FixedExtentScrollController(initialItem: _selectedDay - 1);
+      }
+    });
   }
 
   void _showDatePicker() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext builder) {
-        return Container(
-          height: MediaQuery.of(context).size.height / 3,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // 年ピッカー
-              Container(
-                width: MediaQuery.of(context).size.width / 3,
-                child: CupertinoPicker(
-                  itemExtent: 32.0,
-                  onSelectedItemChanged: (int index) {
-                    setState(() {
-                      _selectedYear = 1925 + index;
-                    });
-                  },
-                  children: List<Widget>.generate(
-                    (DateTime.now().year - 1924),
-                    (int index) {
-                      return Center(
-                        child: Text('${1925 + index}年'),
-                      );
-                    },
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height / 3 + 50,
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("決定",
+                          style: TextStyle(fontSize: 18, color: Colors.blue)),
+                    ),
                   ),
-                ),
-              ),
-              // 月ピッカー
-              Container(
-                width: MediaQuery.of(context).size.width / 3,
-                child: CupertinoPicker(
-                  itemExtent: 32.0,
-                  onSelectedItemChanged: (int index) {
-                    setState(() {
-                      _selectedMonth = index + 1;
-                    });
-                  },
-                  children: List<Widget>.generate(
-                    12,
-                    (int index) {
-                      return Center(
-                        child: Text('${index + 1}月'),
-                      );
-                    },
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: CupertinoPicker(
+                            scrollController: _yearController,
+                            itemExtent: 32.0,
+                            onSelectedItemChanged: (int index) {
+                              setState(() {
+                                _selectedYear = 1925 + index;
+                              });
+                              setModalState(() => _updateDayPicker());
+                            },
+                            children: List<Widget>.generate(
+                              (DateTime.now().year - 1924),
+                              (int index) {
+                                return Center(
+                                  child: Text('${1925 + index}年'),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: CupertinoPicker(
+                            scrollController: _monthController,
+                            itemExtent: 32.0,
+                            onSelectedItemChanged: (int index) {
+                              setState(() {
+                                _selectedMonth = index + 1;
+                              });
+                              setModalState(() => _updateDayPicker());
+                            },
+                            children: List<Widget>.generate(
+                              12,
+                              (int index) {
+                                return Center(
+                                  child: Text('${index + 1}月'),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        // 日ピッカー（修正: 動的に更新）
+                        Container(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: CupertinoPicker(
+                            scrollController: _dayController,
+                            itemExtent: 32.0,
+                            onSelectedItemChanged: (int index) {
+                              setState(() {
+                                _selectedDay = index + 1;
+                              });
+                            },
+                            children: List<Widget>.generate(
+                              _maxDays,
+                              (int index) => Center(
+                                child: Text('${index + 1}日'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              // 日ピッカー（ボルダリングデビュー日は日選択なし）
-              // if (!isBoulderingDebut)  // TODO：ボルダリングでも選択できるようにするかけんおつ
-              Container(
-                width: MediaQuery.of(context).size.width / 3,
-                child: CupertinoPicker(
-                  itemExtent: 32.0,
-                  onSelectedItemChanged: (int index) {
-                    setState(() {
-                      _selectedDay = index + 1;
-                    });
-                  },
-                  children: List<Widget>.generate(
-                    31,
-                    (int index) {
-                      return Center(
-                        child: Text('${index + 1}日'),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

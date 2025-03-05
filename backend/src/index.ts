@@ -973,7 +973,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         var result;
 
         // クエリパラメータを取得
-        const {user_id, update_date, is_bouldering_date} = req.query;
+        const {user_id, update_date, is_bouldering_debut} = req.query;
 
         // user_idがないケース
         if(user_id == null) {
@@ -985,7 +985,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           const client = await pool.connect();
 
           // 更新処理
-          if(is_bouldering_date == "true") {
+          if(is_bouldering_debut == "true") {
             result = await client.query(`
               UPDATE boulder
               SET boul_start_date = $1
@@ -1014,6 +1014,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         res.status(500).send("サーバーエラーが発生しました");
       }
       break;
+
 
     // request_id: 18
     // - ホームジムIDを更新する

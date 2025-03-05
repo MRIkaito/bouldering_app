@@ -57,7 +57,11 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
             loading: () => const Center(child: CircularProgressIndicator()),
             data: (user) {
               // ボル活歴をキャッシュ
-              cachedBoulLogDuration ??= calcBoulderingDuration(user);
+              if (user != null) {
+                setState(() {
+                  cachedBoulLogDuration = calcBoulderingDuration(user);
+                });
+              }
 
               return SafeArea(
                 child: NestedScrollView(
@@ -183,7 +187,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                                       'lib/view/assets/date_range.svg'),
                                   const SizedBox(width: 8),
                                   const Text("ボルダリング歴："),
-                                  Text(cachedBoulLogDuration!),
+                                  Text(cachedBoulLogDuration ?? " - 年 - か月"),
                                 ],
                               ),
                               const SizedBox(height: 8),

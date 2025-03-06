@@ -28,7 +28,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final userRef = ref.watch(userProvider);
     final gymRef = ref.watch(gymProvider);
     final String gender;
-    final String homeGymName;
 
     if (userRef?.gender == null) {
       gender = "未回答";
@@ -36,9 +35,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       switch (userRef!.gender) {
         case 0:
           gender = '未回答';
-          // ここを通っている
-          // TODO：下記削除する
-          print("gender: $gender");
         case 1:
           gender = '男性';
         case 2:
@@ -46,12 +42,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         default:
           gender = '未回答';
       }
-    }
-
-    if (userRef?.homeGymId == null) {
-      homeGymName = "選択なし";
-    } else {
-      // homdGymIdの名前を設定する
     }
 
     return Scaffold(
@@ -143,8 +133,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               InkWell(
                 onTap: () => {
                   // ページ遷移
-                  selectHomeGymDialog(context, "ホームジム",
-                      gymRef[userRef.homeGymId]!.gymName ?? "選択無し"),
+                  selectHomeGymDialog(
+                      context, "ホームジム", gymRef[userRef.homeGymId]!.gymName),
                 },
                 child: EditSettingItem(
                   title: 'ホームジム',

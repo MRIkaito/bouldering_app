@@ -1,6 +1,4 @@
 import 'package:bouldering_app/view/components/gim_category.dart';
-import 'package:bouldering_app/view/pages/gym_selection_page.dart';
-import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

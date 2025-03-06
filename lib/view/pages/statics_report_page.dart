@@ -1,6 +1,5 @@
 import 'package:bouldering_app/model/bouldering_stats.dart';
 import 'package:bouldering_app/view_model/statics_report_view_model.dart';
-import 'package:bouldering_app/view_model/user_provider.dart'; // 🔴 【追加】ユーザ情報取得のため
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:bouldering_app/view/pages/edit_profile_page.dart';
 import 'package:bouldering_app/view/pages/facility_info_page.dart';
-import 'package:bouldering_app/view/pages/favored_by_user_page.dart';
 import 'package:bouldering_app/view/pages/favorite_user_page.dart';
 import 'package:bouldering_app/view/pages/gym_selection_page.dart';
 import 'package:bouldering_app/view/pages/login_or_signup_page.dart';

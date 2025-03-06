@@ -1,5 +1,4 @@
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
-import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -14,26 +13,22 @@ class UnloginedMyPage extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // 左揃え
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ユーザーのロゴ・ユーザ名部分
               const UserLogoAndName(userName: 'ゲストボルダー'),
 
-              // 24ピクセルのスペースを設ける
               const SizedBox(height: 24),
 
-              // === 背景色を追加した部分 ===
               Container(
                 decoration: BoxDecoration(
-                  color:
-                      const Color(0xFFEEEEEE).withOpacity(0.2), // 赤色の背景色（半透明）
-                  borderRadius: BorderRadius.circular(16), // 角を丸くする
+                  color: const Color(0xFFEEEEEE).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.all(16), // 内側にパディングを追加
+                padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // 左揃えに修正
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // イワノボリタイロゴを中央揃えに
                     Center(
                       child: SizedBox(
                         width: 72,
@@ -46,11 +41,11 @@ class UnloginedMyPage extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    // 「イワノボリタイに登録しよう」のタイトル（2行に分ける）
+                    // 「イワノボリタイに登録しよう」のタイトル
                     const Center(
                       child: Text(
                         'イワノボリタイに\n登録しよう',
-                        textAlign: TextAlign.center, // 真ん中揃え
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Color(0xFF0056FF),
                           fontSize: 32,
@@ -66,7 +61,7 @@ class UnloginedMyPage extends StatelessWidget {
                     // 説明テキスト
                     const Text(
                       'イワノボリタイに登録すると，ボル活がさらに充実します！登録は無料！',
-                      textAlign: TextAlign.left, // 左揃え
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16,
@@ -78,32 +73,27 @@ class UnloginedMyPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
 
-                    // 各項目のリスト（左揃えに修正）
+                    // 各項目のリスト
                     _buildSectionTitle('1. 行きたいジムを保存'),
                     const SizedBox(height: 8),
                     _buildSectionText('気になるジムをお気に入り登録して，行きたいジムリストを作ることができます．'),
-
                     const SizedBox(height: 24),
-
                     _buildSectionTitle('2. 行きたいジムを保存'),
                     const SizedBox(height: 8),
                     _buildSectionText('ジムで登った記録や感想を残すことができます．'),
-
                     const SizedBox(height: 24),
-
                     _buildSectionTitle('3. コンペ'),
                     const SizedBox(height: 8),
                     _buildSectionText(
                         'ジムのコンペやイベント，セッションの情報を確認できます．気になるジムをのぞいてみよう！'),
-
                     const SizedBox(height: 48),
 
-                    // ボタン（InkWellを追加して押下時に画面遷移する）
+                    // 画面遷移ボタン
                     InkWell(
                       onTap: () {
                         context.push("/Unlogined/LoginOrSignUp");
                       },
-                      borderRadius: BorderRadius.circular(10), // 角丸をボタンに適用
+                      borderRadius: BorderRadius.circular(10),
                       child: Container(
                         width: double.infinity,
                         height: 49,
@@ -131,7 +121,6 @@ class UnloginedMyPage extends StatelessWidget {
                   ],
                 ),
               ),
-              // === 背景色を追加した部分ここまで ===
             ],
           ),
         ),
@@ -143,7 +132,7 @@ class UnloginedMyPage extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      textAlign: TextAlign.left, // 左揃え
+      textAlign: TextAlign.left,
       style: const TextStyle(
         color: Color(0xFF0056FF),
         fontSize: 16,
@@ -159,7 +148,7 @@ class UnloginedMyPage extends StatelessWidget {
   Widget _buildSectionText(String text) {
     return Text(
       text,
-      textAlign: TextAlign.left, // 左揃え
+      textAlign: TextAlign.left,
       style: const TextStyle(
         color: Colors.black,
         fontSize: 16,

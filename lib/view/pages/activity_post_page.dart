@@ -216,10 +216,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
     // 選択したジム
     String? selectedGym;
 
-    // ログイン状態にないと、投稿できないようにする
     return (userRef?.userId == null)
         // 未ログイン
-        ? Center(child: const Text("ログインしないと、投稿はできません"))
+        ? const Center(child: Text("投稿機能の利用は，ログインユーザーのみ可能です"))
 
         // ログイン状態
         : Scaffold(
@@ -230,7 +229,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   onPressed: () {
                     // 投稿処理
                     print("投稿するボタンが押されました");
-                    // TODO：上記消去予定/ 下記実装予定
+                    // TODO：下記実装予定
                     /*
                     _insertBoulLogTweet(
                       user!.userId,
@@ -255,24 +254,17 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ジム名
-                  // const Text(
-                  //   // TODO：Riverpodで状態としてジムの情報を取得する
-                  //   'ジム',
-                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  // ),
-                  // TODO：下記を採用する
                   TextField(
                       readOnly: true,
                       decoration: InputDecoration(
                         hintText: selectedGym ?? "ジムを選択してください",
-                        suffixIcon: Icon(Icons.arrow_drop_down),
+                        suffixIcon: const Icon(Icons.arrow_drop_down),
                       ),
                       onTap: () async {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => GymSearchPage()),
+                              builder: (context) => const GymSearchPage()),
                         );
 
                         if (result != null) {
@@ -325,9 +317,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       // 写真追加ボタン
                       GestureDetector(
                         onTap: () {
-                          // テスト ---------------------------
-
-                          // ---------------------------
+                          // TODO：写真を追加する処理を実装する
                           print("写真を追加");
                         },
                         child: Container(

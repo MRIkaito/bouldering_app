@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:bouldering_app/view/pages/search_gim_page.dart';
-
-// HTTPリクエスト テスト
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,7 +16,7 @@ class HomePage extends StatelessWidget {
 
           // アプリアイコン
           Align(
-            alignment: Alignment.center, // 中央揃え
+            alignment: Alignment.center,
             child: SvgPicture.asset(
               'lib/view/assets/app_main_icon.svg',
             ),
@@ -38,7 +33,7 @@ class HomePage extends StatelessWidget {
                 color: Colors.black,
                 fontSize: 28,
                 fontWeight: FontWeight.w400,
-                height: 0.8, // ここでは正しいline heightを指定
+                height: 0.8,
                 letterSpacing: -0.50,
               ),
             ),
@@ -51,9 +46,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               // ページ遷移
               context.push("/Home/SearchGim");
-
-              // テスト：データ取得
-              // fetchData(9);
             },
             borderRadius: BorderRadius.circular(32), // タッチエフェクトの範囲をボーダーに合わせる
             splashColor: Colors.grey.withOpacity(0.3), // タップ時のエフェクトカラー
@@ -72,7 +64,8 @@ class HomePage extends StatelessWidget {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: BorderSide(width: 1, color: Color(0xFFD9D9D9)),
+                          side: const BorderSide(
+                              width: 1, color: Color(0xFFD9D9D9)),
                           borderRadius: BorderRadius.circular(32),
                         ),
                       ),
@@ -115,8 +108,7 @@ class HomePage extends StatelessWidget {
                       width: 44,
                       height: 44,
                       clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(),
-                      // child: FlutterLogo(),
+                      decoration: const BoxDecoration(),
                       child: const Icon(
                         Icons.search,
                         size: 40.0,
@@ -129,7 +121,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 48),
+          const SizedBox(height: 48),
 
           // 地図検索ウィジェット
           Container(
@@ -160,7 +152,7 @@ class HomePage extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       print("タップしたよ");
-                      // ページ遷移：実装したら以下コメントアウト削除
+                      // TODO：ページ遷移 実装
                       // context.push("/home/searchGimOnMap");
                     },
                     child: Container(
@@ -175,7 +167,7 @@ class HomePage extends StatelessWidget {
                               width: 176,
                               height: 32,
                               decoration: ShapeDecoration(
-                                color: Color(0xFF0056FF),
+                                color: const Color(0xFF0056FF),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -213,43 +205,5 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-// テスト作成
-Future<void> fetchData(int gymId) async {
-  gymId = gymId + 1;
-  final url = Uri.parse(
-          'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
-      .replace(queryParameters: {'gym_id': gymId.toString()});
-
-  try {
-    // HTTP GETリクエスト
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      // レスポンスボディをJSONとしてデコード
-      final List<dynamic> data = jsonDecode(response.body);
-      print("$data");
-
-      // 指定されたgym_idのデータを検索
-      final gym = data.firstWhere((gym) => gym['gym_id'] == gymId,
-          orElse: () => null // 見つからない場合はnullを返す
-          );
-
-      print(gym);
-
-      if (gym != null) {
-        // is_bouldering_gym の値を取得
-        final isBouldering = gym['is_lead_gym'];
-        print('gym_id: $gymId のis_lead_gym: $isBouldering');
-      } else {
-        print('gym_id: $gymId のデータがみつかりませんでした');
-      }
-    } else {
-      print("エラー：${response.statusCode}");
-    }
-  } catch (e) {
-    print("リクエスト中にErrorが発生しました: $e");
   }
 }

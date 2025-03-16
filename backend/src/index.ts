@@ -70,52 +70,81 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // requestId：2
+     // requestId：2
     // ツイートを最新順から取得する処理
     case 2:
       try {
+        // クエリパラメータを取得
+        const {limit = 20, cursor} = req.query;
+
         // DB接続
         const client = await pool.connect();
 
-        // ツイート数を取得するパラメータ
-        const limit = 20;
-        const offset = 0;
+        // DBに投げるクエリを入れる変数
+        let query;
+        let params;
 
-        // ツイートを最新順から時系列順に取得
-        const result = await client.query(`
+        if(cursor) {
+          // カーソル(tweeted_date)を使ってページネーション
+          query =`
           SELECT
             BLT.tweet_id,
-            B.user_name,
+            BLT.tweet_contents,
             BLT.visited_date,
             BLT.tweeted_date,
-            BLT.tweet_contents,
             BLT.liked_counts,
             BLT.movie_url,
+            B.user_id,
+            B.user_name,
+            B.user_icon_url,
+            GI.gym_id,
             GI.gym_name,
             GI.prefecture
           FROM
             boul_log_tweet AS BLT
           INNER JOIN
-            boulder AS B
-            ON BLT.user_id = B.user_id
+            boulder AS B ON BLT.user_id = B.user_id
           INNER JOIN
-            gym_info AS GI
-            ON BLT.gym_id = GI.gym_id
-          ORDER BY
-            BLT.tweeted_date DESC
-          LIMIT ${limit}
-          OFFSET ${offset};
-        `);
+            gym_info AS GI ON BLT.gym_id = GI.gym_id
+          WHERE BLT.tweeted_date < $1
+          ORDER BY BLT.tweeted_date DESC
+          LIMIT $2
+          `;
+          params = [cursor, limit];
+
+        } else {
+          // 最初の取得(カーソル無し)
+          query =`
+          SELECT
+            BLT.tweet_id,
+            BLT.tweet_contents,
+            BLT.visited_date,
+            BLT.tweeted_date,
+            BLT.liked_counts,
+            BLT.movie_url,
+            B.user_id,
+            B.user_name,
+            B.user_icon_url,
+            GI.gym_id,
+            GI.gym_name,
+            GI.prefecture
+          FROM
+            boul_log_tweet AS BLT
+          INNER JOIN
+            boulder AS B ON BLT.user_id = B.user_id
+          INNER JOIN
+            gym_info AS GI ON BLT.gym_id = GI.gym_id
+          ORDER BY BLT.tweeted_date DESC
+          LIMIT $1;
+          `;
+          params = [limit];
+        }
+
+        // クエリ実行：ツイートを最新準から取得
+        const result = await client.query(query, params);
 
         // DB接続を解放
         client.release();
-
-        // データが見つからないケース
-        if(result.rows.length === 0) {
-          // エラーコード404,  見つからない旨を返信
-          res.status(404).send('データは見つかりませんでした');
-          return;
-        }
 
         // 結果を返信
         res.status(200).json(result.rows);
@@ -125,7 +154,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-// requestId：3
+
+    // requestId：3
     // ログイン時に(自身の)ユーザーデータを取得する
     //
     // クエリパラメータ：
@@ -308,7 +338,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // requestId：6
+     // requestId：6
     // お気に入り登録しているユーザーのツイートを取得する処理
     //
     // クエリパラメータ：
@@ -316,26 +346,56 @@ exports.getData = functions.https.onRequest(async (req, res) => {
     case 6:
       try{
         // クエリパラメータを取得
-        const {user_id} = req.query;
+        const {user_id, limit = 20, cursor} = req.query;
 
         // user_idがない(null)ケース
-        if(!user_id){
+        if(user_id == null){
           // エラーコード400とuser_idが送られてきていない旨を返信して終了
-          // (ToDo)
-          // ログインしていないときは、user_idはnullである(と予想される)ので
-          // お気に入りユーザーのツイートを出力するタブでどう実装するかを考える必要あり
           res.status(400).send("user_idパラメータが必要です");
           return;
+        }
+        // DB接続
+        const client = await pool.connect();
+
+        // DBに投げるクエリを入れる変数
+        let query;
+        let params;
+
+        if(cursor) {
+          // カーソルを使ってpagination
+          query =`
+            SELECT
+              BLT.tweet_id,
+              B.user_name,
+              FUR.likee_user_id,
+              BLT.visited_date,
+              BLT.tweeted_date,
+              BLT.tweet_contents,
+              BLT.liked_counts,
+              BLT.movie_url,
+              GI.gym_name,
+              GI.prefecture
+            FROM
+              boul_log_tweet AS BLT
+            INNER JOIN
+              boulder AS B
+              ON BLT.user_id = B.user_id
+            INNER JOIN
+              gym_info AS GI
+              ON BLT.gym_id = GI.gym_id
+            INNER JOIN
+              favorite_user_relation AS FUR
+              ON FUR.likee_user_id = BLT.user_id
+            WHERE FUR.liker_user_id = $1
+            AND BLT.tweeted_date < $2
+            ORDER BY
+              BLT.tweeted_date DESC
+            LIMIT $3;
+          `;
+          params = [user_id, cursor, limit];
         } else {
-          // DB接続
-          const client = await pool.connect();
-
-          // ツイート数を取得するパラメータ
-          const limit = 20;
-          const offset = 0;
-
-          // お気に入りユーザーのツイートを最新順から時系列順に取得
-          const result = await client.query(`
+          // 最初の取得(カーソル無し)
+          query =`
             SELECT
               BLT.tweet_id,
               B.user_name,
@@ -362,24 +422,20 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               FUR.liker_user_id = $1
             ORDER BY
               BLT.tweeted_date DESC
-            LIMIT ${limit}
-            OFFSET ${offset};
-            `, [user_id]
-          );
-
-          // DB接続を解放
-          client.release();
-
-          // データが見つからないケース
-          if(result.rows.length === 0) {
-            // エラーコード404, 見つからない旨を返信
-            res.status(404).send("データは見つかりませんでした");
-            return;
-          }
-
-          // 結果を返信
-          res.status(200).json(result.rows);
+            LIMIT $2;
+          `;
+          params = [user_id, limit];
         }
+
+        // お気に入りユーザーのツイートを最新順から時系列順に取得
+        const result = await client.query(query, params);
+
+        // DB接続を解放
+        client.release();
+
+        // 結果を返信
+        res.status(200).json(result.rows);
+
       } catch(error){
         console.error("Error querying database: ",error);
         res.status(500).send("Error querying database");
@@ -576,21 +632,32 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
+
     // requestId：10
     // 行きたいと思ったジムを. "イキタイ施設"として登録する
     //
     // クエリパラメータ：
     // user_id：ユーザーを識別するID
     // gym_id：ジムを識別する
+
+    // 下記、「イキタイテーブル」を作成する
+    // CREATE TABLE wanna_go_relation (
+    //   id SERIAL PRIMARY KEY,
+    //   gym_id INT NOT NULL,
+    //   user_id VARCHAR(36) NOT NULL,
+    //   created_at TIMESTAMP DEFAULT NOW(),
+    //   UNIQUE(gym_id, user_id)
+    // );
+
       case 10:
         try{
           // クエリパラメータを取得
           const {user_id, gym_id} = req.query;
 
           // user_id, gym_idがないケース
-          if(!user_id || !gym_id) {
+          if(user_id === null || gym_id === null) {
             // エラーコード400, user_id, gym_igがない旨を返信して終了
-            res.status(400).send("user_id, gym_idパラメータがありません");
+            res.status(400).send("user_id, またはgym_idパラメータがありません");
             return;
           } else{
             // DB接続
@@ -600,26 +667,24 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             const result = await client.query(`
             INSERT INTO wanna_go_relation
               (
-                user_id,
                 gym_id,
-                created_at
+                user_id
               )
             VALUES
               (
                 $1,
-                $2,
-                CURRENT_TIMESTAMP
+                $2  -- この$1, $2にはそれぞれもらってきた値(ジムID、ユーザーID)を入れる
               )
+            ON CONFLICT (gym_id, user_id) DO NOTHING
             RETURNING *;
-          `, [user_id, gym_id]);
+            `, [user_id, gym_id]);
 
             // DB接続を解放
             client.release();
 
-            // 挿入が成功されたかを確認する
-            // TO DO：
-            if((result.rowCount ?? 0) === 0)  {
-              res.status(201).send("データが正常に挿入されました");
+            // 挿入に成功したかを確認する
+            if((result.rowCount ?? 0) > 0)  {
+              res.status(200).send("データが正常に挿入されました");
             } else {
               res.status(400).send("データ挿入に失敗しました");
             }
@@ -629,6 +694,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           res.status(500).send("サーバーエラーが発生しました");
         }
         break;
+
 
     // requestId：11
     // 新規登録(サインアップ)時の処理
@@ -708,26 +774,28 @@ exports.getData = functions.https.onRequest(async (req, res) => {
     case 12:
       try{
         // クエリパラメータを取得
-        const {user_id} = req.query;
+        const {user_id, limit = 20, cursor} = req.query;
 
         // user_idがない(null)ケース
-        if(!user_id){
+        if(user_id == null){
           // エラーコード400とuser_idが送られてきていない旨を返信して終了
           res.status(400).send("user_idパラメータが必要です");
           return;
-        } else {
-          // DB接続
-          const client = await pool.connect();
+        }
 
-          // ツイート数を取得するパラメータ
-          const limit = 20;
-          const offset = 0;
+        // DB接続
+        const client = await pool.connect();
 
-          // 自分のツイートを最新順から時系列順に取得
-          const result = await client.query(`
+        // DBに投げるクエリを入れる変数
+        let query;
+        let params;
+
+        if(cursor) {
+          // カーソル（tweeted_date）を使ってページネーション
+            query =`
             SELECT
               BLT.tweet_id,
-              BLT.tweetcontents,
+              BLT.tweet_contents,
               BLT.visited_date,
               BLT.tweeted_date,
               BLT.liked_count,
@@ -738,41 +806,55 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               GI.gym_id,
               GI.gym_name,
               GI.prefecture
-            FROM
-              boul_log_tweet AS BLT
-            INNER JOIN
-              boulder AS B
-              ON BLT.user_id = B.user_id
-            INNER JOIN
-              gym_info AS GI
-              ON BLT.gym_id = GI.gym_id
-            WHERE
-              BLT.user_id = $1
-            ORDER BY
-              BLT.visited_date DESC
-            LIMIT ${limit}
-            OFFSET ${offset};
-            `, [user_id]
-          );
-
-          // DB接続を解放
-          client.release();
-
-          // データが見つからないケース
-          if(result.rows.length === 0) {
-            // エラーコード404, 見つからない旨を返信
-            res.status(404).send("データは見つかりませんでした");
-            return;
-          }
-
-          // 結果を返信
-          res.status(200).json(result.rows);
+            FROM boul_log_tweet AS BLT
+            INNER JOIN boulder AS B ON BLT.user_id = B.user_id
+            INNER JOIN gym_info AS GI ON BLT.gym_id = GI.gym_id
+            WHERE BLT.user_id = $1
+              AND BLT.tweeted_date < $2
+            ORDER BY BLT.tweeted_date DESC
+            LIMIT $3;
+          `;
+          params = [user_id, cursor, limit];
+        } else {
+          // 最初の取得（カーソルなし）
+          query =`
+            SELECT
+              BLT.tweet_id,
+              BLT.tweet_contents,
+              BLT.visited_date,
+              BLT.tweeted_date,
+              BLT.liked_count,
+              BLT.movie_url,
+              B.user_id,
+              B.user_name,
+              B.user_icon_url,
+              GI.gym_id,
+              GI.gym_name,
+              GI.prefecture
+            FROM boul_log_tweet AS BLT
+            INNER JOIN boulder AS B ON BLT.user_id = B.user_id
+            INNER JOIN gym_info AS GI ON BLT.gym_id = GI.gym_id
+            WHERE BLT.user_id = $1
+            ORDER BY BLT.tweeted_date DESC
+            LIMIT $2;
+          `;
+          params = [user_id, limit];
         }
+
+        // クエリ実行
+        const result = await client.query(query, params);
+
+        // DB接続を解放
+        client.release();
+
+        // 結果を返信
+        res.status(200).json(result.rows);
       } catch(error){
         console.error("Error querying database: ",error);
         res.status(500).send("Error querying database");
       }
       break;
+
 
     // request_id: 13
     // - ジムの情報を取得する
@@ -1014,7 +1096,6 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         res.status(500).send("サーバーエラーが発生しました");
       }
       break;
-
 
     // request_id: 18
     // - ホームジムIDを更新する
@@ -1342,9 +1423,304 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
+    // requestId: 23
+    // - イキタイ登録しているジム情報を取得する
+    //
+    // クエリパラメータ
+    // user_id: ユーザーID
+    // gym_id: ジムを識別するID
+    case 23:
+      try{
+        // クエリパラメータ取得
+        const {user_id} = req.query;
 
-    // default
-    // - request_idなし
+        if(user_id === null){
+          res.status(400).send("user_id, またはgym_idパラメータが必要です");
+          return;
+        } else {
+          // DB接続
+          const client = await pool.connect();
+
+          // お気に入り登録しているジム情報（ジムカード）を取得(お気に入り登録した順番に取得)
+          const result = await client.query(`
+          SELECT
+            GI.gym_id,
+            GI.gym_name,
+            GI.hp_link,
+            GI.prefecture,
+            GI.city,
+            GI.address_line,
+            GI.latitude,
+            GI.longitude,
+            GI.tel_no,
+            GI.fee,
+            GI.minimum_fee,
+            GI.equipment_rental_fee,
+            COUNT(DISTINCT WGR.gym_id) AS ikitai_count,
+            COUNT(DISTINCT BLT.gym_id) AS boul_count,
+            CT.is_bouldering_gym,
+            CT.is_lead_gym,
+            CT.is_speed_gym,
+            GH.sun_open,
+            GH.sun_close
+            GH.mon_open,
+            GH.mon_close,
+            GH.tue_open,
+            GH.tue_close,
+            GH.wed_open,
+            GH.wed_close,
+            GH.thu_open,
+            GH.thu_close,
+            GH.fri_open,
+            GH.fri_close,
+            GH.sat_open,
+            GH.sat_close
+          FROM gym_info GI
+          INNER JOIN wanna_go_relation WGR
+            ON WGR.gym_id = GI.gym_id
+          LEFT JOIN boul_log_tweet BLT
+            ON BLT.gym_id = GI.gym_id
+          LEFT JOIN climbing_types CT
+            ON CT.gym_id = GI.gym_id
+          LEFT JOIN gym_hours GH
+            ON GH.gym_id = GI.gym_id
+          WHERE WGR.user_id = $1
+          GROUP BY GI.gym_id, GI.gym_name, GI.hp_link, GI.prefecture, GI.city,
+            GI.address_line, GI.latitude, GI.longitude, GI.tel_no, GI.fee,
+            GI.minimum_fee, GI.equipment_rental_fee,
+            CT.is_bouldering_gym, CT.is_lead_gym, CT.is_speed_gym,
+            GH.mon_open, GH.mon_close, GH.tue_open, GH.tue_close,
+            GH.wed_open, GH.wed_close, GH.thu_open, GH.thu_close,
+            GH.fri_open, GH.fri_close, GH.sat_open, GH.sat_close,
+            GH.sun_open, GH.sun_close;
+          `, [user_id]
+          );
+
+          // DB接続を解放
+          client.release();
+
+          if(result.rows.length > 0) {
+            res.status(200).json(result.rows);
+            return;
+          } else if(result.rows.length === 0) {
+            res.status(204).send("No Content");
+            return;
+          } else {
+            res.status(500).send("Error querying database");
+            return;
+          }
+        }
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
+
+    // requestId: 24
+    // - 特定のジム(ID)のツイートを取得する
+    //
+    // クエリパラメータ
+    // - gymId : ジムを識別するID
+    // - limit : ツイートを一度に読み込んで取得する数
+    // - cursor : フロント側で取得している最も古いツイート日時
+    case 24:
+    // DB接続用変数
+    let client;
+
+    try {
+        // クエリパラメータを取得
+        const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string, 10) : NaN;
+        const limit = req.query.limit ? parseInt(req.query.limit as string, 10) || 20 : 20;
+        const cursor = req.query.cursor ? new Date(req.query.cursor as string) : null; // 修正箇所
+
+        // gym_idがない(null)ケース
+        if (isNaN(gym_id)) {
+        res.status(400).send("gym_idパラメータが必要です");
+        return;
+        }
+
+        // cursorのバリデーション
+        if (cursor && isNaN(cursor.getTime())) {
+        res.status(400).send("cursorの値が不正です");
+        return;
+        }
+
+        // DB接続
+        client = await pool.connect();
+
+        // DBに投げるクエリを入れる変数
+        let query;
+        let params;
+
+        if (cursor) {
+        // カーソル(tweeted_date)を使ってページネーション
+        query = `
+            SELECT
+            BLT.tweet_id,
+            BLT.tweet_contents,
+            BLT.visited_date,
+            BLT.tweeted_date,
+            BLT.liked_counts,
+            BLT.movie_url,
+            B.user_id,
+            B.user_name,
+            B.user_icon_url,
+            GI.gym_id,
+            GI.gym_name,
+            GI.prefecture
+            FROM
+            boul_log_tweet AS BLT
+            INNER JOIN
+            boulder AS B ON BLT.user_id = B.user_id
+            INNER JOIN
+            gym_info AS GI ON BLT.gym_id = GI.gym_id
+            WHERE GI.gym_id = $1
+            AND BLT.tweeted_date < $2
+            ORDER BY BLT.tweeted_date DESC
+            LIMIT $3;
+        `;
+        params = [gym_id, cursor, limit];
+        } else {
+        // 最初の取得(カーソル無し)
+        query = `
+            SELECT
+            BLT.tweet_id,
+            BLT.tweet_contents,
+            BLT.visited_date,
+            BLT.tweeted_date,
+            BLT.liked_counts,
+            BLT.movie_url,
+            B.user_id,
+            B.user_name,
+            B.user_icon_url,
+            GI.gym_id,
+            GI.gym_name,
+            GI.prefecture
+            FROM
+            boul_log_tweet AS BLT
+            INNER JOIN
+            boulder AS B ON BLT.user_id = B.user_id
+            INNER JOIN
+            gym_info AS GI ON BLT.gym_id = GI.gym_id
+            WHERE
+            GI.gym_id = $1
+            ORDER BY BLT.tweeted_date DESC
+            LIMIT $2;
+        `;
+        params = [gym_id, limit];
+        }
+
+        // 特定のジムのツイートを最新準から時系列順に取得
+        const result = await client.query(query, params);
+
+        // 結果を返信
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+    } finally {
+        // DB接続を解放
+        if (client) {
+        client.release();
+        }
+    }
+    break;
+
+
+// requestId: 25
+// - 特定のジム(ID)の施設情報を取得する
+//
+// クエリパラメータ
+// - gymId : ジムを識別するID
+// - limit : ツイートを一度に読み込んで取得する数
+// - cursor : フロント側で取得している最も古いツイート日時
+case 25:
+  // let client; の定義はcase 24:の中にある
+  try {
+    // クエリパラメータ取得
+    const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string, 10) : NaN; // 修正箇所
+
+    // gym_idがない(null)ケース
+    if (isNaN(gym_id)) {
+      // エラーコード400とgym_idが送られてきていない旨を返信して終了
+      res.status(400).send("gym_idパラメータが必要です");
+      return;
+    }
+
+    // DB接続
+    client = await pool.connect();
+
+    // お気に入り登録しているジム情報（ジムカード）を取得(お気に入り登録した順番に取得)
+    const result = await client.query(
+      `
+      SELECT
+        GI.gym_id,
+        GI.gym_name,
+        GI.hp_link,
+        GI.prefecture,
+        GI.city,
+        GI.address_line,
+        GI.latitude,
+        GI.longitude,
+        GI.tel_no,
+        GI.fee,
+        GI.minimum_fee,
+        GI.equipment_rental_fee,
+        COUNT(DISTINCT WGR.gym_id) AS ikitai_count,
+        COUNT(DISTINCT BLT.gym_id) AS boul_count,
+        CT.is_bouldering_gym,
+        CT.is_lead_gym,
+        CT.is_speed_gym,
+        GH.sun_open,
+        GH.sun_close,
+        GH.mon_open,
+        GH.mon_close,
+        GH.tue_open,
+        GH.tue_close,
+        GH.wed_open,
+        GH.wed_close,
+        GH.thu_open,
+        GH.thu_close,
+        GH.fri_open,
+        GH.fri_close,
+        GH.sat_open,
+        GH.sat_close
+      FROM gym_info GI
+      LEFT JOIN wanna_go_relation WGR
+        ON WGR.gym_id = GI.gym_id
+      LEFT JOIN climbing_types CT
+        ON CT.gym_id = GI.gym_id
+      LEFT JOIN gym_hours GH
+        ON GH.gym_id = GI.gym_id
+      WHERE GI.gym_id = $1;
+      `,
+      [gym_id]
+    );
+
+    if (result.rows.length > 0) {
+      res.status(200).json(result.rows);
+      return;
+    } else if (result.rows.length === 0) {
+      res.status(204).send("No Content");
+      return;
+    } else {
+      res.status(500).send("Error querying database");
+      return;
+    }
+  } catch (error) {
+    console.error("Error querying database: ", error);
+    res.status(500).send("Error querying database");
+  } finally {
+    // 修正：clientがnullでない場合のみrelease
+    if (client) {
+      client.release();
+    }
+  }
+  break;
+
+
+    // 無効なIDが送られてきたとき
     default:
       try {
         // gym_idがないとき，エラーコード400とgym_idがない旨を返信して終了

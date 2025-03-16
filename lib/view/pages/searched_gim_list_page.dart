@@ -120,9 +120,15 @@ class SearchedGimListPage extends StatelessWidget {
                           itemBuilder: (context, index) {
                             return const GimCard(
                               gymName: 'Folkボルダリングジム',
-                              gymLocation: '[神奈川県]',
+                              gymPrefecture: '神奈川県',
                               ikitaiCount: 200,
                               boulCount: 400,
+                              minimumFee: 1500,
+                              isBoulderingGym: true,
+                              isLeadGym: false,
+                              isSpeedGym: false,
+                              isOpened: true,
+                              gymPhotos: [],
                             );
                           },
                         ),
@@ -161,7 +167,13 @@ class SearchedGimListPage extends StatelessWidget {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: 5,
                           itemBuilder: (context, index) {
-                            return const BoulLog();
+                            return BoulLog(
+                              userName: 'test',
+                              visitedDate: '2020-09-23',
+                              gymName: 'Dボルダリング',
+                              prefecture: '神奈川県',
+                              tweetContents: '今はテスト用',
+                            );
                           },
                         ),
                       ],

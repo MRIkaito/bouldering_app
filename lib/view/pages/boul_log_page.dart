@@ -10,7 +10,6 @@
 // /// ■ クラス
 // /// - View
 // /// - ボル活ページを表示する
-// // class BoulLogPage extends StatelessWidget {
 // class BoulLogPage extends ConsumerWidget {
 //   const BoulLogPage({super.key});
 
@@ -72,10 +71,10 @@
 
 //                             return BoulLog(
 //                               userName: userName,
-//                               date: date,
+//                               visitedDate: date,
 //                               gymName: gymName,
 //                               prefecture: prefecture,
-//                               activity: activity,
+//                               tweetContents: activity,
 //                             );
 //                           },
 //                         );
@@ -89,121 +88,121 @@
 //                   // ログイン状態(isLoggedIn = true)：お気に入りユーザーのツイートのみ表示
 //                   // ログイン状態(isLoggedIn = false)：「イワノボリタイに登録しよう」画面を表示
 //                   FutureBuilder<List<dynamic>>(
-//                       future: boulLogTweet.fetchDataFavoriteTweet(userId),
-//                       builder: isLoggedIn
-//                           ? (context, snapshot) {
-//                               print("trueです!");
-//                               print("userId(boul_log_page.dart): ${userId}");
-//                               if (snapshot.connectionState ==
-//                                   ConnectionState.waiting) {
-//                                 return const Center(
-//                                     child: CircularProgressIndicator());
-//                               } else if (snapshot.hasError) {
-//                                 return Center(
-//                                     child: Text(
-//                                         "Errorが発生しました: ${snapshot.error}"));
-//                               } else if (snapshot.hasData) {
-//                                 final favoriteUserData = snapshot.data!;
+//                     future: boulLogTweet.fetchDataFavoriteTweet(userId),
+//                     builder: isLoggedIn
+//                         ? (context, snapshot) {
+//                             print("trueです!");
+//                             print("userId(boul_log_page.dart): ${userId}");
+//                             if (snapshot.connectionState ==
+//                                 ConnectionState.waiting) {
+//                               return const Center(
+//                                   child: CircularProgressIndicator());
+//                             } else if (snapshot.hasError) {
+//                               return Center(
+//                                   child:
+//                                       Text("Errorが発生しました: ${snapshot.error}"));
+//                             } else if (snapshot.hasData) {
+//                               final favoriteUserData = snapshot.data!;
 
-//                                 return ListView.builder(
-//                                     itemCount: favoriteUserData.length,
-//                                     itemBuilder: (context, index) {
-//                                       final favoriteUserTweet =
-//                                           favoriteUserData[index];
-//                                       final String favoriteUserName =
-//                                           favoriteUserTweet['user_name'];
-//                                       final String favoriteGymName =
-//                                           favoriteUserTweet['gym_name'];
-//                                       final String favoritePrefecture =
-//                                           favoriteUserTweet['prefecture'];
-//                                       final String favoriteDate =
-//                                           DateTime.parse(favoriteUserTweet[
-//                                                   'visited_date'])
-//                                               .toLocal()
-//                                               .toString()
-//                                               .split(' ')[0];
-//                                       final String favoriteActivity =
-//                                           favoriteUserTweet['tweet_contents'];
+//                               return ListView.builder(
+//                                   itemCount: favoriteUserData.length,
+//                                   itemBuilder: (context, index) {
+//                                     final favoriteUserTweet =
+//                                         favoriteUserData[index];
+//                                     final String favoriteUserName =
+//                                         favoriteUserTweet['user_name'];
+//                                     final String favoriteGymName =
+//                                         favoriteUserTweet['gym_name'];
+//                                     final String favoritePrefecture =
+//                                         favoriteUserTweet['prefecture'];
+//                                     final String favoriteDate = DateTime.parse(
+//                                             favoriteUserTweet['visited_date'])
+//                                         .toLocal()
+//                                         .toString()
+//                                         .split(' ')[0];
+//                                     final String favoriteActivity =
+//                                         favoriteUserTweet['tweet_contents'];
 
-//                                       return BoulLog(
-//                                           userName: favoriteUserName,
-//                                           date: favoriteDate,
-//                                           gymName: favoriteGymName,
-//                                           prefecture: favoritePrefecture,
-//                                           activity: favoriteActivity);
-//                                     });
-//                               } else {
-//                                 print("データが見つかっていません！");
-//                                 return const Center(
-//                                     child: Text("データが見つかりませんでした"));
-//                               }
+//                                     return BoulLog(
+//                                         userName: favoriteUserName,
+//                                         visitedDate: favoriteDate,
+//                                         gymName: favoriteGymName,
+//                                         prefecture: favoritePrefecture,
+//                                         tweetContents: favoriteActivity);
+//                                   });
+//                             } else {
+//                               print("データが見つかっていません！");
+//                               return const Center(
+//                                   child: Text("データが見つかりませんでした"));
 //                             }
-//                           : (context, snapshot) {
-//                               return Column(
-//                                 crossAxisAlignment: CrossAxisAlignment.center,
-//                                 children: [
-//                                   const SizedBox(height: 32),
+//                           }
+//                         : (context, snapshot) {
+//                             return Column(
+//                               crossAxisAlignment: CrossAxisAlignment.center,
+//                               children: [
+//                                 const SizedBox(height: 32),
 
-//                                   // ロゴ：イワノボリタイ
-//                                   Center(
-//                                     child: SizedBox(
-//                                       width: 72,
-//                                       height: 72,
-//                                       child: SvgPicture.asset(
-//                                         'lib/view/assets/app_main_icon.svg',
-//                                       ),
+//                                 // ロゴ：イワノボリタイ
+//                                 Center(
+//                                   child: SizedBox(
+//                                     width: 72,
+//                                     height: 72,
+//                                     child: SvgPicture.asset(
+//                                       'lib/view/assets/app_main_icon.svg',
 //                                     ),
 //                                   ),
-//                                   const SizedBox(height: 16),
+//                                 ),
+//                                 const SizedBox(height: 16),
 
-//                                   // タイトル："イワノボリタイに登録しよう"
-//                                   const Center(
-//                                     child: Text(
-//                                       'イワノボリタイに\n登録しよう',
-//                                       textAlign: TextAlign.center, // 真ん中揃え
-//                                       style: TextStyle(
-//                                         color: Color(0xFF0056FF),
-//                                         fontSize: 32,
-//                                         fontFamily: 'Roboto',
-//                                         fontWeight: FontWeight.w700,
-//                                         height: 1.2,
-//                                         letterSpacing: -0.50,
-//                                       ),
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 16),
-
-//                                   // 説明文
-//                                   const Text(
-//                                     'ログインしてユーザーを\nお気に入り登録しよう!',
-//                                     textAlign: TextAlign.center, // 左揃え
+//                                 // タイトル："イワノボリタイに登録しよう"
+//                                 const Center(
+//                                   child: Text(
+//                                     'イワノボリタイに\n登録しよう',
+//                                     textAlign: TextAlign.center, // 真ん中揃え
 //                                     style: TextStyle(
-//                                       color: Colors.black,
-//                                       fontSize: 20,
+//                                       color: Color(0xFF0056FF),
+//                                       fontSize: 32,
 //                                       fontFamily: 'Roboto',
 //                                       fontWeight: FontWeight.w700,
-//                                       height: 1.4,
+//                                       height: 1.2,
 //                                       letterSpacing: -0.50,
 //                                     ),
 //                                   ),
-//                                   const SizedBox(height: 16),
+//                                 ),
+//                                 const SizedBox(height: 16),
 
-//                                   // 説明文
-//                                   const Text(
-//                                     'お気に入り登録したユーザーの\nツイートを見ることができます！',
-//                                     textAlign: TextAlign.center, // 左揃え
-//                                     style: TextStyle(
-//                                       color: Colors.black,
-//                                       fontSize: 20,
-//                                       fontFamily: 'Roboto',
-//                                       fontWeight: FontWeight.w700,
-//                                       height: 1.4,
-//                                       letterSpacing: -0.50,
-//                                     ),
-//                                   )
-//                                 ],
-//                               );
-//                             }),
+//                                 // 説明文
+//                                 const Text(
+//                                   'ログインしてユーザーを\nお気に入り登録しよう!',
+//                                   textAlign: TextAlign.center, // 左揃え
+//                                   style: TextStyle(
+//                                     color: Colors.black,
+//                                     fontSize: 20,
+//                                     fontFamily: 'Roboto',
+//                                     fontWeight: FontWeight.w700,
+//                                     height: 1.4,
+//                                     letterSpacing: -0.50,
+//                                   ),
+//                                 ),
+//                                 const SizedBox(height: 16),
+
+//                                 // 説明文
+//                                 const Text(
+//                                   'お気に入り登録したユーザーの\nツイートを見ることができます！',
+//                                   textAlign: TextAlign.center, // 左揃え
+//                                   style: TextStyle(
+//                                     color: Colors.black,
+//                                     fontSize: 20,
+//                                     fontFamily: 'Roboto',
+//                                     fontWeight: FontWeight.w700,
+//                                     height: 1.4,
+//                                     letterSpacing: -0.50,
+//                                   ),
+//                                 )
+//                               ],
+//                             );
+//                           },
+//                   ),
 //                 ],
 //               ),
 //             ),
@@ -213,6 +212,8 @@
 //     );
 //   }
 // }
+
+///////////////////////////////////////////////////////////////////////////////
 
 import 'dart:core';
 import 'package:bouldering_app/view_model/favorite_user_tweets_provider.dart';

@@ -27,48 +27,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
   switch(requestId) {
     // requestId：1
-    // - ユーザー情報を取得する処理
-    //
-    // クエリパラメータ：
-    // gym_id：ジムを識別するID
-    case 1:
-      try {
-        // クエリパラメータを取得
-        const {gym_id} = req.query;
-
-        // gym_idがない(null)ケース
-        if(!gym_id) {
-            // エラーコード400, gym_idがない旨を返信して終了する
-            res.status(400).send("gym_id パラメータが必要です");
-            return;
-        } else {
-          // DB接続
-          const client = await pool.connect();
-
-          // gym_idに該当するジムの種別を取得
-          const result = await client.query(
-            "SELECT * FROM climbing_type WHERE gym_id = $1",
-            [gym_id]    // パラメータをプレースホルダで安全に渡す
-          );
-
-          // DB接続を解放
-          client.release();
-
-          // 指定したgym_idが見つからない
-          if(result.rows.length === 0) {
-            // エラーコード404, gym_idが見つからない旨を返信
-            res.status(404).send('gym_id: ${gym_id}のデータは見つかりませんでした．');
-            return;
-          }
-
-          // 見つかったときの結果を返信
-          res.status(200).json(result.rows);
-        }
-      } catch (error) {
-        console.error("Error querying database:", error);
-        res.status(500).send("Error querying database");
-      }
-      break;
+    // なし
 
      // requestId：2
     // ツイートを最新順から取得する処理
@@ -442,74 +401,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // TO DO：requestId
     // requestId：7
-    // 新規登録時にユーザー情報をDBに追加する
-    //
-    // クエリパラメータ：
-    // user_id：ユーザーを識別するID
-    // email：メールアドレス
-    case 7:
-      try{
-        // クエリパラメータを取得
-        const {user_id, email} = req.query;
-
-        // user_idがないケース
-        if(!user_id){
-          // エラーコード400, user_idが送られてきていない旨を返信して終了
-          res.status(400).send("user_idパラメータが必要です");
-          return;
-        } else{
-          // DB接続
-          const client = await pool.connect();
-
-          // 新規登録時にユーザー情報を登録する
-          const result = await client.query(`
-            INSERT INTO boulder
-              (
-                user_id,
-                user_name,
-                user_icon_url,
-                self_introduce,
-                favorite_gyms,
-                boul_start_date,
-                home_gym_id,
-                email,
-                created_at,
-                updated_at
-              )
-            VALUES
-              (
-                $1,
-                '駆け出しボルダー',
-                'test-url(みんなが同じURL, つまり同じ画像)からスタートする',
-                'はじめまして！',
-                '好きなジムを登録してください！'
-                NULL,
-                NULL,
-                $2,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-              )
-              RETURNING *;
-          `, [user_id, email]);
-
-          // DB接続を解放
-          client.release();
-
-          // ユーザー情報の挿入が成功されたかを確認する
-          // TO DO：正常時，異常時の処理が適切なのかを確認する
-          if((result.rowCount ?? 0) === 0)  {
-            res.status(201).send("データが正常に挿入されました");
-          } else {
-            res.status(400).send("データ挿入に失敗しました");
-          }
-        }
-      } catch(error){
-        console.error("データ挿入エラー:", error);
-        res.status(500).send("サーバーエラーが発生しました");
-      }
-      break;
+    // なし
 
     // requestId：8
     // ツイート内容をDBに登録する
@@ -798,7 +691,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               BLT.tweet_contents,
               BLT.visited_date,
               BLT.tweeted_date,
-              BLT.liked_count,
+              BLT.liked_counts,
               BLT.movie_url,
               B.user_id,
               B.user_name,
@@ -823,7 +716,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               BLT.tweet_contents,
               BLT.visited_date,
               BLT.tweeted_date,
-              BLT.liked_count,
+              BLT.liked_counts,
               BLT.movie_url,
               B.user_id,
               B.user_name,
@@ -1146,167 +1039,9 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // request_id: 19
-    // - 指定した月のボル活の回数を取得する
-    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
-    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
-    //
-    // クエリパラメータ
-    // - user_id: ユーザーID
-    // - months_ago : 何か月前のデータを取得するかを指定する
-    case 19:
-      try{
-        // クエリパラメータを取得
-        const {user_id, months_ago} = req.query;
-        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago, 10) : 0;
+    // request_id: 19 - 22
+    // なし
 
-        if(user_id == null) {
-          // Errorコード400, user_idがない旨を返信して終了
-          res.status(400).send("user_idパラメータが有りません");
-          return;
-        } else {
-          // DB接続
-          const client = await pool.connect();
-
-          // 更新処理
-          const result = await client.query(`
-            SELECT COALESCE(SUM(daily_gym_count),0) AS total_visits
-            FROM (
-              SELECT DATE(visited_date) AS visit_day, COUNT(DISTINCT gym_id) AS daily_gym_count
-              FROM boul_log_tweet
-              WHERE user_id = $1
-                AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-                AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
-              GROUP BY visit_day
-            ) AS daily_counts;
-            `, [user_id, casted_months_ago]);
-
-          // DB接続を解放
-          client.release();
-
-          // データを見つけられなかったケース
-          if(result.rows.length === 0) {
-            // エラーコード404, 見つからない旨を返信
-            res.status(404).send("データは見つかりませんでした");
-            return;
-          }
-
-          // 結果を返信
-          res.status(200).json(result.rows);
-          return;
-        }
-      } catch(error) {
-        console.error("Error querying database: ", error);
-        res.status(500).send("Error querying database");
-      }
-      break;
-
-    // request_id: 20
-    // - 指定した月の、訪問したジム施設数を取得する
-    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
-    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
-    //
-    // クエリパラメータ
-    // - user_id: ユーザーID
-    // - months_ago : 何か月前のデータを取得するかを指定する
-    case 20:
-      try{
-        // クエリパラメータを取得
-        const {user_id, months_ago} = req.query;
-        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago, 10) : 0;
-        // const casted_months_ago = parseInt(months_ago);
-
-        if(user_id == null) {
-          // Errorコード400, user_idがない旨を返信して終了
-          res.status(400).send("user_idパラメータが有りません");
-          return;
-        } else {
-          // DB接続
-          const client = await pool.connect();
-
-          // 更新処理
-          const result = await client.query(`
-          SELECT COUNT(DISTINCT gym_id) AS total_gym_count
-            FROM boul_log_tweet
-            WHERE user_id = $1
-              AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-              AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month';
-          `, [user_id, casted_months_ago]);
-
-          // DB接続を解放
-          client.release();
-
-          // データを見つけられなかったケース
-          if(result.rows.length === 0) {
-            // エラーコード404, 見つからない旨を返信
-            res.status(404).send("データは見つかりませんでした");
-            return;
-          }
-
-          // 結果を返信
-          res.status(200).json(result.rows);
-          return;
-        }
-      } catch(error) {
-        console.error("Error querying database: ", error);
-        res.status(500).send("Error querying database");
-      }
-      break;
-
-    // request_id: 21
-    // - 指定した月の、週あたりにボルダリング活動した回数を取得(GET)する
-    // - どの"ユーザー"の, 今月から"何か月前"の情報を取得するか、を指定する必要がある
-    // - 今月の情報を取得する場合は、months_agoは0で良い(0か月前)
-    //
-    // クエリパラメータ
-    // - user_id: ユーザーID
-    // - months_ago : 何か月前のデータを取得するかを指定する
-    case 21:
-      try{
-        // クエリパラメータを取得
-        const {user_id, months_ago} = req.query;
-        const casted_months_ago = (typeof months_ago === "string") ? parseInt(months_ago) : 0;
-
-        if(user_id == null) {
-          // Errorコード400, user_idがない旨を返信して終了
-          res.status(400).send("user_idパラメータが有りません");
-          return;
-        } else {
-          // DB接続
-          const client = await pool.connect();
-
-          // 更新処理
-          const result = await client.query(`
-          SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0) / (EXTRACT(DAY FROM CURRENT_DATE) / 7), 1) AS weekly_visit_rate
-          FROM (
-            SELECT visited_date, COUNT(DISTINCT gym_id) AS daily_gym_count
-            FROM boul_log_tweet
-            WHERE user_id = $1
-              AND visited_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months')
-              AND visited_date < DATE_TRUNC('month', CURRENT_DATE - INTERVAL '$2 months') + INTERVAL '1 month'
-            GROUP BY visited_date
-          ) AS daily_counts;
-          `, [user_id, casted_months_ago]);
-
-          // DB接続を解放
-          client.release();
-
-          // データを見つけられなかったケース
-          if(result.rows.length === 0) {
-            // エラーコード404, 見つからない旨を返信
-            res.status(404).send("データは見つかりませんでした");
-            return;
-          }
-
-          // 結果を返信
-          res.status(200).json(result.rows);
-          return;
-        }
-      } catch(error) {
-        console.error("Error querying database: ", error);
-        res.status(500).send("Error querying database");
-      }
-      break;
 
     // request_id: 22
     // - 指定した月の「ボル活回数」「訪問したジム施設数」「週当たりのボルダリング活動数」を取得する
@@ -1718,6 +1453,102 @@ case 25:
     }
   }
   break;
+
+
+      // requestId: 26
+    // 概要：イキタイを登録した各ユーザーのID、ジムID,登録日を登録(INSERT)する
+    // トリガ：イキタイ登録 押下時
+    // クエリパラメータ
+    // - user_id: ユーザID
+    // - gym_id：ジムID
+    case 26:
+      try{
+        // クエリパラメータを取得
+        const {user_id, gym_id} = req.query;
+
+        // パラメータがないケース
+        if(!user_id || !gym_id) {
+          // エラーコード400, パラメータがない旨を返信して終了
+          res.status(400).send("user_id, またはgym_idパラメータがありません");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // イキタイリレーションに登録する。
+        const result = await client.query(`
+        INSRERT INTO wanna_go_relation
+        (
+          user_id,
+          gym_id,
+          created_at
+        )
+        VALUES
+        (
+          $1,
+          $2,
+          CURRENT_TIMESTAMP
+        )
+        RETURNING *;
+        `, [user_id, gym_id]);
+
+        // DB接続を解放
+        client.release();
+
+        // 挿入が成功されたかを確認する
+        if((result.rowCount ?? 0) > 0)  {
+          res.status(200).send("データが正常に挿入されました");
+        } else {
+          res.status(400).send("データ挿入に失敗しました");
+        }
+      } catch(error) {
+        console.error("データ挿入エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+    break;
+
+    // requestId: 27
+    // 概要：イキタイを登録した各ユーザーのID、ジムID,登録日をDBから削除する
+    // トリガ：イキタイ登録 解除押下時
+    // クエリパラメータ
+    // - user_id: ユーザID
+    // - gym_id：ジムID
+    case 27:
+      try{
+        // クエリパラメータをh崇徳
+        const {user_id, gym_id} = req.query;
+
+        // パラメータがない場合、
+        if(!user_id || !gym_id) {
+          res.status(400).send("user_id またはgym_idパラメータがありません");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // 特定のuser_id, gym_idレコードを削除
+        const result = await client.query(`
+          DELETE FROM wanna_go_relation
+          WHERE user_id = $1
+          AND gym_id = $2;
+        `, [user_id, gym_id]);
+
+        // DB接続を解放
+        client.release();
+
+        // 削除が成功した場合
+        if((result.rowCount ?? 0) > 0) {
+          res.status(200).send("データが正常に削除されました");
+        } else {
+          res.status(404).send("該当するデータが見つかりませんでした");
+        }
+      } catch(error) {
+        console.error("データ削除エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
 
 
     // 無効なIDが送られてきたとき

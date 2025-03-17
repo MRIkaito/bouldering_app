@@ -3,21 +3,22 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:bouldering_app/model/boul_log_tweet.dart';
 
-class GeneralTweetsState {
-  final List<BoulLogTweet> generalTweets;
+class FavoriteUserTweetsState {
+  final List<BoulLogTweet> favoriteUserTweets;
   final bool hasMore;
 
-  GeneralTweetsState({
-    required this.generalTweets,
+  FavoriteUserTweetsState({
+    required this.favoriteUserTweets,
     required this.hasMore,
   });
 }
 
-class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
+class FavoriteUserTweetsNotifier
+    extends StateNotifier<FavoriteUserTweetsState> {
   // コンストラクタ
-  GeneralTweetsNotifier()
-      : super(GeneralTweetsState(generalTweets: [], hasMore: true)) {
-    _fetchMoreGeneralTweets();
+  FavoriteUserTweetsNotifier()
+      : super(FavoriteUserTweetsState(favoriteUserTweets: [], hasMore: true)) {
+    _fetchMoreFavoriteUserTweets();
   }
 
   // プロパティ
@@ -25,13 +26,13 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 
   /// ■ メソッド
   /// - お気に入りユーザーのツイートを取得するメソッド
-  Future<void> _fetchMoreGeneralTweets() async {
+  Future<void> _fetchMoreFavoriteUserTweets() async {
     if (_isLoading || !state.hasMore) return;
 
     _isLoading = true;
 
-    final String? cursor = state.generalTweets.isNotEmpty
-        ? state.generalTweets.last.tweetedDate.toString()
+    final String? cursor = state.favoriteUserTweets.isNotEmpty
+        ? state.favoriteUserTweets.last.tweetedDate.toString()
         : null;
 
     final url = Uri.parse(
@@ -48,27 +49,31 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 
       if (response.statusCode == 200) {
         // レスポンスボディをJSONとしてデコードする
-        final List<dynamic> generalTweetsList = jsonDecode(response.body);
+        final List<dynamic> favoriteUserTweetsList = jsonDecode(response.body);
 
-        final List<BoulLogTweet> newGeneralTweetsList = generalTweetsList
-            .map((tweet) => BoulLogTweet(
-                  tweetId: tweet['tweet_id'],
-                  tweetContents: tweet['tweet_contents'],
-                  visitedDate: tweet['visited_date'],
-                  tweetedDate: tweet['tweeted_date'],
-                  likedCount: tweet['liked_count'],
-                  movieUrl: tweet['movie_url'],
-                  userId: tweet['user_id'],
-                  userName: tweet['user_name'],
-                  gymId: tweet['gym_id'],
-                  gymName: tweet['gym_name'],
-                  prefecture: tweet['prefecture'],
-                ))
-            .toList();
+        final List<BoulLogTweet> newFavoriteUserTweetsList =
+            favoriteUserTweetsList
+                .map((tweet) => BoulLogTweet(
+                      tweetId: tweet['tweet_id'],
+                      tweetContents: tweet['tweet_contents'],
+                      visitedDate: tweet['visited_date'],
+                      tweetedDate: tweet['tweeted_date'],
+                      likedCount: tweet['liked_count'],
+                      movieUrl: tweet['movie_url'],
+                      userId: tweet['user_id'],
+                      userName: tweet['user_name'],
+                      gymId: tweet['gym_id'],
+                      gymName: tweet['gym_name'],
+                      prefecture: tweet['prefecture'],
+                    ))
+                .toList();
 
-        state = GeneralTweetsState(
-          generalTweets: [...state.generalTweets, ...newGeneralTweetsList],
-          hasMore: newGeneralTweetsList.length >= 20,
+        state = FavoriteUserTweetsState(
+          favoriteUserTweets: [
+            ...state.favoriteUserTweets,
+            ...newFavoriteUserTweetsList
+          ],
+          hasMore: newFavoriteUserTweetsList.length >= 20,
         );
       } else {
         throw Exception("ツイート取得に失敗しました");
@@ -84,12 +89,12 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
   /// - 総合ツイートを追加で取得するメソッド
   /// - ページネーションでさらにツイートを取得する
   void loadMore() {
-    _fetchMoreGeneralTweets();
+    _fetchMoreFavoriteUserTweets();
   }
 }
 
 // StateNotifierProviderの定義
-final generalTweetsProvider =
-    StateNotifierProvider<GeneralTweetsNotifier, GeneralTweetsState>(
-  (ref) => GeneralTweetsNotifier(),
+final favoriteUserTweetsProvider =
+    StateNotifierProvider<FavoriteUserTweetsNotifier, FavoriteUserTweetsState>(
+  (ref) => FavoriteUserTweetsNotifier(),
 );

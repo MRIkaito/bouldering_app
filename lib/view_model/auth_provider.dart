@@ -77,9 +77,9 @@ class AuthNotifier extends StateNotifier<bool> {
           email: email, password: password);
 
       // ユーザー情報取得
-      userProviderRef
+      await userProviderRef
           .read(userProvider.notifier)
-          .fetchUserData(userCredential.user!.uid);
+          .fetchUserData(userCredential.user!.uid); // ユーザー情報を必ず取得する
 
       // ログイン状態(true)に変更
       state = true;

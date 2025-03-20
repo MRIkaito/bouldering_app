@@ -1,21 +1,18 @@
-import 'package:bouldering_app/model/boul_log_tweet.dart';
-import 'package:bouldering_app/model/boulder.dart';
-import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/my_tweets_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
 import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
+import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class LoginedMyPage extends ConsumerStatefulWidget {
@@ -28,110 +25,63 @@ class LoginedMyPage extends ConsumerStatefulWidget {
 /// ■ クラス
 /// - ログインした時のマイページ
 class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
+  // ボル活統計情報データ(キャッシュ)
   String? cachedBoulLogDuration;
 
   // スクロールを監視するコントローラ：ScrollController
   final ScrollController _scrollController = ScrollController();
-  // 内部で状態として取得したツイートを管理する
-  final List<BoulLogTweet> _tweets = [];
-  // ロード中かを識別する
-  bool _isLoading = false;
-  // データをDBからまだ取得できるかを判別する
-  bool _hasMore = true;
 
   // (イキタイジム)内部で状態として、取得したジム情報を管理する
-  final List<GymInfo> _wannaGoGyms = [];
+  // final List<GymInfo> _wannaGoGyms = [];
   // (イキタイジム)ロード中かを識別する
-  bool _isGymCardLoading = false;
+  // bool _isGymCardLoading = false;
 
-  // 初期化
+  /// ■ 初期化
   @override
   void initState() {
     super.initState();
+
+    // ツイート情報を取得
+    // userIdは必ず取得されてから遷移するので強制案ラップ
+    ref
+        .read(myTweetsProvider.notifier)
+        .fetchTweets(ref.read(userProvider)!.userId);
+
+    // 自身のイキタイジム情報を取得
+    // userIdは必ず取得されてから遷移するので強制アンラップ
+    ref
+        .read(wannaGoRelationProvider.notifier)
+        .fetchWannaGoGymCards(ref.read(userProvider)!.userId);
+
+    // TODO：現在デバッグのためコメントアウト
     // _scrollController.addListener(_onScroll);
   }
 
+  /// ■ 破棄
   @override
   void dispose() {
     _scrollController.dispose(); // ✅ メモリリーク防止
     super.dispose();
   }
 
-  Future<void> _fetchTweets() async {
-    if (_isLoading || !_hasMore) return;
-
-    setState(() => _isLoading = true);
-    print(
-        "🟢 [DEBUG] _fetchTweets() called. isLoading: $_isLoading, hasMore: $_hasMore");
-
-    // ✅ 🌟 user_id が null でないことを確認
-    final userId = ref.watch(userProvider)?.userId;
+  /// ■ メソッド
+  /// - ツイートを取得する処理
+  Future<void> fetchTweets() async {
+    // ユーザーID
+    final userId = ref.read(userProvider)?.userId;
     print("🟡 [DEBUG] user_id before request: $userId");
 
+    // ユーザーID取得できていない時、実行しない
     if (userId == null) {
       print("❌ [ERROR] user_id is null! API リクエストをスキップ");
-      setState(() => _isLoading = false);
       return;
     }
 
-    final String? cursor =
-        _tweets.isNotEmpty ? _tweets.last.tweetedDate.toString() : null;
-    final url = Uri.parse(
-            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
-        .replace(queryParameters: {
-      'request_id': '12',
-      'limit': '20',
-      if (cursor != null) 'cursor': cursor,
-      'user_id': userId,
-    });
-
-    try {
-      final response = await http.get(url);
-      print("🟣 [DEBUG] Response status: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        print("🟢 [DEBUG] Response body: $jsonData");
-
-        final List<BoulLogTweet> newTweets = jsonData
-            .map((tweet) => BoulLogTweet(
-                  tweetId: tweet['tweet_id'],
-                  tweetContents: tweet['tweet_contents'],
-                  visitedDate: DateTime.tryParse(tweet['visited_date'] ?? '') ??
-                      DateTime.now(),
-                  tweetedDate: DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
-                      DateTime.now(),
-                  likedCount: tweet['liked_count'],
-                  movieUrl: tweet['movie_url'],
-                  userId: tweet['user_id'],
-                  userName: tweet['user_name'],
-                  gymId: tweet['gym_id'],
-                  gymName: tweet['gym_name'],
-                  prefecture: tweet['prefecture'],
-                ))
-            .toList();
-
-        if (mounted) {
-          setState(() {
-            _tweets.addAll(newTweets);
-            _hasMore = newTweets.length >= 20;
-          });
-        }
-      } else {
-        print(
-            "❌ [ERROR] Failed to fetch tweets. Status: ${response.statusCode}");
-        print("❌ [ERROR] Response body: ${response.body}");
-      }
-    } catch (error) {
-      print("❌ [ERROR] Exception in _fetchTweets(): $error");
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-      print("🟢 [DEBUG] _fetchTweets() finished. isLoading: $_isLoading");
-    }
+    // ツイート取得処理
+    await ref.read(myTweetsProvider.notifier).fetchTweets(userId);
   }
 
+  // TODO：デバッグ中につきコメントアウト
   // スクロールがif文の条件を満たしたとき, _fetchTweets() を実行
   // void _onScroll() {
   //   if (_scrollController.position.pixels >= // 現在のスクロール位置(上から何ピクセル下にスクロールしたか)
@@ -141,85 +91,21 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
   //   }
   // }
 
-  Future<void> _fetchGymCards() async {
-    if (_isGymCardLoading) return;
+  Future<void> fetchGymCards() async {
+    // ユーザーID
+    final userId = ref.read(userProvider)?.userId;
+    print("🟡 [DEBUG] user_id before request: $userId");
 
-    setState(() => _isGymCardLoading = true);
-    print(
-        "[DEBUG] _fetchGymCards() called. isGymCardLoading: $_isGymCardLoading");
-
-    final url = Uri.parse(
-            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
-        .replace(queryParameters: {
-      'request_id': '23',
-      'user_id': ref.watch(userProvider)?.userId, // 追加（重要）
-    });
-
-    print("[DEBUG] Fetching gym cards from: $url");
-
-    try {
-      final response = await http.get(url);
-      print("[DEBUG] Response status: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        print("[DEBUG] Gym cards fetched: $jsonData");
-
-        final List<GymInfo> newGymCards = jsonData
-            .map((gymCard) => GymInfo(
-                  gymId: int.tryParse(gymCard['gym_id']) ?? 0,
-                  gymName: gymCard['gym_name'] ?? '',
-                  hpLink: gymCard['hp_link'] ?? '',
-                  prefecture: gymCard['prefecture'] ?? '',
-                  city: gymCard['city'] ?? '',
-                  addressLine: gymCard['address_line'] ?? '',
-                  latitude:
-                      double.tryParse(gymCard['latitude'].toString()) ?? 0.0,
-                  longitude:
-                      double.tryParse(gymCard['longitude'].toString()) ?? 0.0,
-                  telNo: gymCard['tel_no'] ?? '',
-                  fee: gymCard['fee'] ?? '',
-                  minimumFee: int.tryParse(gymCard['minimum_fee']) ?? 0,
-                  equipmentRentalFee: gymCard['equipment_rental_fee'] ?? '',
-                  ikitaiCount: int.tryParse(gymCard['ikitai_count']) ?? 0,
-                  boulCount: int.tryParse(gymCard['boul_count']) ?? 0,
-                  isBoulderingGym: gymCard['is_bouldering_gym'] == 'true',
-                  isLeadGym: gymCard['is_lead_gym'] == 'true',
-                  isSpeedGym: gymCard['is_speed_gym'] == 'true',
-                  sunOpen: gymCard['sun_open'] ?? '-',
-                  sunClose: gymCard['sun_close'] ?? '-',
-                  monOpen: gymCard['mon_open'] ?? '-',
-                  monClose: gymCard['mon_close'] ?? '-',
-                  tueOpen: gymCard['tue_open'] ?? '-',
-                  tueClose: gymCard['tue_close'] ?? '-',
-                  wedOpen: gymCard['wed_open'] ?? '-',
-                  wedClose: gymCard['wed_close'] ?? '-',
-                  thuOpen: gymCard['thu_open'] ?? '-',
-                  thuClose: gymCard['thu_close'] ?? '-',
-                  friOpen: gymCard['fri_open'] ?? '-',
-                  friClose: gymCard['fri_close'] ?? '-',
-                  satOpen: gymCard['sat_open'] ?? '-',
-                  satClose: gymCard['sat_close'] ?? '-',
-                ))
-            .toList();
-
-        setState(() {
-          _wannaGoGyms.addAll(newGymCards);
-        });
-
-        print("[DEBUG] Gym cards fetched. Total count: ${_wannaGoGyms.length}");
-      } else {
-        print(
-            "[ERROR] Failed to fetch gym cards. Status: ${response.statusCode}");
-        print("[ERROR] Response body: ${response.body}");
-      }
-    } catch (error) {
-      print("[ERROR] Exception in _fetchGymCards(): $error");
-    } finally {
-      setState(() => _isGymCardLoading = false);
-      print(
-          "[DEBUG] _fetchGymCards() finished. isGymCardLoading: $_isGymCardLoading");
+    // ユーザーID取得できていない時、実行しない
+    if (userId == null) {
+      print("❌ [ERROR] user_id is null! API リクエストをスキップ");
+      return;
     }
+
+    // ジムカード情報取得処理
+    await ref
+        .read(wannaGoRelationProvider.notifier)
+        .fetchWannaGoGymCards(userId);
   }
 
   // 現在時刻において、営業中か否かを判別する
@@ -246,12 +132,20 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
     final asyncUser = ref.watch(asyncUserProvider);
     final gymRef = ref.read(gymProvider);
 
-    ref.listen<AsyncValue<Boulder?>>(asyncUserProvider, (previous, next) {
-      if (next is AsyncData && next.value != null && _tweets.isEmpty) {
-        print("🟢 [DEBUG] user_id が取得できたので _fetchTweets() を実行！");
-        _fetchTweets();
-      }
-    });
+    // 自分のツイート情報
+    final tweets = ref.watch(myTweetsProvider);
+    final hasMore = ref.watch(myTweetsProvider.notifier).hasMore;
+
+    // 自分のイキタイ登録しているジム情報
+    final gymCards = ref.watch(wannaGoRelationProvider);
+
+    // TODO：デバッグ中につきコメントアウト
+    // ref.listen<AsyncValue<Boulder?>>(asyncUserProvider, (previous, next) {
+    //   if (next is AsyncData && next.value != null && _tweets.isEmpty) {
+    //     print("🟢 [DEBUG] user_id が取得できたので _fetchTweets() を実行！");
+    //     _fetchTweets();
+    //   }
+    // });
 
     return DefaultTabController(
       length: 2,
@@ -279,11 +173,6 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                 setState(() {
                   cachedBoulLogDuration = calcBoulderingDuration(user);
                 });
-              }
-
-              if (user != null && _tweets.isEmpty) {
-                print("🟢 [DEBUG] 初回の _fetchTweets() を実行！");
-                _fetchTweets();
               }
 
               return SafeArea(
@@ -457,15 +346,15 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                   // タブの中に表示する画面
                   body: TabBarView(
                     children: [
-                      _tweets.isEmpty
+                      tweets.isEmpty
                           ? const Center(child: CircularProgressIndicator())
                           :
                           // 自分のツイート
                           ListView.builder(
                               controller: _scrollController,
-                              itemCount: _tweets.length + (_hasMore ? 1 : 0),
+                              itemCount: tweets.length + (hasMore ? 1 : 0),
                               itemBuilder: (context, index) {
-                                if (index == _tweets.length) {
+                                if (index == tweets.length) {
                                   return const Padding(
                                     padding: EdgeInsets.all(16),
                                     child: Center(
@@ -473,7 +362,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                                   );
                                 }
 
-                                final tweet = _tweets[index];
+                                final tweet = tweets[index];
 
                                 return BoulLog(
                                   userName: ref.read(userProvider)?.userName ??
@@ -493,14 +382,14 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                       // お気に入り(イキタイ)登録しているジム
                       ListView.builder(
                         itemBuilder: (context, index) {
-                          if (index == _wannaGoGyms.length) {
+                          if (index == gymCards.length) {
                             return const Padding(
                               padding: EdgeInsets.all(16),
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
 
-                          final gymCard = _wannaGoGyms[index];
+                          final gymCard = gymCards[index];
 
                           final Map<String, String> gymOpenHours = {
                             'sun_open': gymCard.sunOpen ?? '-',

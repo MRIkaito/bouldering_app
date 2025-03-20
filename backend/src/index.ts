@@ -1455,7 +1455,7 @@ case 25:
   break;
 
 
-      // requestId: 26
+    // requestId: 26
     // 概要：イキタイを登録した各ユーザーのID、ジムID,登録日を登録(INSERT)する
     // トリガ：イキタイ登録 押下時
     // クエリパラメータ
@@ -1547,6 +1547,100 @@ case 25:
       } catch(error) {
         console.error("データ削除エラー", error);
         res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // requestId: 27
+    // 概要：行きたい登録してジム情報を取得する
+    // トリガ：行きたい登録押下時
+    //
+    // クエリパラメータ
+    // gym_id：ジムID
+    case 27:
+      // let client; の定義はcase 24の中にあり．
+      try{
+        // クエリパラメータ取得
+        const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string , 10) : NaN;
+
+        // gym_idがない(null)ケース
+        if(isNaN(gym_id)){
+          // エラーコード400と，gym_idが送られてきていない旨を返信して終了
+          res.status(400).send("gym_idパラメータが必要です");
+          return;
+        }
+
+        // DB接続
+        client = await pool.connect();
+
+        // お気に入り登録しているジム情報(ジムカード)を取得
+        const result = await client.query(`
+          SELECT
+            GI.gym_id,
+            GI.gym_name,
+            GI.hp_link,
+            GI.prefecture,
+            GI.city,
+            GI.address_line,
+            GI.latitude,
+            GI.longitude,
+            GI.tel_no,
+            GI.fee,
+            GI.minimum_fee,
+            GI.equipment_rental_fee,
+            COUNT(DISTINCT WGR.gym_id) AS ikitai_count,
+            COUNT(DISTINCT BLT.gym_id) AS boul_count,
+            CT.is_bouldering_gym,
+            CT.is_lead_gym,
+            CT.is_speed_gym,
+            GH.sun_open,
+            GH.sun_close,
+            GH.mon_open,
+            GH.mon_close,
+            GH.tue_open,
+            GH.tue_close,
+            GH.wed_open,
+            GH.wed_close,
+            GH.thu_open,
+            GH.thu_close,
+            GH.fri_open,
+            GH.fri_close,
+            GH.sat_open,
+            GH.sat_close
+        FROM gym_info GI
+        LEFT JOIN wanna_go_relation WGR
+            ON WGR.gym_id = GI.gym_id
+        LEFT JOIN boul_log_tweet BLT
+            ON BLT.gym_id = GI.gym_id
+        LEFT JOIN climbing_types CT
+            ON CT.gym_id = GI.gym_id
+        LEFT JOIN gym_hours GH
+            ON GH.gym_id = GI.gym_id
+        WHERE GI.gym_id = $1
+        GROUP BY GI.gym_id, GI.gym_name, GI.hp_link, GI.prefecture, GI.city,
+            GI.address_line, GI.latitude, GI.longitude, GI.tel_no, GI.fee,
+            GI.minimum_fee, GI.equipment_rental_fee,
+            CT.is_bouldering_gym, CT.is_lead_gym, CT.is_speed_gym,
+            GH.mon_open, GH.mon_close, GH.tue_open, GH.tue_close,
+            GH.wed_open, GH.wed_close, GH.thu_open, GH.thu_close,
+            GH.fri_open, GH.fri_close, GH.sat_open, GH.sat_close,
+            GH.sun_open, GH.sun_close;
+        `, [gym_id]);
+
+        if (result.rows.length > 0) {
+          res.status(200).json(result.rows);
+          return;
+        } else {
+          res.status(500).send("Error querying database");
+          return;
+        }
+      } catch(error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      } finally{
+        // 修正：clientがnullでない場合のみrelease
+        if (client) {
+          client.release();
+        }
       }
       break;
 

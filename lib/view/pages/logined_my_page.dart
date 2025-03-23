@@ -31,18 +31,13 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
   // スクロールを監視するコントローラ：ScrollController
   final ScrollController _scrollController = ScrollController();
 
-  // (イキタイジム)内部で状態として、取得したジム情報を管理する
-  // final List<GymInfo> _wannaGoGyms = [];
-  // (イキタイジム)ロード中かを識別する
-  // bool _isGymCardLoading = false;
-
   /// ■ 初期化
   @override
   void initState() {
     super.initState();
 
     // ツイート情報を取得
-    // userIdは必ず取得されてから遷移するので強制案ラップ
+    // userIdは必ず取得されてから遷移するので強制アンラップ
     ref
         .read(myTweetsProvider.notifier)
         .fetchTweets(ref.read(userProvider)!.userId);
@@ -60,7 +55,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
   /// ■ 破棄
   @override
   void dispose() {
-    _scrollController.dispose(); // ✅ メモリリーク防止
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -108,6 +103,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
         .fetchWannaGoGymCards(userId);
   }
 
+  // TODO：utilityに移動させる
   // 現在時刻において、営業中か否かを判別する
   bool isOpen(Map<String, String> hours) {
     DateTime now = DateTime.now();
@@ -389,7 +385,7 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                             );
                           }
 
-                          final gymCard = gymCards[index];
+                          final gymCard = gymCards.values.toList()[index];
 
                           final Map<String, String> gymOpenHours = {
                             'sun_open': gymCard.sunOpen ?? '-',

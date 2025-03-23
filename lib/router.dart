@@ -334,5 +334,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (context, state) => const MaterialPage(
               fullscreenDialog: true, child: EditProfilePage()),
         ),
+        GoRoute(
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/activitypost',
+          pageBuilder: (context, state) =>
+              MaterialPage(fullscreenDialog: true, child: ActivityPostPage()),
+        ),
       ]);
 });

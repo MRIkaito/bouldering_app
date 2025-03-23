@@ -2,6 +2,7 @@ import 'package:bouldering_app/view/pages/gym_search_page.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -33,10 +34,19 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   final String bucketName =
       "your-gcs-bucket-name"; // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
 
+  bool fromFacilityInfoPage = false; // 初期値はfalse
+
   // 初期化
   @override
   void initState() {
     super.initState();
+
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    fromFacilityInfoPage = extra?['fromPager1'] ?? false;
+    // このfromFacilityInfoPage がtrueの時に、投稿ボタンを押下して確認できればpopする処理を追加する
+    // awaitなどで投稿がDBに登録されるのを待って、投稿されたら、pop()するという処理にする
+
+    // なお、fromFacilityInfoPage以外のページからの遷移の場合は最後にpopしなくていい
   }
 
   /// ■ メソッド
@@ -133,12 +143,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// - [photoUrls] 写真のURL
   /// - [movieUrls] 動画のURL
   Future<void> _insertBoulLogTweet(
-      String userId,
-      int gymId,
-      String visitedDate,
-      String tweetContents,
-      List<String> photoUrls,
-      List<String> movieUrls) async {
+    String userId,
+    int gymId,
+    String visitedDate,
+    String tweetContents,
+    List<String> photoUrls,
+    List<String> movieUrls,
+  ) async {
     // 送信先URL
     final url = Uri.parse(
         'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData');
@@ -240,6 +251,14 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       ["http"], // TODO：動画URLを配列にする実装
                     );
                     */
+
+                    // 上記の投稿部分で、awaitを使ってDB登録されるまで待つ実装をする
+                    if (fromFacilityInfoPage) {
+                      context.pop();
+                    } else {
+                      // ページ遷移の必要無し
+                      // DO NOTHING
+                    }
                   },
                   child: const Text(
                     '投稿する',

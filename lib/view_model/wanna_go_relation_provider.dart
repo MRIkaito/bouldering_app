@@ -22,9 +22,11 @@ import 'dart:convert';
 
 /// ■ クラス
 /// - イキタイ登録したジムを管理するクラス
-class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
+///
+/// 状態： {ジムID：ジム情報}
+class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
   /// ■ コンストラクタ
-  WannaGoRelationNotifier() : super([]);
+  WannaGoRelationNotifier() : super({});
 
   /// ■ プロパティ
   bool _isGymCardLoading = false;
@@ -33,12 +35,13 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
   bool get isGymCardLoadfing => _isGymCardLoading;
 
   /// ■ メソッド
-  /// 自身のイキタイ登録したジムを取得する関数
+  /// - 自分がイキタイ登録しているジムをすべて取得する関数
   ///
   /// 引数
-  ///
+  /// -[userId] ユーザーID
   ///
   /// 返り値
+  /// なし
   Future<void> fetchWannaGoGymCards(String userId) async {
     // すでにローディング中のときは実行しない
     if (_isGymCardLoading) return;
@@ -64,7 +67,7 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
         final List<dynamic> jsonData = json.decode(response.body);
         print("[DEBUG] Gym cards fetched: $jsonData");
 
-        final List<GymInfo> newGymCards = jsonData
+        final List<GymInfo> registeredGymCards = jsonData
             .map((gymCard) => GymInfo(
                   gymId: int.tryParse(gymCard['gym_id']) ?? 0,
                   gymName: gymCard['gym_name'] ?? '',
@@ -102,8 +105,15 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
                 ))
             .toList();
 
+        final Map<int, GymInfo> registeredGymMap = {
+          for (var registeredGymCard in registeredGymCards)
+            registeredGymCard.gymId: registeredGymCard
+        };
+
+        state.addAll(registeredGymMap);
+
         // イキタイジム情報を保持
-        state = [...state, ...newGymCards];
+        // state = [...state, ...newGymCards];
         print("[DEBUG] Gym cards fetched. Total count: ${state.length}");
       } else {
         print(
@@ -142,7 +152,7 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
 
       if (response.statusCode == 200) {
         // イキタイ登録したジムのジムIDを渡し，状態を更新する処理を呼び出す
-        fetchSpecificGymCard(gymId);
+        _updateGymCards(gymId);
       } else {
         throw Exception("イキタイジム登録に失敗しました");
       }
@@ -152,18 +162,18 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
   }
 
   /// ■ メソッド
-  /// - イキタイ登録したジム情報を取得して状態に追加する
+  /// - イキタイ登録したジムの情報を取得し、そのジムを状態に追加する
   ///
   /// 引数
-  /// - [gymId]ジムのID
+  /// - [gymId] ジムのID
   ///
   /// 返り値
   /// なし
-  Future<void> fetchSpecificGymCard(String gymId) async {
+  Future<void> _updateGymCards(String gymId) async {
     final url = Uri.parse(
             'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
         .replace(queryParameters: {
-      'request_id': '27',
+      'request_id': '25',
       'gym_id': gymId.toString(),
     });
 
@@ -173,7 +183,7 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
 
       if (response.statusCode == 200) {
         final List<dynamic> wannaGoRelationList = jsonDecode(response.body);
-        final List<GymInfo> newWannaGoRelationList = wannaGoRelationList
+        final List<GymInfo> newRegisteredGymList = wannaGoRelationList
             .map((gymCard) => GymInfo(
                   gymId: int.tryParse(gymCard['gym_id']) ?? 0,
                   gymName: gymCard['gym_name'] ?? '',
@@ -211,8 +221,14 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
                 ))
             .toList();
 
+        final Map<int, GymInfo> newRegisteredGymMap = {
+          for (var newRegisteredGym in newRegisteredGymList)
+            newRegisteredGym.gymId: newRegisteredGym
+        };
+
+        state.addAll(newRegisteredGymMap);
         // 状態更新：イキタイ登録したジム情報を更新
-        state = [...newWannaGoRelationList, ...state];
+        // state = [...newWannaGoRelationList, ...state];
       } else {
         throw Exception("イキタイジム登録に失敗しました");
       }
@@ -222,7 +238,7 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
   }
 
   /// ■ メソッド
-  /// - イキタイ登録を解除する
+  /// - イキタイ登録を解除(削除)する
   ///
   /// 引数
   /// - [user_id] (イキタイ登録した)ユーザーのID
@@ -230,7 +246,7 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
   ///
   /// 返り値
   /// - なし
-  Future<void> deleteWannaGoGym(String userId, int gymId) async {
+  Future<void> deleteWannaGoGym(String userId, String gymId) async {
     final url = Uri.parse(
             'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
         .replace(queryParameters: {
@@ -240,16 +256,21 @@ class WannaGoRelationNotifier extends StateNotifier<List<GymInfo>> {
     });
 
     try {
-      final response = await http.get(url);
+      final response = await http.delete(url);
 
-      if (response.statusCode == 200) {}
-    } catch (error) {}
+      if (response.statusCode == 200) {
+        print("削除成功：${response.body}");
+        // UI更新処理があれば実装する
+      }
+    } catch (error) {
+      print("エラー発生：$error");
+    }
   }
 }
 
 /// ■ プロバイダ
 /// イキタイ登録したジム(状態)を提供するプロバイダ
 final wannaGoRelationProvider =
-    StateNotifierProvider<WannaGoRelationNotifier, List<GymInfo>>((ref) {
+    StateNotifierProvider<WannaGoRelationNotifier, Map<int, GymInfo>>((ref) {
   return WannaGoRelationNotifier();
 });

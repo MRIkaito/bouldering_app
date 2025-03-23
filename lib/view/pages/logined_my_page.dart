@@ -74,6 +74,12 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
 
     // ツイート取得処理
     await ref.read(myTweetsProvider.notifier).fetchTweets(userId);
+
+    // // ✅ 強制的に UI を再描画
+    // setState(() {
+    //   print(
+    //       "🟢 [DEBUG] setState() called after fetching tweets. tweets length: ${ref.read(myTweetsProvider).length}");
+    // });
   }
 
   // TODO：デバッグ中につきコメントアウト
@@ -133,7 +139,11 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
     final hasMore = ref.watch(myTweetsProvider.notifier).hasMore;
 
     // 自分のイキタイ登録しているジム情報
+    // ✅ デバッグポイント 1: wannaGoRelationProvider の状態をチェック
     final gymCards = ref.watch(wannaGoRelationProvider);
+    print("🟢 [DEBUG] gymCardsのデータ: $gymCards");
+    print("🟢 [DEBUG] gymCards.keys: ${gymCards.keys}");
+    print("🟢 [DEBUG] gymCards.values.toList(): ${gymCards.values.toList()}");
 
     // TODO：デバッグ中につきコメントアウト
     // ref.listen<AsyncValue<Boulder?>>(asyncUserProvider, (previous, next) {
@@ -142,6 +152,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
     //     _fetchTweets();
     //   }
     // });
+
+    print("🟡 [DEBUG] UI tweets length: ${tweets.length}");
 
     return DefaultTabController(
       length: 2,
@@ -377,7 +389,21 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
 
                       // お気に入り(イキタイ)登録しているジム
                       ListView.builder(
+                        itemCount: gymCards.isEmpty ? 1 : gymCards.length,
                         itemBuilder: (context, index) {
+                          // リスト画からの場合は，登録しているジムがない旨を表示
+                          if (gymCards.isEmpty) {
+                            print(
+                                "🟢 [DEBUG] gymCards が空のため「登録されているジムがありません」を表示");
+                            return const Center(
+                              child: Text(
+                                "登録されているジムがありません。",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            );
+                          }
+
+                          // 最後のインデックスでローディング表示をする
                           if (index == gymCards.length) {
                             return const Padding(
                               padding: EdgeInsets.all(16),
@@ -386,7 +412,8 @@ class LoginedMyPageState extends ConsumerState<LoginedMyPage> {
                           }
 
                           final gymCard = gymCards.values.toList()[index];
-
+                          print(
+                              "🟢 [DEBUG] gymCards.length: ${gymCards.length}");
                           final Map<String, String> gymOpenHours = {
                             'sun_open': gymCard.sunOpen ?? '-',
                             'sun_close': gymCard.sunClose ?? '-',

@@ -525,68 +525,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-
-    // requestId：10
-    // 行きたいと思ったジムを. "イキタイ施設"として登録する
-    //
-    // クエリパラメータ：
-    // user_id：ユーザーを識別するID
-    // gym_id：ジムを識別する
-
-    // 下記、「イキタイテーブル」を作成する
-    // CREATE TABLE wanna_go_relation (
-    //   id SERIAL PRIMARY KEY,
-    //   gym_id INT NOT NULL,
-    //   user_id VARCHAR(36) NOT NULL,
-    //   created_at TIMESTAMP DEFAULT NOW(),
-    //   UNIQUE(gym_id, user_id)
-    // );
-
-      case 10:
-        try{
-          // クエリパラメータを取得
-          const {user_id, gym_id} = req.query;
-
-          // user_id, gym_idがないケース
-          if(user_id === null || gym_id === null) {
-            // エラーコード400, user_id, gym_igがない旨を返信して終了
-            res.status(400).send("user_id, またはgym_idパラメータがありません");
-            return;
-          } else{
-            // DB接続
-            const client = await pool.connect();
-
-            // 行きたいジムを登録する
-            const result = await client.query(`
-            INSERT INTO wanna_go_relation
-              (
-                gym_id,
-                user_id
-              )
-            VALUES
-              (
-                $1,
-                $2  -- この$1, $2にはそれぞれもらってきた値(ジムID、ユーザーID)を入れる
-              )
-            ON CONFLICT (gym_id, user_id) DO NOTHING
-            RETURNING *;
-            `, [user_id, gym_id]);
-
-            // DB接続を解放
-            client.release();
-
-            // 挿入に成功したかを確認する
-            if((result.rowCount ?? 0) > 0)  {
-              res.status(200).send("データが正常に挿入されました");
-            } else {
-              res.status(400).send("データ挿入に失敗しました");
-            }
-          }
-        } catch(error) {
-          console.error("データ挿入エラー:", error);
-          res.status(500).send("サーバーエラーが発生しました");
-        }
-        break;
+    // requestId：10  なし
 
 
     // requestId：11
@@ -1191,9 +1130,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             GI.fee,
             GI.minimum_fee,
             GI.equipment_rental_fee,
-            -- イキタイジムのカウント
             (SELECT COUNT(*) FROM wanna_go_relation WGR WHERE WGR.gym_id = GI.gym_id) AS ikitai_count,
-            -- ツイート数のカウント
             (SELECT COUNT(*) FROM boul_log_tweet BLT WHERE BLT.gym_id = GI.gym_id) AS boul_count,
             CT.is_bouldering_gym,
             CT.is_lead_gym,
@@ -1213,11 +1150,9 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             GH.sat_open,
             GH.sat_close
           FROM gym_info GI
-          LEFT JOIN climbing_types CT
-            ON CT.gym_id = GI.gym_id
-          LEFT JOIN gym_hours GH
-            ON GH.gym_id = GI.gym_id
-          WHERE GI.gym_id IN (SELECT gym_id FROM wanna_go_relation WHERE user_id = $1);
+          LEFT JOIN climbing_types CT ON CT.gym_id = GI.gym_id
+          LEFT JOIN gym_hours GH ON GH.gym_id = GI.gym_id
+          WHERE EXISTS (SELECT 1 FROM wanna_go_relation WGR WHERE WGR.gym_id = GI.gym_id AND WGR.user_id = $1);
           `, [user_id]
           );
 
@@ -1240,6 +1175,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         res.status(500).send("Error querying database");
       }
       break;
+
 
     // requestId: 24
     // - 特定のジム(ID)のツイートを取得する
@@ -1351,20 +1287,23 @@ exports.getData = functions.https.onRequest(async (req, res) => {
     }
     break;
 
+
 // requestId: 25
 // - 特定のジム(ID)の施設情報を取得する
 //
 // クエリパラメータ
 // - gymId : ジムを識別するID
+// - limit : ツイートを一度に読み込んで取得する数
+// - cursor : フロント側で取得している最も古いツイート日時
 case 25:
-  // let client; の定義はcase 24の中にあり．
-  try{
+  // let client; の定義はcase 24:の中にある
+  try {
     // クエリパラメータ取得
-    const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string , 10) : NaN;
+    const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string, 10) : NaN; // 修正箇所
 
     // gym_idがない(null)ケース
-    if(isNaN(gym_id)){
-      // エラーコード400と，gym_idが送られてきていない旨を返信して終了
+    if (isNaN(gym_id)) {
+      // エラーコード400とgym_idが送られてきていない旨を返信して終了
       res.status(400).send("gym_idパラメータが必要です");
       return;
     }
@@ -1372,48 +1311,48 @@ case 25:
     // DB接続
     client = await pool.connect();
 
-    // お気に入り登録しているジム情報(ジムカード)を取得
-    const result = await client.query(`
-    SELECT
-      GI.gym_id,
-      GI.gym_name,
-      GI.hp_link,
-      GI.prefecture,
-      GI.city,
-      GI.address_line,
-      GI.latitude,
-      GI.longitude,
-      GI.tel_no,
-      GI.fee,
-      GI.minimum_fee,
-      GI.equipment_rental_fee,
-      -- サブクエリでカウント（$1 を直接指定）
-      (SELECT COUNT(*) FROM wanna_go_relation WGR WHERE WGR.gym_id = $1) AS ikitai_count,
-      (SELECT COUNT(*) FROM boul_log_tweet BLT WHERE BLT.gym_id = $1) AS boul_count,
-      CT.is_bouldering_gym,
-      CT.is_lead_gym,
-      CT.is_speed_gym,
-      GH.sun_open,
-      GH.sun_close,
-      GH.mon_open,
-      GH.mon_close,
-      GH.tue_open,
-      GH.tue_close,
-      GH.wed_open,
-      GH.wed_close,
-      GH.thu_open,
-      GH.thu_close,
-      GH.fri_open,
-      GH.fri_close,
-      GH.sat_open,
-      GH.sat_close
-    FROM gym_info GI
-    INNER JOIN climbing_types CT
+    // お気に入り登録しているジム情報（ジムカード）を取得(お気に入り登録した順番に取得)
+    const result = await client.query(
+      `
+      SELECT
+        GI.gym_id,
+        GI.gym_name,
+        GI.hp_link,
+        GI.prefecture,
+        GI.city,
+        GI.address_line,
+        GI.latitude,
+        GI.longitude,
+        GI.tel_no,
+        GI.fee,
+        GI.minimum_fee,
+        GI.equipment_rental_fee,
+        (SELECT COUNT(*) FROM wanna_go_relation WGR WHERE WGR.gym_id = $1) AS ikitai_count,
+        (SELECT COUNT(*) FROM boul_log_tweet BLT WHERE BLT.gym_id = $1) AS boul_count,
+        CT.is_bouldering_gym,
+        CT.is_lead_gym,
+        CT.is_speed_gym,
+        GH.sun_open,
+        GH.sun_close,
+        GH.mon_open,
+        GH.mon_close,
+        GH.tue_open,
+        GH.tue_close,
+        GH.wed_open,
+        GH.wed_close,
+        GH.thu_open,
+        GH.thu_close,
+        GH.fri_open,
+        GH.fri_close,
+        GH.sat_open,
+        GH.sat_close
+      FROM gym_info GI
+      INNER JOIN climbing_types CT
         ON CT.gym_id = GI.gym_id
-    INNER JOIN gym_hours GH
+      INNER JOIN gym_hours GH
         ON GH.gym_id = GI.gym_id
-    WHERE GI.gym_id = $1;
-    `, [gym_id]);
+      WHERE GI.gym_id = $1;
+      `, [gym_id]);
 
     if (result.rows.length > 0) {
       res.status(200).json(result.rows);
@@ -1422,16 +1361,17 @@ case 25:
       res.status(500).send("Error querying database");
       return;
     }
-  } catch(error) {
+  } catch (error) {
     console.error("Error querying database: ", error);
     res.status(500).send("Error querying database");
-  } finally{
+  } finally {
     // 修正：clientがnullでない場合のみrelease
     if (client) {
       client.release();
     }
   }
   break;
+
 
     // requestId: 26
     // 概要：イキタイを登録した各ユーザーのID、ジムID,登録日を登録(INSERT)する
@@ -1456,7 +1396,7 @@ case 25:
 
         // イキタイリレーションに登録する。
         const result = await client.query(`
-        INSRERT INTO wanna_go_relation
+        INSERT INTO wanna_go_relation
         (
           user_id,
           gym_id,
@@ -1468,6 +1408,7 @@ case 25:
           $2,
           CURRENT_TIMESTAMP
         )
+        ON CONFLICT (gym_id, user_id) DO NOTHING
         RETURNING *;
         `, [user_id, gym_id]);
 
@@ -1527,6 +1468,7 @@ case 25:
         res.status(500).send("サーバーエラーが発生しました");
       }
       break;
+
 
     // 無効なIDが送られてきたとき
     default:

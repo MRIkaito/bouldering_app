@@ -116,4 +116,40 @@ class BoulLogTweet {
   List<BoulLogTweet> parseBoulLogTweetList(List<dynamic> jsonList) {
     return jsonList.map((json) => BoulLogTweet.fromJson(json)).toList();
   }
+
+  /// ■ メソッド
+  /// - 状態変更を反映するメソッド
+  ///
+  /// 引数
+  /// - 各プロパティ
+  ///
+  /// 返り値
+  /// - もらった引数を反映した状態
+  BoulLogTweet copyWith({
+    int? tweetId,
+    String? tweetContents,
+    DateTime? visitedDate,
+    DateTime? tweetedDate,
+    int? likedCount,
+    String? movieUrl,
+    String? userId,
+    String? userName,
+    int? gymId,
+    String? gymName,
+    String? prefecture,
+  }) {
+    return BoulLogTweet(
+      tweetId: tweetId ?? this.tweetId,
+      tweetContents: tweetContents ?? this.tweetContents,
+      visitedDate: visitedDate ?? this.visitedDate,
+      tweetedDate: tweetedDate ?? this.tweetedDate,
+      likedCount: likedCount ?? this.likedCount,
+      movieUrl: movieUrl ?? this.movieUrl,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      gymId: gymId ?? this.gymId,
+      gymName: gymName ?? this.gymName,
+      prefecture: prefecture ?? this.prefecture,
+    );
+  }
 }

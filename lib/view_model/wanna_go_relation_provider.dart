@@ -69,25 +69,40 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
 
         final List<GymInfo> registeredGymCards = jsonData
             .map((gymCard) => GymInfo(
-                  gymId: int.tryParse(gymCard['gym_id']) ?? 0,
+                  gymId: gymCard['gym_id'] is int
+                      ? gymCard['gym_id']
+                      : int.tryParse(gymCard['gym_id'].toString()) ?? 0,
                   gymName: gymCard['gym_name'] ?? '',
                   hpLink: gymCard['hp_link'] ?? '',
                   prefecture: gymCard['prefecture'] ?? '',
                   city: gymCard['city'] ?? '',
                   addressLine: gymCard['address_line'] ?? '',
-                  latitude:
-                      double.tryParse(gymCard['latitude'].toString()) ?? 0.0,
-                  longitude:
-                      double.tryParse(gymCard['longitude'].toString()) ?? 0.0,
+                  latitude: gymCard['latitude'] is double
+                      ? gymCard['latitude']
+                      : double.tryParse(gymCard['latitude'].toString()) ?? 0.0,
+                  longitude: gymCard['longitude'] is double
+                      ? gymCard['longitude']
+                      : double.tryParse(gymCard['longitude'].toString()) ?? 0.0,
                   telNo: gymCard['tel_no'] ?? '',
                   fee: gymCard['fee'] ?? '',
-                  minimumFee: int.tryParse(gymCard['minimum_fee']) ?? 0,
+                  minimumFee: gymCard['minimum_fee'] is int
+                      ? gymCard['minimum_fee']
+                      : int.tryParse(gymCard['minimum_fee'].toString()) ?? 0,
                   equipmentRentalFee: gymCard['equipment_rental_fee'] ?? '',
-                  ikitaiCount: int.tryParse(gymCard['ikitai_count']) ?? 0,
-                  boulCount: int.tryParse(gymCard['boul_count']) ?? 0,
-                  isBoulderingGym: gymCard['is_bouldering_gym'] == 'true',
-                  isLeadGym: gymCard['is_lead_gym'] == 'true',
-                  isSpeedGym: gymCard['is_speed_gym'] == 'true',
+                  ikitaiCount: gymCard['ikitai_count'] is int
+                      ? gymCard['ikitai_count']
+                      : int.tryParse(gymCard['ikitai_count'].toString()) ?? 0,
+                  boulCount: gymCard['boul_count'] is int
+                      ? gymCard['boul_count']
+                      : int.tryParse(gymCard['boul_count'].toString()) ?? 0,
+                  isBoulderingGym:
+                      gymCard['is_bouldering_gym'].toString().toLowerCase() ==
+                          'true',
+                  isLeadGym:
+                      gymCard['is_lead_gym'].toString().toLowerCase() == 'true',
+                  isSpeedGym:
+                      gymCard['is_speed_gym'].toString().toLowerCase() ==
+                          'true',
                   sunOpen: gymCard['sun_open'] ?? '-',
                   sunClose: gymCard['sun_close'] ?? '-',
                   monOpen: gymCard['mon_open'] ?? '-',
@@ -105,23 +120,34 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
                 ))
             .toList();
 
-        final Map<int, GymInfo> registeredGymMap = {
-          for (var registeredGymCard in registeredGymCards)
-            registeredGymCard.gymId: registeredGymCard
-        };
+        // ✅ `copyWith()` を利用して `state` を更新する
+        state = Map.from(state)
+          ..addAll({
+            for (var registeredGymCard in registeredGymCards)
+              registeredGymCard.gymId: registeredGymCard.copyWith()
+          });
 
-        state.addAll(registeredGymMap);
+        print("🟢 [DEBUG] 更新後の gymCards: ${state}");
+        print("🟢 [DEBUG] gymCards.keys: ${state.keys}");
+        print("🟢 [DEBUG] gymCards.values.toList(): ${state.values.toList()}");
 
-        // イキタイジム情報を保持
-        // state = [...state, ...newGymCards];
-        print("[DEBUG] Gym cards fetched. Total count: ${state.length}");
+        // final Map<int, GymInfo> registeredGymMap = {
+        //   for (var registeredGymCard in registeredGymCards)
+        //     registeredGymCard.gymId: registeredGymCard
+        // };
+
+        // state.addAll(registeredGymMap);
+
+        // // イキタイジム情報を保持
+        // // state = [...state, ...newGymCards];
+        // print("[DEBUG] Gym cards fetched. Total count: ${state.length}");
       } else {
         print(
             "[ERROR] Failed to fetch gym cards. Status: ${response.statusCode}");
         print("[ERROR] Response body: ${response.body}");
       }
     } catch (error) {
-      //
+      print("❌ [ERROR] Exception in fetchWannaGoGymCards(): $error");
     } finally {
       _isGymCardLoading = false;
     }

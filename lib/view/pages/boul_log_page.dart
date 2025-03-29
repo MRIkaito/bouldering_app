@@ -216,210 +216,37 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 import 'dart:core';
-import 'package:bouldering_app/view_model/favorite_user_tweets_provider.dart';
+import 'package:bouldering_app/view/components/favorite_tweets_section.dart';
+import 'package:bouldering_app/view/components/general_tweets_section.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view/components/switcher_tab.dart';
-import 'package:bouldering_app/view_model/user_provider.dart';
-import 'package:bouldering_app/view_model/auth_provider.dart';
-import 'package:bouldering_app/view_model/general_tweets_provider.dart';
-
-class BoulLogPage extends ConsumerStatefulWidget {
-  const BoulLogPage({super.key});
-
-  @override
-  BoulLogPageState createState() => BoulLogPageState();
-}
 
 /// ■ クラス
 /// - View
 /// - ボル活ページを表示する
-class BoulLogPageState extends ConsumerState<BoulLogPage> {
-  /* ボル活ページ */
-  // ボル活ページのスクロールを監視するコントローラ
-  final ScrollController _generalTweetsScrollController = ScrollController();
-
-  /* お気に入りユーザ */
-  // お気に入りユーザページのスクロールを監視するコントローラ
-  final ScrollController _favoriteTweetsScrollController = ScrollController();
-
-  // 初期化
-  @override
-  void initState() {
-    super.initState();
-
-    //　スクロール発生時、_onScroll()を実行するリスナーを追加
-    _generalTweetsScrollController.addListener(_onGeneralTweetsScroll);
-    _favoriteTweetsScrollController.addListener(_onFavoriteUserTweetsScroll);
-  }
-
-  void _onGeneralTweetsScroll() {
-    if (_generalTweetsScrollController.position.pixels >
-        _generalTweetsScrollController.position.maxScrollExtent - 100) {
-      ref.read(generalTweetsProvider.notifier).loadMore();
-    }
-  }
-
-  void _onFavoriteUserTweetsScroll() {
-    if (_favoriteTweetsScrollController.position.pixels >
-        _favoriteTweetsScrollController.position.maxScrollExtent - 100) {
-      ref.read(favoriteUserTweetsProvider.notifier).loadMore();
-    }
-  }
+class BoulLogPage extends StatelessWidget {
+  const BoulLogPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ログイン状態を監視
-    final isLoggedIn = ref.watch(authProvider);
-    // ユーザー情報を取得
-    final userId = ref.watch(userProvider)?.userId;
-
-    // デバッグ
-    print("isLoggedIn: $isLoggedIn");
-    print("userId: $userId");
-
-    // 総合ツイート
-    // final generalTweets = ref.watch(generalTweetsProvider);
-    final generalTweetsState = ref.watch(generalTweetsProvider);
-    final generalTweets = generalTweetsState.generalTweets;
-    final _hasMoreGeneralTweets = generalTweetsState.hasMore;
-
-    // お気に入りユーザーツイート
-
-    final favoriteUserTweetsState = ref.watch(favoriteUserTweetsProvider);
-    final favoriteUserTweets = favoriteUserTweetsState.favoriteUserTweets;
-    final _hasMoreFavoriteUserTweets = favoriteUserTweetsState.hasMore;
-
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 2,
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: [
               // タブバー
-              const SwitcherTab(leftTabName: "みんなのボル活", rightTabName: "お気に入り"),
+              SwitcherTab(leftTabName: "みんなのボル活", rightTabName: "お気に入り"),
 
               // タブの中身
               Expanded(
                 child: TabBarView(
                   children: [
                     // (タブ1) みんなのボル活
-                    ListView.builder(
-                      controller: _generalTweetsScrollController,
-                      itemCount: generalTweets.length +
-                          (_hasMoreGeneralTweets ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == generalTweets.length) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-
-                        final generalTweet = generalTweets[index];
-
-                        return BoulLog(
-                          userName: generalTweet.userName,
-                          visitedDate: generalTweet.visitedDate
-                              .toLocal()
-                              .toIso8601String()
-                              .split('T')[0],
-                          // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
-                          gymName: generalTweet.gymName,
-                          prefecture: generalTweet.prefecture,
-                          tweetContents: generalTweet.tweetContents,
-                        );
-                      },
-                    ),
+                    GeneralTweetsSection(),
 
                     // (タブ2) お気に入りユーザーのツイート
-                    isLoggedIn
-                        ? ListView.builder(
-                            controller: _favoriteTweetsScrollController,
-                            itemCount: favoriteUserTweets.length +
-                                (_hasMoreFavoriteUserTweets ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == favoriteUserTweets.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Center(
-                                      child: CircularProgressIndicator()),
-                                );
-                              }
-
-                              final favoriteUserTweet =
-                                  favoriteUserTweets[index];
-
-                              return BoulLog(
-                                userName: favoriteUserTweet.userName,
-                                visitedDate: favoriteUserTweet.visitedDate
-                                    .toLocal()
-                                    .toIso8601String()
-                                    .split('T')[0],
-                                // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
-                                gymName: favoriteUserTweet.gymName,
-                                prefecture: favoriteUserTweet.prefecture,
-                                tweetContents: favoriteUserTweet.tweetContents,
-                              );
-                            },
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 32),
-                              Center(
-                                child: SizedBox(
-                                  width: 72,
-                                  height: 72,
-                                  child: SvgPicture.asset(
-                                      'lib/view/assets/app_main_icon.svg'),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              const Center(
-                                child: Text(
-                                  'イワノボリタイに\n登録しよう',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Color(0xFF0056FF),
-                                    fontSize: 32,
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.2,
-                                    letterSpacing: -0.50,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'ログインしてユーザーを\nお気に入り登録しよう!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.4,
-                                  letterSpacing: -0.50,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'お気に入り登録したユーザーの\nツイートを見ることができます！',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.4,
-                                  letterSpacing: -0.50,
-                                ),
-                              ),
-                            ],
-                          ),
+                    FavoriteTweetsSection(),
                   ],
                 ),
               ),

@@ -48,7 +48,7 @@ class GimCard extends StatelessWidget {
                 ),
                 const TextSpan(text: ' '), // スペースを追加
                 TextSpan(
-                  text: '[${gymPrefecture}]',
+                  text: '[$gymPrefecture]',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.grey,

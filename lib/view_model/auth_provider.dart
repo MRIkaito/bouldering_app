@@ -1,5 +1,7 @@
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/my_tweets_provider.dart';
 import 'package:bouldering_app/view_model/utility/show_popup.dart';
+import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,8 +16,8 @@ class AuthNotifier extends StateNotifier<bool> {
   /// - 次に、checkLoginStatus()で、ログイン状態を確認する
   ///
   /// 引数：
-  /// - [userProviderRef] ユーザー情報のプロバイダの参照情報
-  AuthNotifier(this.userProviderRef) : super(false) {
+  /// - [ref] ユーザー情報のプロバイダの参照情報
+  AuthNotifier(this.ref) : super(false) {
     _checkLoginStatus();
   }
 
@@ -51,7 +53,7 @@ class AuthNotifier extends StateNotifier<bool> {
   /// ■ プロパティ
   /// - userProvider
   /// - ユーザー情報を参照する
-  final Ref userProviderRef;
+  final Ref ref;
 
   /// ■ メソッド
   /// - ログイン状態にあるかを確認する
@@ -77,14 +79,23 @@ class AuthNotifier extends StateNotifier<bool> {
           email: email, password: password);
 
       // ユーザー情報取得
-      await userProviderRef
+      await ref
           .read(userProvider.notifier)
           .fetchUserData(userCredential.user!.uid); // ユーザー情報を必ず取得する
+
+      // ツイート情報取得
+      await ref
+          .read(myTweetsProvider.notifier)
+          .fetchTweets(userCredential.user!.uid); // ツイート情報を最初に取得しておく
+
+      // イキタイジム情報取得
+      await ref
+          .read(wannaGoRelationProvider.notifier)
+          .fetchWannaGoGymCards(userCredential.user!.uid); // イキタイジム情報を最初に取得しておく
 
       // ログイン状態(true)に変更
       state = true;
 
-      // ログインページに遷移
       if (mounted) {
         context.push("/Unlogined/LoginOrSignUp/Logined");
       }
@@ -122,7 +133,7 @@ class AuthNotifier extends StateNotifier<bool> {
       final userCredential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       // ユーザー新規登録(登録:true/登録失敗:false)
-      final isSignedUp = await userProviderRef
+      final isSignedUp = await ref
           .read(userProvider.notifier)
           .insertNewUserData(userCredential.user!.uid, email);
       // ログインされていなければ新規登録画面でエラー表示(終了)
@@ -131,7 +142,7 @@ class AuthNotifier extends StateNotifier<bool> {
         return;
       }
       // ユーザー情報取得
-      await userProviderRef
+      await ref
           .read(userProvider.notifier)
           .fetchUserData(userCredential.user!.uid);
       // ログイン状態(true)にする
@@ -178,7 +189,7 @@ class AuthNotifier extends StateNotifier<bool> {
       // 状態をログアウトに変更
       state = false;
       // 取得していたユーザー情報(状態)をクリア
-      userProviderRef.read(userProvider.notifier).clearUserData();
+      ref.read(userProvider.notifier).clearUserData();
     } catch (e) {
       throw Exception("ログアウトに失敗しました：\$e");
     }
@@ -226,7 +237,7 @@ class AuthNotifier extends StateNotifier<bool> {
       state = false;
 
       // 取得していたユーザー情報(状態)をクリア
-      userProviderRef.read(userProvider.notifier).clearUserData();
+      ref.read(userProvider.notifier).clearUserData();
 
       resultMessage["result"] = true;
       resultMessage["message"] = "アカウントを削除しました";

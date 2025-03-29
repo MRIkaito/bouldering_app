@@ -1,6 +1,5 @@
 import 'package:bouldering_app/model/boulder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -407,17 +406,17 @@ final userProvider = StateNotifierProvider<UserNotifier, Boulder?>((ref) {
 
 /// ■ プロバイダ
 /// - 非同期表示用のプロバイダ
-final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
-  await Future.delayed(const Duration(seconds: 2));
-  final userNotifier = ref.read(userProvider.notifier);
-  final userState = ref.watch(userProvider);
-  final userId = FirebaseAuth.instance.currentUser?.uid;
+// final asyncUserProvider = FutureProvider<Boulder?>((ref) async {
+//   await Future.delayed(const Duration(seconds: 2));
+//   final userNotifier = ref.read(userProvider.notifier);
+//   final userState = ref.watch(userProvider);
+//   final userId = FirebaseAuth.instance.currentUser?.uid;
 
-  // user(状態)を取得できておらず，またuserIdは取得できているときに
-  // 改めてuser(状態)を取得する
-  if ((userState == null) && (userId != null)) {
-    userNotifier.fetchUserData(userId);
-  }
+//   // user(状態)を取得できておらず，またuserIdは取得できているときに
+//   // 改めてuser(状態)を取得する
+//   if ((userState == null) && (userId != null)) {
+//     userNotifier.fetchUserData(userId);
+//   }
 
-  return ref.watch(userProvider);
-});
+//   return ref.watch(userProvider);
+// });

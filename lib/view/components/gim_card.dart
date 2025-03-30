@@ -100,6 +100,8 @@ class GimCard extends StatelessWidget {
                                   );
                                 },
                                 errorBuilder: (context, error, stackTrace) {
+                                  debugPrint(
+                                      "❌ [GimCard] Image load failed. URL: $photoUrl");
                                   return Container(
                                     width: 132,
                                     height: 100,
@@ -115,7 +117,7 @@ class GimCard extends StatelessWidget {
                                             fontSize: 14),
                                       ),
                                     ),
-                                  ); // エラー時も「写真なし」を表示
+                                  );
                                 },
                               ),
                             ),

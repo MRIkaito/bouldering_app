@@ -19,6 +19,23 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
   bool get hasMore => _hasMore;
 
   /// ■ メソッド
+  /// 自身の保持しているツイートを破棄する
+  ///
+  /// 引数
+  /// - なし
+  ///
+  /// 返り値
+  /// - なし
+  ///
+  /// 備考
+  /// - リフレッシュ時に保持しているツイート情報をすべて破棄する処理として実装
+  /// - fetchTweetsに状態通知の処理が既に実装されているため、当処理では状態通知(=copyWith)不要
+  void disposeMyTweets() {
+    _hasMore = true;
+    state = [];
+  }
+
+  /// ■ メソッド
   /// 自身のツイートを取得する関数
   ///
   /// 引数
@@ -89,7 +106,7 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
           print("🟡 [DEBUG] No new tweets found.");
         }
 
-        /// ✅ `copyWith` を使って `state` を更新
+        /// ✅ copyWith を使って state を更新
         state = List.from(state)
           ..addAll(newTweets.map((tweet) => tweet.copyWith()));
 
@@ -98,7 +115,8 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
         } else {
           print(
               "🟡 [DEBUG] Before updating state, tweet count: ${state.length}");
-          state = [...state, ...newTweets];
+          // TODO：下記の実装は不要であると思うので確認する
+          // state = [...state, ...newTweets];
           print(
               "🟢 [DEBUG] After updating state, tweet count: ${state.length}");
         }

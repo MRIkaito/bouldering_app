@@ -35,6 +35,23 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
   bool get isGymCardLoadfing => _isGymCardLoading;
 
   /// ■ メソッド
+  /// - 自分が保持しているイキタイジムをすべて破棄する
+  ///
+  /// 引数
+  /// - なし
+  ///
+  /// 返り値
+  /// - なし
+  ///
+  /// 備考
+  /// - リフレッシュ時に保持しているイキタイジム情報をすべて破棄する処理として実装
+  /// - fetchWannaGoGymCardsに状態通知の処理が実装されているため、問う処理では
+  /// 状態通知(= copyWith)は不要
+  void disposeWannaGoGymCards() {
+    state = {};
+  }
+
+  /// ■ メソッド
   /// - 自分がイキタイ登録しているジムをすべて取得する関数
   ///
   /// 引数
@@ -120,7 +137,7 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
                 ))
             .toList();
 
-        // ✅ `copyWith()` を利用して `state` を更新する
+        // ✅ copyWith() を利用して state を更新する
         state = Map.from(state)
           ..addAll({
             for (var registeredGymCard in registeredGymCards)

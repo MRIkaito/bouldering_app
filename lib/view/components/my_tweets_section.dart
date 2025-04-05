@@ -29,7 +29,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
 
   /// ■ メソッド
   /// - ツイートを取得する処理
-  Future<void> fetchTweets() async {
+  Future<void> _fetchTweets() async {
     // ユーザーID
     final userId = ref.read(userProvider)?.userId;
     print("🟡 [DEBUG] user_id before request: $userId");
@@ -49,8 +49,20 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 10) {
       print("🟢 [DEBUG] トリガー条件を満たしたのでfetchTweetsを呼びます！");
-      fetchTweets();
+      _fetchTweets();
     }
+  }
+
+  // 1. リフレッシュ開始
+  Future<void> _refetchTweets() async {
+    // 2. ツイート取得状態を初期状態(false)に戻す
+    // 3. 今持っているツイートをすべて破棄する
+    ref.read(myTweetsProvider.notifier).disposeMyTweets();
+
+    // 4. 新しく取得しなおす
+    await _fetchTweets();
+
+    return;
   }
 
   @override
@@ -64,30 +76,35 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
         ? const Center(child: CircularProgressIndicator())
         :
         // 自分のツイート
-        ListView.builder(
-            key: const PageStorageKey<String>('my_tweets_section'),
-            controller: _scrollController,
-            itemCount: tweets.length + (hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == tweets.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
+        RefreshIndicator(
+            onRefresh: _refetchTweets,
+            child: ListView.builder(
+              key: const PageStorageKey<String>('my_tweets_section'),
+              controller: _scrollController,
+              itemCount: tweets.length + (hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == tweets.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final tweet = tweets[index];
+
+                return BoulLog(
+                  userName: ref.read(userProvider)?.userName ?? ' 取得できませんでした ',
+                  visitedDate: tweet.visitedDate
+                      .toLocal()
+                      .toIso8601String()
+                      .split('T')[0],
+                  // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                  gymName: tweet.gymName,
+                  prefecture: tweet.prefecture,
+                  tweetContents: tweet.tweetContents,
                 );
-              }
-
-              final tweet = tweets[index];
-
-              return BoulLog(
-                userName: ref.read(userProvider)?.userName ?? ' 取得できませんでした ',
-                visitedDate:
-                    tweet.visitedDate.toLocal().toIso8601String().split('T')[0],
-                // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
-                gymName: tweet.gymName,
-                prefecture: tweet.prefecture,
-                tweetContents: tweet.tweetContents,
-              );
-            },
+              },
+            ),
           );
   }
 }

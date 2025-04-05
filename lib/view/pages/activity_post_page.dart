@@ -36,17 +36,21 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
   bool fromFacilityInfoPage = false; // 初期値はfalse
 
-  // 初期化
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     fromFacilityInfoPage = extra?['fromPager1'] ?? false;
     // このfromFacilityInfoPage がtrueの時に、投稿ボタンを押下して確認できればpopする処理を追加する
     // awaitなどで投稿がDBに登録されるのを待って、投稿されたら、pop()するという処理にする
 
-    // なお、fromFacilityInfoPage以外のページからの遷移の場合は最後にpopしなくていい
+    // なお、fromFacilityInfoPage以外のページからの遷移の場合は最後にpopしなくていいfalse;
   }
 
   /// ■ メソッド

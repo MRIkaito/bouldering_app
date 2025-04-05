@@ -80,12 +80,14 @@ class BoulLogTweet {
 
   // JSON形式からBoulLogTweetクラス(Map形式)への変換
   factory BoulLogTweet.fromJson(Map<String, dynamic> json) {
+    print(
+        "🔍 visited_date raw: ${json['visited_date']} | type: ${json['visited_date'].runtimeType}");
     return BoulLogTweet(
       tweetId: json['tweet_id'] ?? '',
       userId: json['user_id'] ?? '',
       userName: json['user_name'] ?? '',
-      visitedDate: json['visited_date'] ?? '1990-01-01',
-      tweetedDate: json['tweeted_date'] ?? '1990-01-01',
+      visitedDate: DateTime.parse(json['visited_date'] ?? '1990-01-01'),
+      tweetedDate: DateTime.parse(json['tweeted_date'] ?? '1990-01-01'),
       gymId: json['gym_id'] ?? 0,
       tweetContents: json['tweet_contents'] ?? '',
       likedCount: json['liked_count'] ?? 0,

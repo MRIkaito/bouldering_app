@@ -11,6 +11,49 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - 状態をnullに初期化して、未ログイン状態にする
   UserNotifier() : super(null);
 
+  /// ■ メソッド
+  /// - ユーザーアイコンURLを更新する
+  /// - userIdを取得できていないと、更新失敗(false)
+  /// - 更新前・後のURLが同じ場合は、DBアクセス無しで終了
+  ///
+  /// 引数
+  ///
+  /// 返り値
+  /// - 更新成功：true / 更新失敗：false
+  Future<bool> updateUserIconUrl(String? setUserIconUrl, String userId) async {
+    // userIdを正常に取得できなかった時、userIdをfalseにして終了
+    if (userId == "") {
+      return false;
+    }
+
+    // setUserIconUrlがnullのケースは画像が渡されなかったケースのため、処理せず終了
+    if (setUserIconUrl == null) {
+      return false;
+    }
+
+    int requestId = 19;
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': requestId.toString(),
+      'user_id': userId.toString(),
+      'user_icon_url': setUserIconUrl,
+    });
+
+    try {
+      final response = await http.get(url);
+
+      if ((response.statusCode == 200) && (state != null)) {
+        state = state!.copyWith(userIconUrl: setUserIconUrl); // ユーザアイコンURLを状態更新
+        return true;
+      } else {
+        return false; // ユーザーアイコンURLの更新失敗として終了
+      }
+    } catch (error) {
+      throw Exception("ユーザー名変更に失敗しました: ${error}");
+    }
+  }
+
   /// ■ メソッド：fetchUserData
   /// - ユーザーデータを取得する
   ///

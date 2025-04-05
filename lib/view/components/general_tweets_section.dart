@@ -59,7 +59,6 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
               .toLocal()
               .toIso8601String()
               .split('T')[0],
-          // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
           gymName: generalTweet.gymName,
           prefecture: generalTweet.prefecture,
           tweetContents: generalTweet.tweetContents,

@@ -15,14 +15,15 @@ class FavoriteUserTweetsState {
 
 class FavoriteUserTweetsNotifier
     extends StateNotifier<FavoriteUserTweetsState> {
+  // プロパティ
+  bool _isLoading = false;
+  final String userId;
+
   // コンストラクタ
-  FavoriteUserTweetsNotifier()
+  FavoriteUserTweetsNotifier(this.userId)
       : super(FavoriteUserTweetsState(favoriteUserTweets: [], hasMore: true)) {
     _fetchMoreFavoriteUserTweets();
   }
-
-  // プロパティ
-  bool _isLoading = false;
 
   /// ■ メソッド
   /// - お気に入りユーザーのツイートを取得するメソッド
@@ -38,7 +39,8 @@ class FavoriteUserTweetsNotifier
     final url = Uri.parse(
             'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
         .replace(queryParameters: {
-      'request_id': '2', // TODO：別のユーザーID（後で設定）
+      'request_id': '6',
+      'user_id': userId,
       'limit': '20',
       if (cursor != null) 'cursor': cursor,
     });
@@ -80,6 +82,7 @@ class FavoriteUserTweetsNotifier
           hasMore: newFavoriteUserTweetsList.length >= 20,
         );
       } else {
+        print("[Debug] ${response.statusCode}");
         throw Exception("ツイート取得に失敗しました");
       }
     } catch (error) {
@@ -98,7 +101,13 @@ class FavoriteUserTweetsNotifier
 }
 
 // StateNotifierProviderの定義
-final favoriteUserTweetsProvider =
-    StateNotifierProvider<FavoriteUserTweetsNotifier, FavoriteUserTweetsState>(
-  (ref) => FavoriteUserTweetsNotifier(),
+final favoriteUserTweetsProvider = StateNotifierProvider.family<
+    FavoriteUserTweetsNotifier, FavoriteUserTweetsState, String>(
+  // ↑ String = userIdの型
+  (ref, userId) => FavoriteUserTweetsNotifier(userId),
 );
+
+// final favoriteUserTweetsProvider =
+//     StateNotifierProvider<FavoriteUserTweetsNotifier, FavoriteUserTweetsState>(
+//   (ref) => FavoriteUserTweetsNotifier(),
+// );

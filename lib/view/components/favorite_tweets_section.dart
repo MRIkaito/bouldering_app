@@ -33,7 +33,9 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
   void _onFavoriteUserTweetsScroll() {
     if (_favoriteTweetsScrollController.position.pixels >
         _favoriteTweetsScrollController.position.maxScrollExtent - 100) {
-      ref.read(favoriteUserTweetsProvider.notifier).loadMore();
+      // ref.read(favoriteUserTweetsProvider.notifier).loadMore();
+      final userId = ref.read(userProvider)!.userId;
+      ref.read(favoriteUserTweetsProvider(userId).notifier).loadMore();
     }
   }
 
@@ -45,8 +47,66 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
     print("isLoggedIn: $isLoggedIn");
     print("userId: $userId");
 
+    if (!isLoggedIn || userId == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 32),
+          Center(
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: SvgPicture.asset('lib/view/assets/app_main_icon.svg'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Center(
+            child: Text(
+              'イワノボリタイに\n登録しよう',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF0056FF),
+                fontSize: 32,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+                letterSpacing: -0.50,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'ログインしてユーザーを\nお気に入り登録しよう!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+              letterSpacing: -0.50,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'お気に入り登録したユーザーの\nツイートを見ることができます！',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+              letterSpacing: -0.50,
+            ),
+          ),
+        ],
+      );
+    }
+
     // お気に入りユーザーツイート
-    final favoriteUserTweetsState = ref.watch(favoriteUserTweetsProvider);
+    final favoriteUserTweetsState =
+        ref.watch(favoriteUserTweetsProvider(userId));
     final favoriteUserTweets = favoriteUserTweetsState.favoriteUserTweets;
     final _hasMoreFavoriteUserTweets = favoriteUserTweetsState.hasMore;
 

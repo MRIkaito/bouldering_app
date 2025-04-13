@@ -1,4 +1,6 @@
+import 'package:bouldering_app/model/gym.dart';
 import 'package:bouldering_app/view/pages/gym_search_page.dart';
+import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,16 +27,22 @@ class ActivityPostPage extends ConsumerStatefulWidget {
 /// - -View
 /// - ボル活(ツイート)を投稿するページの状態を定義したもの
 class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
-  final TextEditingController _textController =
-      TextEditingController(); // ツイート内容
-  DateTime _selectedDate = DateTime.now(); // ジム訪問日
-  final ImagePicker _picker = ImagePicker(); // 画像取得クラス
+  // ツイート内容
+  final TextEditingController _textController = TextEditingController();
+  // ジム訪問日
+  DateTime _selectedDate = DateTime.now();
+  // 画像取得クラス
+  final ImagePicker _picker = ImagePicker();
   File? _mediaFile;
   String? _uploadedFileUrl;
-  final String bucketName =
-      "your-gcs-bucket-name"; // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
-
-  bool fromFacilityInfoPage = false; // 初期値はfalse
+  // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
+  final String bucketName = "your-gcs-bucket-name";
+  // 施設情報ページから遷移してきたかを判別する変数
+  bool fromFacilityInfoPage = false;
+  // 選択されたジム名を保持するState
+  String? selectedGym;
+  // 選択されたジム名を保持するselectedGymのジムID(gymId)
+  int? gymId;
 
   @override
   void initState() {
@@ -47,10 +55,31 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     fromFacilityInfoPage = extra?['fromPager1'] ?? false;
-    // このfromFacilityInfoPage がtrueの時に、投稿ボタンを押下して確認できればpopする処理を追加する
-    // awaitなどで投稿がDBに登録されるのを待って、投稿されたら、pop()するという処理にする
+  }
 
-    // なお、fromFacilityInfoPage以外のページからの遷移の場合は最後にpopしなくていいfalse;
+  /// ■ メソッド
+  /// - ジム名からジムIDを取得する
+  ///
+  /// 引数
+  /// - [selectedGym]選ばれたジム名
+  ///
+  /// 返り値
+  /// - なし
+  void getGymIdFromSelectedGym(String? selectedGym, Map<int, Gym> gymRef) {
+    if (selectedGym == null) {
+      // DO NOTHING
+    } else {
+      // gymRefのGym中のgymNameとselectedGymが一致すれば，その時のkeyをgymIdに代入する
+      for (var entry in gymRef.entries) {
+        if (entry.value.gymName == selectedGym) {
+          gymId = entry.key;
+          print("選択されたジムID：$gymId");
+          break;
+        }
+      }
+    }
+
+    return;
   }
 
   /// ■ メソッド
@@ -105,12 +134,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       });
 
       // GCSへアップロード
-      String? url = await _uploadToGCS(_mediaFile!);
-      if (url != null) {
-        setState(() {
-          _uploadedFileUrl = url;
-        });
-      }
+      // String? url = await _uploadToGCS(_mediaFile!);
+      // if (url != null) {
+      //   setState(() {
+      //     _uploadedFileUrl = url;
+      //   });
+      // }
     }
   }
 
@@ -120,6 +149,8 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// 引数
   /// - [context] ウィジェットツリーの情報
   Future<void> _selectDate(BuildContext context) async {
+    final DateTime today = DateTime.now();
+
     // 初期値：当日
     // 選択開始年：2000年
     // 選択終了年：当年
@@ -127,7 +158,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
-      lastDate: DateTime(DateTime.now().year, 12, 31),
+      lastDate: today,
     );
     // nullでない かつ 選択された日が当日以外の日でtrue
     if (picked != null && picked != _selectedDate) {
@@ -151,39 +182,36 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
     int gymId,
     String visitedDate,
     String tweetContents,
-    List<String> photoUrls,
-    List<String> movieUrls,
+    // List<String> photoUrls,
+    // List<String> movieUrls,
   ) async {
     // 送信先URL
     final url = Uri.parse(
-        'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData');
-
-    // リクエスト
-    final Map<String, dynamic> requestBody = {
-      'gym_id': gymId.toString(),
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': '8',
       'user_id': userId.toString(),
       'visited_date': visitedDate,
-      'tweet_content': tweetContents,
-      'photosUrl': photoUrls,
-      'moviesUrl': movieUrls
-    }.map(
-        (key, value) => MapEntry(key, value is List ? value.join(',') : value));
+      'gym_id': gymId.toString(),
+      'tweet_contents': tweetContents,
+      // 'photosUrl': photoUrls,
+      // 'moviesUrl': movieUrls,
+    });
 
     try {
       // HTTP POST
-      final response = await http.post(url,
-          headers: {'content-type': 'application/json'},
-          body: jsonEncode(requestBody));
+      final response = await http.post(
+        url,
+        headers: {'content-type': 'application/json'},
+      );
 
-      // レスポンスを確認
       if (response.statusCode == 200) {
-        print("ここにアップロード成功時のメッセージ");
+        print("アップロード成功");
       } else {
-        // 400/ 500エラー：何らかの問題発生
-        print("ここにエラー発生時のメッセージ");
+        print("エラー:${response.statusCode}");
       }
     } catch (error) {
-      print("例外発生");
+      print("例外発生: $error");
     }
   }
 
@@ -225,43 +253,42 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   @override
   Widget build(BuildContext context) {
     // ジム情報参照
-    // final gymRef = ref.read(gymProvider);
+    final gymRef = ref.read(gymProvider);
     // ユーザー情報を取得して、ログイン状態にあるかを確認
     final userRef = ref.watch(userProvider);
-    // 選択したジム
-    String? selectedGym;
 
     return (userRef?.userId == null)
         // 未ログイン
         ? const Center(child: Text("投稿機能の利用は，ログインユーザーのみ可能です"))
-
         // ログイン状態
         : Scaffold(
             appBar: AppBar(
               title: const Text('ボル活投稿'),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    // 投稿処理
+                  onPressed: () async {
                     print("投稿するボタンが押されました");
-                    // TODO：下記実装予定
-                    /*
-                    _insertBoulLogTweet(
-                      user!.userId,
-                      1, // TODO：現在はリテラルで置いているがここはジム情報取得して代入するようにする
-                      DateFormat('yyyy-MM-DD').format(_selectedDate),
-                      _textController.text,
-                      ["http"], // TODO：写真URLを配列にする実装
-                      ["http"], // TODO：動画URLを配列にする実装
-                    );
-                    */
 
-                    // 上記の投稿部分で、awaitを使ってDB登録されるまで待つ実装をする
-                    if (fromFacilityInfoPage) {
-                      context.pop();
+                    // 投稿処理
+                    getGymIdFromSelectedGym(selectedGym, gymRef);
+                    if (gymId != null) {
+                      await _insertBoulLogTweet(
+                        userRef!.userId,
+                        gymId!,
+                        DateFormat('yyyy-MM-dd').format(_selectedDate),
+                        _textController.text,
+                        // ["http"], // TODO：写真URLを配列にする実装
+                        // ["http"], // TODO：動画URLを配列にする実装
+                      );
+
+                      if (fromFacilityInfoPage) {
+                        // 施設情報ページから遷移してきた場合，popして戻る
+                        context.pop();
+                      } else {
+                        // DO NOTHING
+                      }
                     } else {
-                      // ページ遷移の必要無し
-                      // DO NOTHING
+                      print("ジムを選択してください．");
                     }
                   },
                   child: const Text(
@@ -277,6 +304,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ジム選択フィールド
                   TextField(
                       readOnly: true,
                       decoration: InputDecoration(
@@ -313,7 +341,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            DateFormat('yyyy.MM.dd').format(_selectedDate),
+                            "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
@@ -337,11 +365,22 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // 写真表示部分
+                      _mediaFile != null
+                          ? Image.file(
+                              _mediaFile!,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            )
+                          : const SizedBox.shrink(),
                       // 写真追加ボタン
                       GestureDetector(
                         onTap: () {
                           // TODO：写真を追加する処理を実装する
                           print("写真を追加");
+                          // 写真を選択してアップロード
+                          _pickMedia(true);
                         },
                         child: Container(
                           padding: const EdgeInsets.all(24),
@@ -358,6 +397,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                 style:
                                     TextStyle(color: Colors.grey, fontSize: 12),
                               ),
+                              // if (_mediaFile != null)
+                              //   Image.file(
+                              //     _mediaFile!,
+                              //     width: 100,
+                              //     height: 100,
+                              //     fit: BoxFit.cover,
+                              //   ),
                             ],
                           ),
                         ),

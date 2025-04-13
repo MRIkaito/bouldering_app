@@ -415,7 +415,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
     case 8:
       try {
         // クエリパラメータを取得
-        const {user_id, tweet_contents, visited_date, gym_id} = req.query;
+        const {user_id, visited_date, gym_id, tweet_contents,} = req.query;
 
         // user_idがないケース
         if(!user_id){
@@ -436,7 +436,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
                 tweeted_date,
                 gym_id,
                 tweet_contents,
-                liked_count,
+                liked_counts,
                 movie_url
               )
             VALUES
@@ -457,8 +457,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // 挿入が成功されたかを確認する
           // TO DO：正常時，異常時の処理が適切なのかを確認する
-          if((result.rowCount ?? 0) === 0)  {
-            res.status(201).send("データが正常に挿入されました");
+          if((result.rowCount ?? 0) > 0)  {
+            res.status(200).send("データが正常に挿入されました");
           } else {
             res.status(400).send("データ挿入に失敗しました");
           }

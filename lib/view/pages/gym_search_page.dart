@@ -15,9 +15,9 @@ class GymSearchPage extends ConsumerStatefulWidget {
 /// - ジム選択するページ
 class _GymSearchPageState extends ConsumerState<GymSearchPage> {
   final TextEditingController _controller = TextEditingController();
-  // すべてのジムを格納
+  // すべてのジムを格納する変数
   List<Map<String, String>> allGyms = [];
-  // フィルタリングされたジムを格納
+  // フィルタリングされたジムを格納する変数
   List<Map<String, String>> filterdGyms = [];
 
   // 初期化
@@ -25,23 +25,31 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
   initState() {
     super.initState();
 
-    // 1. すべてのジムを取得する処理
+    // すべてのジムをallGymsに格納
     final gymRef = ref.read(gymProvider);
     final gymsLength = gymRef.length;
     for (int i = 0; i < gymsLength; i++) {
-      Map<String, String> oneGym = {
-        'name': '${gymRef[i]?.gymName}',
-        'location': '${gymRef[i]?.prefecture}${gymRef[i]?.city}'
-      };
-      allGyms.add(oneGym);
+      final gym = gymRef[i];
+      // nullチェック
+      if (gym?.gymName != null &&
+          gym?.prefecture != null &&
+          gym?.city != null) {
+        Map<String, String> oneGym = {
+          'name': '${gymRef[i]?.gymName}',
+          'location': '${gymRef[i]?.prefecture}${gymRef[i]?.city}'
+        };
+        // nullを除いたジムをallGymに追加
+        allGyms.add(oneGym);
+      }
     }
 
-    // 2. 初期状態では、全件のジム情報をfilterdGymsにも取得する
+    // フィルタリングされたジムをfilterdGymsに格納
+    // ※ 最初はすべてのジムを格納
     filterdGyms = List.from(allGyms);
   }
 
   /// ■ メソッド
-  /// - TextFieldに入力した文字で、allGymsのジム情報をフィルタリングして、
+  /// - allGymsのジム情報を，TextFieldに入力した文字でフィルタリングして、
   /// - filterdGymsに格納するメソッド
   ///
   /// 引数
@@ -61,15 +69,15 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
     return Scaffold(
         appBar: AppBar(
             title: const Text("ジム選択", style: TextStyle(color: Colors.black)),
-            backgroundColor: Color(0xFEF7FF)),
+            backgroundColor: const Color(0x00fef7ff)),
         body: Column(
           children: [
-            // 検索ボックス
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
               child: Row(
                 children: [
+                  // 検索ボックス
                   Expanded(
                     child: TextField(
                       controller: _controller,
@@ -83,11 +91,10 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
                         prefixIcon: const Icon(Icons.search),
                       ),
                       onChanged: _filterGyms,
-                      // TODO：下記コメントアウト消去する
-                      // 下記でも同様の処理が行われる
-                      // onChanged: (value) => {_filterGyms(value)}
                     ),
                   ),
+
+                  // クリア
                   TextButton(
                     onPressed: () {
                       _controller.clear();

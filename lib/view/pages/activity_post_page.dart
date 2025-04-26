@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis/storage/v1.dart' as gcs;
 import 'package:googleapis_auth/auth_io.dart';
@@ -27,22 +27,17 @@ class ActivityPostPage extends ConsumerStatefulWidget {
 /// - -View
 /// - ボル活(ツイート)を投稿するページの状態を定義したもの
 class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
-  // ツイート内容
-  final TextEditingController _textController = TextEditingController();
-  // ジム訪問日
-  DateTime _selectedDate = DateTime.now();
-  // 画像取得クラス
-  final ImagePicker _picker = ImagePicker();
-  File? _mediaFile;
+  final TextEditingController _textController =
+      TextEditingController(); // ツイート内容
+  DateTime _selectedDate = DateTime.now(); // ジム訪問日
   String? _uploadedFileUrl;
-  // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
-  final String bucketName = "your-gcs-bucket-name";
-  // 施設情報ページから遷移してきたかを判別する変数
-  bool fromFacilityInfoPage = false;
-  // 選択されたジム名を保持するState
-  String? selectedGym;
-  // 選択されたジム名を保持するselectedGymのジムID(gymId)
-  int? gymId;
+  final String bucketName =
+      "your-gcs-bucket-name"; // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
+  bool fromFacilityInfoPage = false; // 施設情報ページから遷移してきたかを判別する変数
+  String? selectedGym; // 選択されたジム名を保持するState
+  int? gymId; // 選択されたジム名を保持するselectedGymのジムID(gymId)
+
+  List<File> _mediaFiles = [];
 
   @override
   void initState() {
@@ -52,7 +47,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     fromFacilityInfoPage = extra?['fromPager1'] ?? false;
   }
@@ -87,6 +81,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   ///
   /// 引数
   /// - [file] アップロードするファイル
+  ///
+  /// 返り値
+  /// - GoogleCloudStorageのURLを返す
   Future<String?> _uploadToGCS(File file) async {
     final credentials = ServiceAccountCredentials.fromJson(r'''{
       "type": "service_account",
@@ -123,23 +120,41 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   ///
   /// 引数
   /// - [isImage] 画像であるかを判別するフラグ
-  Future<void> _pickMedia(bool isImage) async {
-    final XFile? pickedFile = isImage
-        ? await _picker.pickImage(source: ImageSource.gallery)
-        : await _picker.pickVideo(source: ImageSource.gallery);
+  // Future<void> _pickMedia(bool isImage) async {
+  //   final XFile? pickedFile = isImage
+  //       ? await _picker.pickImage(source: ImageSource.gallery)
+  //       : await _picker.pickVideo(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       _mediaFile = File(pickedFile.path);
+  //     });
+
+  // GCSへアップロード
+  // String? url = await _uploadToGCS(_mediaFile!);
+  // if (url != null) {
+  //   setState(() {
+  //     _uploadedFileUrl = url;
+  //   });
+  // }
+  //   }
+  // }
+
+  Future<void> _pickMultipleImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _mediaFile = File(pickedFile.path);
+        final selectedFiles = result.paths.map((path) => File(path!)).toList();
+        _mediaFiles.addAll(selectedFiles);
+        if (_mediaFiles.length > 5) {
+          _mediaFiles = _mediaFiles.sublist(0, 5); // 5枚の制限
+          // _mediaFiles = result.paths.map((path) => File(path!)).toList();
+        }
       });
-
-      // GCSへアップロード
-      // String? url = await _uploadToGCS(_mediaFile!);
-      // if (url != null) {
-      //   setState(() {
-      //     _uploadedFileUrl = url;
-      //   });
-      // }
     }
   }
 
@@ -214,40 +229,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       print("例外発生: $error");
     }
   }
-
-  /*
-    @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("メディアアップロード")),
-      body: Column(
-        children: [
-          _mediaFile != null
-              ? (_mediaFile!.path.endsWith(".mp4")
-                  ? Text("動画が選択されました")
-                  : Image.file(_mediaFile!))
-              : Text("メディアなし"),
-
-          SizedBox(height: 20),
-
-          ElevatedButton(onPressed: () => _pickMedia(true), child: Text("画像を選択")),
-          ElevatedButton(onPressed: () => _pickMedia(false), child: Text("動画を選択")),
-
-          SizedBox(height: 20),
-
-          _uploadedFileUrl != null
-              ? Column(
-                  children: [
-                    Text("アップロード完了"),
-                    SelectableText(_uploadedFileUrl!),
-                  ],
-                )
-              : Container(),
-        ],
-      ),
-    );
-  }
-  */
 
   /// ■ Widget build
   @override
@@ -362,25 +343,73 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   ),
 
                   // カウンターと写真追加ボタン
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 写真表示部分
-                      _mediaFile != null
-                          ? Image.file(
-                              _mediaFile!,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            )
-                          : const SizedBox.shrink(),
+                      // 写真一覧
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          // children: _mediaFiles
+                          //     .map((file) => Padding(
+                          //           padding: const EdgeInsets.only(right: 8.0),
+                          //           child: Image.file(file,
+                          //               width: 100,
+                          //               height: 100,
+                          //               fit: BoxFit.cover),
+                          //         ))
+                          //     .toList(),
+
+                          // 追加
+                          children: [
+                            ..._mediaFiles.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final file = entry.value;
+                              return Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Image.file(file,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover),
+                                  ),
+
+                                  // ✗ボタン
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _mediaFiles.removeAt(index);
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close,
+                                            size: 16, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ],
+                          // 追加
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // 写真追加ボタン
                       GestureDetector(
                         onTap: () {
-                          // TODO：写真を追加する処理を実装する
-                          print("写真を追加");
                           // 写真を選択してアップロード
-                          _pickMedia(true);
+                          _pickMultipleImages();
                         },
                         child: Container(
                           padding: const EdgeInsets.all(24),
@@ -397,13 +426,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                 style:
                                     TextStyle(color: Colors.grey, fontSize: 12),
                               ),
-                              // if (_mediaFile != null)
-                              //   Image.file(
-                              //     _mediaFile!,
-                              //     width: 100,
-                              //     height: 100,
-                              //     fit: BoxFit.cover,
-                              //   ),
                             ],
                           ),
                         ),

@@ -12,6 +12,7 @@ import 'package:googleapis/storage/v1.dart' as gcs;
 import 'package:googleapis_auth/auth_io.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// ■ クラス
 /// - View
@@ -30,14 +31,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   final TextEditingController _textController =
       TextEditingController(); // ツイート内容
   DateTime _selectedDate = DateTime.now(); // ジム訪問日
-  String? _uploadedFileUrl;
-  final String bucketName =
-      "your-gcs-bucket-name"; // TODO：GCSのバケット名を指定(Google Cloud、の設定に合わせて変更する)
-  bool fromFacilityInfoPage = false; // 施設情報ページから遷移してきたかを判別する変数
   String? selectedGym; // 選択されたジム名を保持するState
   int? gymId; // 選択されたジム名を保持するselectedGymのジムID(gymId)
+  List<File> _mediaFiles = []; // アップロードする写真・動画を保持する変数
+  List<String> _uploadedUrls = []; // アップロード完了した写真・動画のURLを保持する変数(リスト)
+  FilePickerResult? result;
 
-  List<File> _mediaFiles = [];
+  bool fromFacilityInfoPage = false; // 施設情報ページから遷移してきたかを判別する変数
 
   @override
   void initState() {
@@ -83,76 +83,48 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// - [file] アップロードするファイル
   ///
   /// 返り値
-  /// - GoogleCloudStorageのURLを返す
-  Future<String?> _uploadToGCS(File file) async {
-    final credentials = ServiceAccountCredentials.fromJson(r'''{
-      "type": "service_account",
-      "project_id": "your-project-id",
-      "private_key_id": "your-private-key-id",
-      "private_key": "your-private-key",
-      "client_email": "your-client-email",
-      "client_id": "your-client-id",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "your-cert-url"
-    }''');
-
+  /// - GoogleCloudStorageに保存した写真の公開URLを返す
+  Future<String?> uploadFileToGCS(File file) async {
+    // GCS保存先情報
+    final jsonString =
+        await rootBundle.loadString('assets/keys/service_account.json');
+    final credentials =
+        ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
     final client = await clientViaServiceAccount(
         credentials, [gcs.StorageApi.devstorageFullControlScope]);
     final storage = gcs.StorageApi(client);
-
+    const bucketName = "boulderingapp_tweets_media";
+    final fileName =
+        "${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
     final media = gcs.Media(file.openRead(), file.lengthSync());
-    final fileName = file.path.split('/').last;
 
+    // GCS保存処理
     await storage.objects.insert(
       gcs.Object()..name = fileName,
       bucketName,
       uploadMedia: media,
     );
-
     client.close();
-    return "https://storage.googleapis.com/$bucketName/$fileName"; // GCSの公開URL
+
+    // GCSの公開URL
+    return "https://storage.googleapis.com/$bucketName/$fileName";
   }
 
   /// ■ メソッド
-  /// - 画像・動画取得して、GCSヘアップロードする処理
-  ///
-  /// 引数
-  /// - [isImage] 画像であるかを判別するフラグ
-  // Future<void> _pickMedia(bool isImage) async {
-  //   final XFile? pickedFile = isImage
-  //       ? await _picker.pickImage(source: ImageSource.gallery)
-  //       : await _picker.pickVideo(source: ImageSource.gallery);
-
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       _mediaFile = File(pickedFile.path);
-  //     });
-
-  // GCSへアップロード
-  // String? url = await _uploadToGCS(_mediaFile!);
-  // if (url != null) {
-  //   setState(() {
-  //     _uploadedFileUrl = url;
-  //   });
-  // }
-  //   }
-  // }
-
+  /// - GCS保存する写真を選択する
   Future<void> _pickMultipleImages() async {
-    final result = await FilePicker.platform.pickFiles(
+    result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: true,
     );
 
-    if (result != null && result.files.isNotEmpty) {
+    if (result != null && result!.files.isNotEmpty) {
       setState(() {
-        final selectedFiles = result.paths.map((path) => File(path!)).toList();
+        final selectedFiles = result!.paths.map((path) => File(path!)).toList();
+
         _mediaFiles.addAll(selectedFiles);
         if (_mediaFiles.length > 5) {
           _mediaFiles = _mediaFiles.sublist(0, 5); // 5枚の制限
-          // _mediaFiles = result.paths.map((path) => File(path!)).toList();
         }
       });
     }
@@ -192,13 +164,11 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// - [visitedDate] 訪問した日
   /// - [photoUrls] 写真のURL
   /// - [movieUrls] 動画のURL
-  Future<void> _insertBoulLogTweet(
+  Future<int?> _insertBoulLogTweet(
     String userId,
     int gymId,
     String visitedDate,
     String tweetContents,
-    // List<String> photoUrls,
-    // List<String> movieUrls,
   ) async {
     // 送信先URL
     final url = Uri.parse(
@@ -209,8 +179,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       'visited_date': visitedDate,
       'gym_id': gymId.toString(),
       'tweet_contents': tweetContents,
-      // 'photosUrl': photoUrls,
-      // 'moviesUrl': movieUrls,
     });
 
     try {
@@ -221,9 +189,51 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       );
 
       if (response.statusCode == 200) {
-        print("アップロード成功");
+        final responseBody = jsonDecode(response.body);
+        final tweetId = responseBody['tweet_id'];
+        return tweetId;
       } else {
         print("エラー:${response.statusCode}");
+      }
+    } catch (error) {
+      print("例外発生: $error");
+      return null;
+    }
+
+    return null;
+  }
+
+  /// ■ メソッド
+  /// ツイートに紐づいた写真・動画をDBに保存する処理
+  ///
+  /// 引数
+  /// - [tweetId] ツイートID
+  /// - [mediaUrl] 写真・動画のURL
+  /// - [mediaType] 'photo' または 'video'
+  Future<void> _insertBoulLogTweetMedia(
+    int tweetId,
+    String mediaUrl,
+    String mediaType,
+  ) async {
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': '7',
+      'tweet_id': tweetId.toString(),
+      'media_url': mediaUrl,
+      'media_type': mediaType,
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'content-type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print("メディア登録成功: $mediaUrl");
+      } else {
+        print("メディア登録失敗: ${response.statusCode}");
       }
     } catch (error) {
       print("例外発生: $error");
@@ -250,20 +260,47 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   onPressed: () async {
                     print("投稿するボタンが押されました");
 
-                    // 投稿処理
+                    /* ジムID取得 */
                     getGymIdFromSelectedGym(selectedGym, gymRef);
+
                     if (gymId != null) {
-                      await _insertBoulLogTweet(
+                      /* ツイート内容のDB登録処理 */
+                      final int? tweetId = await _insertBoulLogTweet(
                         userRef!.userId,
                         gymId!,
                         DateFormat('yyyy-MM-dd').format(_selectedDate),
                         _textController.text,
-                        // ["http"], // TODO：写真URLを配列にする実装
-                        // ["http"], // TODO：動画URLを配列にする実装
                       );
 
+                      /* メディアをGCSへアップロードする/ URLをDB保存する */
+                      _uploadedUrls.clear(); // リセット
+                      for (final file in _mediaFiles) {
+                        // GCSへのアップロード
+                        final uploadedUrl = await uploadFileToGCS(file);
+                        if ((uploadedUrl != null) && (tweetId != null)) {
+                          // GCSへアップロードしたメディアURLをDB保存
+                          _insertBoulLogTweetMedia(
+                            tweetId,
+                            uploadedUrl,
+                            'photo',
+                          );
+                          _uploadedUrls.add(uploadedUrl);
+                        }
+                      }
+                      print("アップロード完了URL一覧: $_uploadedUrls");
+
+                      /* 投稿ページ初期化 */
+                      setState(() {
+                        _selectedDate = DateTime.now();
+                        selectedGym = null;
+                        gymId = null;
+                        _textController.clear();
+                        _mediaFiles.clear();
+                        _uploadedUrls.clear();
+                      });
+
+                      /* 施設情報から遷移して投稿する場合，投稿後に戻る処理 */
                       if (fromFacilityInfoPage) {
-                        // 施設情報ページから遷移してきた場合，popして戻る
                         context.pop();
                       } else {
                         // DO NOTHING

@@ -17,6 +17,8 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// - 更新前・後のURLが同じ場合は、DBアクセス無しで終了
   ///
   /// 引数
+  /// - [setUserIconUrl] セットしたいユーザーアイコンのURL
+  /// - [userId] ログインユーザーのID
   ///
   /// 返り値
   /// - 更新成功：true / 更新失敗：false

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
@@ -42,6 +43,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// 引数：なし
   /// 返り値：なし
   Future<void> _pickImage() async {
+    print("アイコン写真選択画面を押下したよ！");
     final picker = ImagePicker();
     final pickedFile =
         await picker.pickImage(source: ImageSource.gallery); // ギャラリーから選択
@@ -57,7 +59,27 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   }
 
   /// ■ メソッド
-  /// ユーザーアイコンURLの状態を変更する
+  /// 写真を選択して，画像をGoogleCloudStorageに保存する処理
+  // Future<void> _pickAndUploadProfileImage() async {
+  //   final result = await FilePicker.platform.pickFiles(
+  //     type: FileType.image,
+  //     allowMultiple: false,
+  //   );
+
+  //   if (result != null && result.files.isNotEmpty) {
+  //     final file = File(result.files.single.path!);
+
+  //     // GCSにアップロード
+  //     final uploadedUrl = await _uploadToCloudStorage(file);
+
+  //     if (uploadedUrl != null) {
+  //       setState(() {
+  //         // URLを変数に保持
+  //         _uploadedFileUrl = uploadedUrl;
+  //       });
+  //     }
+  //   }
+  // }
 
   /// ■ メソッド
   /// Google Cloud Storageに写真をアップロードする
@@ -148,7 +170,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               // アイコン
               Center(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min, // 追加
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
                       onTap: () async {
@@ -161,6 +183,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             .read(userProvider.notifier)
                             .updateUserIconUrl(_uploadedImageUrl, userId);
                         if (context.mounted) {
+                          print("ここで失敗画面が登場した！");
                           confirmedDialog(context, result);
                         }
                       },
@@ -191,7 +214,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               ),
               const SizedBox(height: 20),
 
-              // 名前
+              // ニックネーム
               InkWell(
                 onTap: () => {
                   // ページ遷移

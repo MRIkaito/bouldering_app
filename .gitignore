@@ -64,3 +64,4 @@ firebase.json
 
 # 環境設定ファイル
 .env
+assets/*

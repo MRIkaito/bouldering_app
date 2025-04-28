@@ -402,7 +402,51 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
 
     // requestId：7
-    // なし
+    // ツイート内容に紐づくメディア(写真・動画)URLをDBに登録する
+    //
+    // クエリパラメータ；
+    // tweet_id: ツイートID
+    // media_url: 写真，または動画のURL
+    // meidia_type: 'photo' または 'video'
+    case 7:
+      try{
+        // クエリパラメータ取得
+        const {tweet_id, media_url, media_type} = req.query;
+
+        // DB接続
+        const client = await pool.connect();
+
+        // メディアURLをDBに登録(挿入・INSERT)
+        const result = await client.query(`
+          INSERT INTO boul_log_tweet_media
+            (
+              tweet_id,
+              media_url,
+              media_type
+            )
+          VALUES
+            (
+              $1,
+              $2,
+              $3
+            )
+          RETURNING *;
+        `, [tweet_id, media_url, media_type]);
+
+        // DB接続を解放
+        client.release();
+
+        // 挿入が成功されたか確認
+        if((result.rowCount ?? 0) > 0)  {
+          res.status(200).json("データが正常に挿入されました");
+        } else {
+          res.status(400).send("データ挿入に失敗しました");
+        }
+      } catch(error) {
+        console.error("データ挿入エラー：", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
 
     // requestId：8
     // ツイート内容をDBに登録する
@@ -455,10 +499,16 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           // DB接続を解放
           client.release();
 
-          // 挿入が成功されたかを確認する
-          // TO DO：正常時，異常時の処理が適切なのかを確認する
+          // 挿入が成功されたか確認
           if((result.rowCount ?? 0) > 0)  {
-            res.status(200).send("データが正常に挿入されました");
+            // tweet_idを取得
+            const insertedTweetId = result.rows[0].tweet_id;
+
+            // JSON形式で返す
+            res.status(200).json({
+              message: "データが正常に挿入されました",
+              tweet_id: insertedTweetId
+            });
           } else {
             res.status(400).send("データ挿入に失敗しました");
           }

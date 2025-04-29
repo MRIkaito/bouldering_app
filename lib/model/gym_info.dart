@@ -1,69 +1,3 @@
-// class GymInfo {
-//   final int gymId;
-//   final String gymName;
-//   final String hpLink;
-//   final String prefecture;
-//   final String city;
-//   final String addressLine;
-//   final double latitude;
-//   final double longitude;
-//   final String telNo;
-//   final String fee;
-//   final int minimumFee;
-//   final String equipmentRentalFee;
-
-//   GymInfo({
-//     required this.gymId,
-//     required this.gymName,
-//     required this.hpLink,
-//     required this.prefecture,
-//     required this.city,
-//     required this.addressLine,
-//     required this.latitude,
-//     required this.longitude,
-//     required this.telNo,
-//     required this.fee,
-//     required this.minimumFee,
-//     required this.equipmentRentalFee,
-//   });
-
-//   factory GymInfo.fromJson(Map<String, dynamic> json) {
-//     return GymInfo(
-//         gymId: json['gym_id'],
-//         gymName: json['gym_name'],
-//         hpLink: json['hp_link'],
-//         prefecture: json['prefecture'],
-//         city: json['city'],
-//         addressLine: json['address_line'],
-//         latitude: json['latitude'],
-//         longitude: json['longitude'],
-//         telNo: json['tel_no'],
-//         fee: json['fee'],
-//         minimumFee: json['minimum_fee'],
-//         equipmentRentalFee: json['equipment_rental_fee']);
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'gym_id': gymId,
-//       'gym_name': gymName,
-//       'hp_link': hpLink,
-//       'prefecture': prefecture,
-//       'city': city,
-//       'address_line': addressLine,
-//       'latitude': latitude,
-//       'longitude': longitude,
-//       'tel_no': telNo,
-//       'fee': fee,
-//       'minimum_fee': minimumFee,
-//       'equipment_rental_fee': equipmentRentalFee
-//     };
-//   }
-
-//   List<GymInfo> parseGymInfoList(List<dynamic> jsonList) {
-//     return jsonList.map((json) => GymInfo.fromJson(json)).toList();
-//   }
-// }
 class GymInfo {
   final int gymId;
   final String gymName;
@@ -136,20 +70,32 @@ class GymInfo {
 
   factory GymInfo.fromJson(Map<String, dynamic> json) {
     return GymInfo(
-      gymId: json['gym_id'] ?? 0,
+      gymId: (json['gym_id'] is int)
+          ? json['gym_id']
+          : int.tryParse(json['gym_id'].toString()) ?? 0,
       gymName: json['gym_name'] ?? '-',
       hpLink: json['hp_link'] ?? '-',
       prefecture: json['prefecture'] ?? '-',
       city: json['city'] ?? '-',
       addressLine: json['address_line'] ?? '-',
-      latitude: json['latitude'] ?? 0.0,
-      longitude: json['longitude'] ?? 0.0,
+      latitude: (json['latitude'] is double)
+          ? json['latitude']
+          : double.tryParse(json['latitude'].toString()) ?? 0.0,
+      longitude: (json['longitude'] is double)
+          ? json['longitude']
+          : double.tryParse(json['longitude'].toString()) ?? 0.0,
       telNo: json['tel_no'] ?? '-',
       fee: json['fee'] ?? '-',
-      minimumFee: json['minimum_fee'] ?? 0,
+      minimumFee: (json['minimum_fee'] is int)
+          ? json['minimum_fee']
+          : int.tryParse(json['minimum_fee'].toString()) ?? 0,
       equipmentRentalFee: json['equipment_rental_fee'] ?? '-',
-      ikitaiCount: json['ikitai_count'] ?? 0,
-      boulCount: json['boul_count'] ?? 0,
+      ikitaiCount: (json['ikitai_count'] is int)
+          ? json['ikitai_count']
+          : int.tryParse(json['ikitai_count'].toString()) ?? 0,
+      boulCount: (json['boul_count'] is int)
+          ? json['boul_count']
+          : int.tryParse(json['boul_count'].toString()) ?? 0,
       isBoulderingGym: json['is_bouldering_type'] ?? true,
       isLeadGym: json['is_lead_gym'] ?? false,
       isSpeedGym: json['is_speed_gym'] ?? false,

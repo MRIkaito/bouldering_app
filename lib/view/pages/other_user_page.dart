@@ -50,8 +50,7 @@ class OtherUserPage extends StatelessWidget {
             body: TabBarView(
               children: [
                 OtherUserTweetsSection(userId: userId),
-                const Text("テスト2"),
-                // OtherUserWannaGoGymsSectrion(),
+                OtherUserWannaGoGymsSectrion(userId: userId),
               ],
             ),
           ),

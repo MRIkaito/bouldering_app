@@ -1,5 +1,8 @@
+import 'package:bouldering_app/view/components/button.dart';
+import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/other_user_provider.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,17 +10,69 @@ import 'package:flutter_svg/svg.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
+import 'package:http/http.dart' as http;
 
-class OtherUserProfileSection extends ConsumerWidget {
+class OtherUserProfileSection extends ConsumerStatefulWidget {
   // コンストラクタ
   const OtherUserProfileSection({super.key, required this.userId});
-
   // プロパティ
   final String userId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final otherUserAsync = ref.watch(otherUserProvider(userId));
+  ConsumerState<OtherUserProfileSection> createState() =>
+      _OtherUserProfileSectionState();
+}
+
+class _OtherUserProfileSectionState
+    extends ConsumerState<OtherUserProfileSection> {
+  bool? isFavorited; // 訪問したユーザーがお気に入り登録をしている人であるかどうかを確認する
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavoriteStatus();
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    final currentUser = ref.read(userProvider);
+    if (currentUser == null) return;
+
+    final favoriteVM = FavoriteUserViewModel();
+    final result =
+        await favoriteVM.isAlreadyFavorited(currentUser.userId, widget.userId);
+    setState(() => isFavorited = result);
+  }
+
+  Future<void> _toggleFavorite() async {
+    final currentUser = ref.read(userProvider);
+    if (currentUser == null) return;
+
+    final likeeId = widget.userId;
+    final likerId = currentUser.userId;
+
+    final endpoint =
+        'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData';
+    final url = Uri.parse(endpoint).replace(queryParameters: {
+      'request_id': isFavorited! ? '10' : '9', // 解除:10 / 登録:9
+      'liker_user_id': likerId,
+      'likee_user_id': likeeId,
+    });
+
+    final response = await (isFavorited! ? http.delete(url) : http.get(url));
+
+    print('🟡 [DEBUG] status: ${response.statusCode}, body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      setState(() {
+        isFavorited = !isFavorited!;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final otherUserAsync = ref.watch(otherUserProvider(widget.userId));
+    final currentUser = ref.watch(userProvider);
 
     return otherUserAsync.when(
         loading: () => const SliverToBoxAdapter(
@@ -56,31 +111,27 @@ class OtherUserProfileSection extends ConsumerWidget {
                   const SizedBox(height: 8),
 
                   // お気に入り登録する・解除するセクション(後で実装)
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Button(
-                  //       onPressedFunction: () => {
-                  //         context.push('/FavoriteUser/favorite'),
-                  //       },
-                  //       buttonName: "お気に入り",
-                  //       buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                  //       buttonHeight: 36,
-                  //       buttonColorCode: 0xFFE3DCE4,
-                  //       buttonTextColorCode: 0xFF000000,
-                  //     ),
-                  //     Button(
-                  //       onPressedFunction: () =>
-                  //           {context.push("/FavoriteUser/favoredBy")},
-                  //       buttonName: "お気に入られ",
-                  //       buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                  //       buttonHeight: 36,
-                  //       buttonColorCode: 0xFFE3DCE4,
-                  //       buttonTextColorCode: 0xFF000000,
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 8),
+                  if (currentUser != null &&
+                      currentUser.userId != user.userId &&
+                      isFavorited != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Button(
+                          onPressedFunction: _toggleFavorite,
+                          buttonName: isFavorited! ? '登録解除' : '登録',
+                          buttonWidth: MediaQuery.of(context).size.width - 48,
+                          buttonHeight: 36,
+                          buttonColorCode:
+                              isFavorited! ? 0xFF0056FF : 0xFFE3DCE4,
+                          buttonTextColorCode:
+                              isFavorited! ? 0xFFFFFFFF : 0xFF000000,
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 8),
 
                   // 自己紹介文
                   SizedBox(

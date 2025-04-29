@@ -52,4 +52,38 @@ class FavoriteUserViewModel {
       throw e;
     }
   }
+
+  /// ■ メソッド
+  /// - お気に入り登録している人のユーザーID・されている人のユーザーIDのペアが
+  /// - 存在するかを確認する
+  ///
+  /// 引数
+  /// - [likerUserId] : お気に入り登録している側のユーザーID
+  /// - [likeeUserId] : お気に入り登録されている側のユーザーID
+  ///
+  /// 返り値
+  /// - [true] : likerUserIdのユーザーがlikeeUserIdのユーザーをお気に入り登録している
+  /// - [false] : likerUserIdのユーザーはlikeeUserIdのユーザーをお気に入り登録していない
+  Future<bool> isAlreadyFavorited(
+      String likerUserId, String likeeUserId) async {
+    final url = Uri.parse(
+            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+        .replace(queryParameters: {
+      'request_id': '1',
+      'liker_user_id': likerUserId,
+      'likee_user_id': likeeUserId,
+    });
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data as List).isNotEmpty;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 }

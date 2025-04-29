@@ -1,7 +1,7 @@
+import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:bouldering_app/view/pages/edit_profile_page.dart';
 import 'package:bouldering_app/view/pages/facility_info_page.dart';
 import 'package:bouldering_app/view/pages/favorite_user_page.dart';
@@ -173,5 +173,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (context, state) =>
               MaterialPage(fullscreenDialog: true, child: ActivityPostPage()),
         ),
+        GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: '/OtherUserPage/:userId',
+            pageBuilder: (context, state) {
+              final String userId = state.pathParameters['userId'] ?? '';
+              return MaterialPage(
+                  fullscreenDialog: true, child: OtherUserPage(userId: userId));
+            }),
       ]);
 });

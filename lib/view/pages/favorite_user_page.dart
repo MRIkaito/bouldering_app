@@ -1,8 +1,10 @@
 import 'package:bouldering_app/view/components/favorite_user_item.dart';
+import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
+import 'package:go_router/go_router.dart';
 
 /// ■ クラス
 /// - お気に入り登録している/されている ユーザーを表示するクラス
@@ -15,10 +17,7 @@ class FavoriteUserPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // インスタンス化
     final FavoriteUserViewModel favoriteUser = FavoriteUserViewModel();
-    // ユーザー情報(ID)を取得
-    // TODO：強制的アンラップで問題ないかを確認する
     final userId = ref.read(userProvider)!.userId;
 
     return Scaffold(
@@ -61,11 +60,15 @@ class FavoriteUserPage extends ConsumerWidget {
                 // 設定していない場合は上記のURLを記述して埋めるようにする
                 final String favoriteUserName = favoriteUser['user_name'];
                 final String favoriteUserHomeGym = favoriteUser['gym_name'];
+                final String favoriteUserId = favoriteUser['likee_user_id'];
 
                 return FavoriteUserItem(
                   name: favoriteUserName,
                   description: favoriteUserHomeGym,
                   imageUrl: favoriteUserIconUrl,
+                  onTap: () {
+                    context.push('/OtherUserPage/$favoriteUserId');
+                  },
                 );
               },
             );

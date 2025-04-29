@@ -4,31 +4,21 @@ import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyTweetsSection extends ConsumerStatefulWidget {
-  const MyTweetsSection({super.key});
+class OtherUserTweetsSection extends ConsumerStatefulWidget {
+  const OtherUserTweetsSection({super.key});
 
   @override
   MyTweetsSectionState createState() => MyTweetsSectionState();
 }
 
-class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
+class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
   final ScrollController _scrollController = ScrollController();
-  bool _showNoTweetsText = false;
 
   /// ■ 初期化
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-
-    // 5病後に「ツイートなし表示」に切り替える
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          _showNoTweetsText = true;
-        });
-      }
-    });
   }
 
   /// ■ dispose
@@ -83,11 +73,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     print("🟡 [DEBUG] UI tweets length: ${tweets.length}");
 
     return tweets.isEmpty
-        ? Center(
-            child: _showNoTweetsText
-                ? const Text("ツイートがありません") // 👈 5秒後にこれが出る
-                : const CircularProgressIndicator(), // 👈 それまではこれ
-          )
+        ? const Center(child: CircularProgressIndicator())
         :
         // 自分のツイート
         RefreshIndicator(

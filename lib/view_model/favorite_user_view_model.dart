@@ -38,7 +38,6 @@ class FavoriteUserViewModel {
       print("test1");
       // HTTP GETリクエスト
       final response = await http.get(url);
-      print("test2");
 
       if (response.statusCode == 200) {
         // レスポンスボディをJSONとしてデコードする

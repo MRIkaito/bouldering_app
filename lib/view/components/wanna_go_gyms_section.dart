@@ -1,9 +1,9 @@
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
+import 'package:bouldering_app/view_model/utility/is_open.dart';
 import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class WannaGoGymsSectrion extends ConsumerStatefulWidget {
   const WannaGoGymsSectrion({super.key});
@@ -22,27 +22,6 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
   /// ■ dispose
   void dispose() {
     super.dispose();
-  }
-
-  // TODO：utilityに移動させる
-  /// ■ メソッド
-  /// - 現在時刻において、営業中か否かを判別する
-  bool isOpen(Map<String, String> hours) {
-    DateTime now = DateTime.now();
-    String currentDay = DateFormat('EEE').format(now).toString().toLowerCase();
-    String currentTime = DateFormat('HH:mm:ss').format(now); // 現在の時刻を表す
-
-    // 営業時間を取得
-    String openTime = hours['${currentDay}_open']!;
-    String closeTime = hours['${currentDay}_close']!;
-
-    if (openTime == '-' || closeTime == '-') {
-      return false;
-    } else {
-      // 営業中か否かを判別
-      return ((currentTime.compareTo(openTime) >= 0) &&
-          (currentTime.compareTo(closeTime)) <= 0);
-    }
   }
 
   /// ■ メソッド

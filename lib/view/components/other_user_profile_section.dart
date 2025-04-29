@@ -55,6 +55,33 @@ class OtherUserProfileSection extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
 
+                  // お気に入り登録する・解除するセクション(後で実装)
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Button(
+                  //       onPressedFunction: () => {
+                  //         context.push('/FavoriteUser/favorite'),
+                  //       },
+                  //       buttonName: "お気に入り",
+                  //       buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
+                  //       buttonHeight: 36,
+                  //       buttonColorCode: 0xFFE3DCE4,
+                  //       buttonTextColorCode: 0xFF000000,
+                  //     ),
+                  //     Button(
+                  //       onPressedFunction: () =>
+                  //           {context.push("/FavoriteUser/favoredBy")},
+                  //       buttonName: "お気に入られ",
+                  //       buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
+                  //       buttonHeight: 36,
+                  //       buttonColorCode: 0xFFE3DCE4,
+                  //       buttonTextColorCode: 0xFF000000,
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 8),
+
                   // 自己紹介文
                   SizedBox(
                     width: double.infinity,

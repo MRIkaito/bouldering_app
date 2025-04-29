@@ -47,11 +47,10 @@ class OtherUserPage extends StatelessWidget {
               ];
             },
             // タブの中に表示する画面
-            body: const TabBarView(
+            body: TabBarView(
               children: [
-                const Text("テスト1"),
+                OtherUserTweetsSection(userId: userId),
                 const Text("テスト2"),
-                // OtherUserTweetsSection(),
                 // OtherUserWannaGoGymsSectrion(),
               ],
             ),

@@ -1,5 +1,4 @@
 import 'package:bouldering_app/view/components/favorite_user_item.dart';
-import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/favorite_user_view_model.dart';

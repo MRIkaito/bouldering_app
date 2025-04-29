@@ -1,6 +1,13 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis/storage/v1.dart' as gcs;
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:crypto/crypto.dart';
+import 'dart:io';
+import 'dart:convert';
 import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
@@ -10,12 +17,6 @@ import 'package:bouldering_app/view/components/edit_setting_item.dart';
 import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:googleapis/storage/v1.dart' as storage;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:path/path.dart' as path;
-import 'package:http/http.dart' as http;
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -26,10 +27,7 @@ class EditProfilePage extends ConsumerStatefulWidget {
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// ■ プロパティ
-  File? _imageFile;
-  String? _uploadedImageUrl;
-  final String bucketName = "my-app-profile-images"; // パケット名
-  final String serviceAccountPath = "assets/service_account.json"; // 認証キー
+  File? _imageFile; // ユーザーアイコンの写真ファイル
 
   /// ■ 初期化
   @override
@@ -41,102 +39,66 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// アイコン画像をギャラリーから選択して設定する
   ///
   /// 引数：なし
-  /// 返り値：なし
-  Future<void> _pickImage() async {
-    print("アイコン写真選択画面を押下したよ！");
-    final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.gallery); // ギャラリーから選択
+  ///
+  /// 返り値：
+  /// - true : 写真選択
+  /// - false : 写真未選択
+  Future<bool> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
 
-    if (pickedFile != null) {
+    if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFile = File(result.files.single.path!);
       });
-
-      // 画像をCloud Storageにアップロード
-      await _uploadToCloudStorage(_imageFile!);
+      return true;
+    } else {
+      return false;
     }
   }
 
   /// ■ メソッド
-  /// 写真を選択して，画像をGoogleCloudStorageに保存する処理
-  // Future<void> _pickAndUploadProfileImage() async {
-  //   final result = await FilePicker.platform.pickFiles(
-  //     type: FileType.image,
-  //     allowMultiple: false,
-  //   );
-
-  //   if (result != null && result.files.isNotEmpty) {
-  //     final file = File(result.files.single.path!);
-
-  //     // GCSにアップロード
-  //     final uploadedUrl = await _uploadToCloudStorage(file);
-
-  //     if (uploadedUrl != null) {
-  //       setState(() {
-  //         // URLを変数に保持
-  //         _uploadedFileUrl = uploadedUrl;
-  //       });
-  //     }
-  //   }
-  // }
-
-  /// ■ メソッド
-  /// Google Cloud Storageに写真をアップロードする
+  /// Google Cloud Storageにユーザーアイコン写真をアップロードする
   ///
   /// 引数
-  /// - [imageFile] 写真
+  /// - [file] 写真
   ///
   /// 返り値
-  /// - なし
-  Future<void> _uploadToCloudStorage(File imageFile) async {
-    try {
-      // 認証設定
-      final credentials = ServiceAccountCredentials.fromJson(
-          await File(serviceAccountPath).readAsString());
-      final client = await clientViaServiceAccount(
-          credentials, [storage.StorageApi.devstorageFullControlScope]);
-      final storageApi = storage.StorageApi(client);
+  /// - GoogleCloudStorageに保存したユーザーアイコン写真の公開URLを返す
+  Future<String?> _uploadToCloudStorage(File file) async {
+    // GCS保存先情報
+    final jsonString =
+        await rootBundle.loadString('assets/keys/service_account.json');
+    final credentials =
+        ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
+    final client = await clientViaServiceAccount(
+        credentials, [gcs.StorageApi.devstorageFullControlScope]);
+    final storage = gcs.StorageApi(client);
+    const bucketName = "boulderingapp_tweets_media";
 
-      // 画像をバイナリデータに変換
-      final imageBytes = await imageFile.readAsBytes();
-      final media = storage.Media(Stream.value(imageBytes), imageBytes.length);
+    // ファイルの中身を読み込み，ハッシュ値を作成する
+    final bytes = await file.readAsBytes();
+    final digest = sha256.convert(bytes);
 
-      // ファイル名をユニークにする
-      String fileName =
-          "profile_${DateTime.now().millisecondsSinceEpoch}${path.extension(imageFile.path)}";
-      final storageObject = storage.Object()..name = fileName;
+    // ファイル名作成(prefix + ハッシュ値)
+    final fileName =
+        "user_icon_url_${digest.toString()}${path.extension(file.path)}";
 
-      // アップロード実行
-      await storageApi.objects
-          .insert(storageObject, bucketName, uploadMedia: media);
+    final media = gcs.Media(file.openRead(), file.lengthSync());
 
-      // 公開URLを生成
-      final imageUrl = "https://storage.googleapis.com/$bucketName/$fileName";
+    // GCS保存処理
+    await storage.objects.insert(
+      gcs.Object()..name = fileName,
+      bucketName,
+      uploadMedia: media,
+    );
+    client.close();
 
-      setState(() {
-        _uploadedImageUrl = imageUrl;
-      });
-      print("🟢アップロード完了: $imageUrl");
-    } catch (error) {
-      print("アップロード失敗: $error");
-    }
+    // GCSの公開URL
+    return "https://storage.googleapis.com/$bucketName/$fileName";
   }
-
-  /* 内部メソッドとして実装したが、必要ないかもしれない
-  /// ■ メソッド
-  /// - DBに更新後のURLを設定して、状態を更新する処理
-  Future<void> updateUserIconUrl(
-      String preUserIconUrl, String setUserIconUrl) async {
-    final userId = ref.read(userProvider)!.userId;
-    final result = await ref
-        .read(userProvider.notifier)
-        .updateUserIconUrl(_uploadedImageUrl, userId);
-    if (context.mounted) {
-      confirmedDialog(context, result);
-    }
-  }
- */
 
   @override
   Widget build(BuildContext context) {
@@ -173,33 +135,53 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: () async {
-                        // 画像をCloudStorageに保存する処理
-                        await _pickImage();
-
-                        // 状態変更処理+DBにURLを保存する処理
-                        final userId = ref.read(userProvider)!.userId;
-                        final result = await ref
-                            .read(userProvider.notifier)
-                            .updateUserIconUrl(_uploadedImageUrl, userId);
-                        if (context.mounted) {
-                          print("ここで失敗画面が登場した！");
-                          confirmedDialog(context, result);
-                        }
-                      },
                       child: CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.grey.shade300,
-                        backgroundImage: _imageFile != null
-                            ? NetworkImage(_uploadedImageUrl!)
-                            : _imageFile != null
-                                ? FileImage(_imageFile!)
-                                : null,
-                        child: _imageFile == null
+                        backgroundImage: (ref.watch(userProvider) != null) &&
+                                // ignore: unnecessary_null_comparison
+                                (ref.watch(userProvider)!.userIconUrl !=
+                                    null) &&
+                                (ref
+                                    .watch(userProvider)!
+                                    .userIconUrl
+                                    .startsWith('https://'))
+                            ? NetworkImage(ref.watch(userProvider)!.userIconUrl)
+                            : null,
+                        child: (ref.watch(userProvider) == null) ||
+                                // ignore: unnecessary_null_comparison
+                                (ref.watch(userProvider)!.userIconUrl ==
+                                    null) ||
+                                (!ref
+                                    .watch(userProvider)!
+                                    .userIconUrl
+                                    .startsWith('https://'))
                             ? Icon(Icons.camera_alt,
                                 size: 40, color: Colors.grey.shade700)
                             : null,
                       ),
+                      onTap: () async {
+                        // 画像選択
+                        final isPickedImage = await _pickImage();
+
+                        if ((isPickedImage == true) && (_imageFile != null)) {
+                          // CloudStorageに保存
+                          final _uploadedImageUrl =
+                              await _uploadToCloudStorage(_imageFile!);
+
+                          // 画像URLをDB保存 + 状態変更
+                          final userId = ref.read(userProvider)!.userId;
+                          final result = await ref
+                              .read(userProvider.notifier)
+                              .updateUserIconUrl(_uploadedImageUrl!, userId);
+
+                          if (context.mounted) {
+                            confirmedDialog(context, result);
+                          }
+                        } else {
+                          return;
+                        }
+                      },
                     ),
                     const SizedBox(height: 8),
                     const Text(

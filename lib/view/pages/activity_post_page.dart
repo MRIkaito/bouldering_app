@@ -258,8 +258,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    print("投稿するボタンが押されました");
-
                     /* ジムID取得 */
                     getGymIdFromSelectedGym(selectedGym, gymRef);
 
@@ -272,7 +270,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                         _textController.text,
                       );
 
-                      /* メディアをGCSへアップロードする/ URLをDB保存する */
+                      /* メディアをGCSへアップロードする, URLをDB保存する */
                       _uploadedUrls.clear(); // リセット
                       for (final file in _mediaFiles) {
                         // GCSへのアップロード

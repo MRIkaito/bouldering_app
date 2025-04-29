@@ -1028,9 +1028,52 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // request_id: 19 - 22
-    // なし
+    // request_id: 19
+    // - ユーザーアイコンURLを更新する
+    //
+    // クエリパラメータ
+    // - user_id: ユーザーID
+    // - user_icon_url: 新しいユーザーアイコンURL
+    case 19:
+      try{
+        // クエリパラメータを取得
+        const { user_id, user_icon_url } = req.query;
 
+        // 必須パラメータチェック
+        if(!user_id || !user_icon_url) {
+          res.status(400).send("user_id, またはuser_icon_urlパラメータが不足しています");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // UPDATE実行
+        const result = await client.query(`
+          UPDATE boulder
+          SET user_icon_url = $1
+          WHERE user_id = $2;
+        `, [user_icon_url, user_id]);
+
+        // DB接続を解放
+        client.release();
+
+        // 更新成功チェック
+        if(!result.rowCount) {
+          res.status(400).send("データ更新に失敗しました");
+          return;
+        }
+
+        res.status(200).send("ユーザーアイコンURLが正常に更新されました");
+        return;
+      } catch(error) {
+        console.error("データ更新エラー：error");
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // request_id: 20 - 21
+    // なし
 
     // request_id: 22
     // - 指定した月の「ボル活回数」「訪問したジム施設数」「週当たりのボルダリング活動数」を取得する

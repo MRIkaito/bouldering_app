@@ -125,8 +125,10 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class BoulLog extends StatelessWidget {
+  final String userId;
   final String userName;
   final String visitedDate;
   final String gymName;
@@ -135,6 +137,7 @@ class BoulLog extends StatelessWidget {
 
   const BoulLog({
     super.key,
+    required this.userId,
     required this.userName,
     required this.visitedDate,
     required this.gymName,
@@ -165,11 +168,16 @@ class BoulLog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () {
+                        context.push('/OtherUserPage/$userId');
+                      },
+                      child: Text(
+                        userName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     Text(
@@ -196,7 +204,8 @@ class BoulLog extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: gymName, // TODO：値をもらう箇所
+                        // TODO：ジム名をタップすると，ジム詳細ページに遷移する処理を実装する
+                        text: gymName,
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.blue,
@@ -204,7 +213,7 @@ class BoulLog extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: " [$prefecture]", // TODO：値をもらう箇所
+                        text: " [$prefecture]",
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -217,7 +226,7 @@ class BoulLog extends StatelessWidget {
 
                 // 活動内容
                 Text(
-                  tweetContents, // TODO：値をもらう箇所
+                  tweetContents,
                   style: const TextStyle(
                     fontSize: 14,
                   ),

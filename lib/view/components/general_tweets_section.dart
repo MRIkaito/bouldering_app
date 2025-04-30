@@ -54,6 +54,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
         final generalTweet = generalTweets[index];
 
         return BoulLog(
+          userId: generalTweet.userId,
           userName: generalTweet.userName,
           visitedDate: generalTweet.visitedDate
               .toLocal()

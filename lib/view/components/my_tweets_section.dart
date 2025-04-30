@@ -107,6 +107,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 final tweet = tweets[index];
 
                 return BoulLog(
+                  userId: tweet.userId,
                   userName: ref.read(userProvider)?.userName ?? ' 取得できませんでした ',
                   visitedDate: tweet.visitedDate
                       .toLocal()

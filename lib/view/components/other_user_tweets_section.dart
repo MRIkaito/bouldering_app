@@ -88,6 +88,7 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
                 final tweet = tweets[index];
 
                 return BoulLog(
+                  userId: tweet.userId,
                   userName: tweet.userName,
                   visitedDate: tweet.visitedDate
                       .toLocal()

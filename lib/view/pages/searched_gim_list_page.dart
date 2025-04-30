@@ -168,6 +168,7 @@ class SearchedGimListPage extends StatelessWidget {
                           itemCount: 5,
                           itemBuilder: (context, index) {
                             return BoulLog(
+                              userId: 'test', // ここはテスト用に記述, このユーザーIDは存在しない
                               userName: 'test',
                               visitedDate: '2020-09-23',
                               gymName: 'Dボルダリング',

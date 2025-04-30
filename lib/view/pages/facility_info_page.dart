@@ -256,6 +256,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                           final specificGymTweet = specificGymTweets[index];
 
                           return BoulLog(
+                            userId: specificGymTweet.userId,
                             userName: specificGymTweet.userName,
                             visitedDate: specificGymTweet.visitedDate
                                 .toLocal()

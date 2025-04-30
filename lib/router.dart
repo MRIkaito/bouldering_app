@@ -126,9 +126,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         // その他フルスクリーンダイアログ
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
-          path: '/FacilityInfo/:gymId', // gymIdをもらうように変更
+          path: '/FacilityInfo/:gymId',
           pageBuilder: (context, state) {
-            final String gymId = state.pathParameters['gymId'] ?? ''; // パラメータ取得
+            final String gymId = state.pathParameters['gymId'] ?? '';
             return MaterialPage(
               fullscreenDialog: true,
               child: FacilityInfoPage(gymId: gymId),

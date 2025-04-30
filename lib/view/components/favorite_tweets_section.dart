@@ -134,6 +134,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                     .toIso8601String()
                     .split('T')[0],
                 // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                gymId: favoriteUserTweet.gymId.toString(),
                 gymName: favoriteUserTweet.gymName,
                 prefecture: favoriteUserTweet.prefecture,
                 tweetContents: favoriteUserTweet.tweetContents,

@@ -60,6 +60,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
               .toLocal()
               .toIso8601String()
               .split('T')[0],
+          gymId: generalTweet.gymId.toString(),
           gymName: generalTweet.gymName,
           prefecture: generalTweet.prefecture,
           tweetContents: generalTweet.tweetContents,

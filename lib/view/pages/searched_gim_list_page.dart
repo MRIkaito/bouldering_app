@@ -171,6 +171,7 @@ class SearchedGimListPage extends StatelessWidget {
                               userId: 'test', // ここはテスト用に記述, このユーザーIDは存在しない
                               userName: 'test',
                               visitedDate: '2020-09-23',
+                              gymId: '1',
                               gymName: 'Dボルダリング',
                               prefecture: '神奈川県',
                               tweetContents: '今はテスト用',

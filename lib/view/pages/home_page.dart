@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // アプリ名テキスト
+          // アプリ名テキスト : test実行する
           SizedBox(
             width: 209,
             height: 25,
@@ -38,7 +38,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 48),
 
           // ジム条件検索

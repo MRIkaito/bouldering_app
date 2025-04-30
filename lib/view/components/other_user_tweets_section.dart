@@ -95,6 +95,7 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
                       .toIso8601String()
                       .split('T')[0],
                   // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                  gymId: tweet.gymId.toString(),
                   gymName: tweet.gymName,
                   prefecture: tweet.prefecture,
                   tweetContents: tweet.tweetContents,

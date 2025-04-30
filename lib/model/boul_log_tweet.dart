@@ -3,7 +3,7 @@ class BoulLogTweet {
   final String userId;
   final String userName;
   final DateTime visitedDate;
-  final DateTime tweetedDate; // createdAtと同義
+  final DateTime tweetedDate;
   final int gymId;
   final String tweetContents;
   final int likedCount;
@@ -25,20 +25,19 @@ class BoulLogTweet {
     required this.prefecture,
   });
 
-  // JSON形式からBoulLogTweetクラス(Map形式)への変換
   factory BoulLogTweet.fromJson(Map<String, dynamic> json) {
-    print(
-        "🔍 visited_date raw: ${json['visited_date']} | type: ${json['visited_date'].runtimeType}");
     return BoulLogTweet(
-      tweetId: json['tweet_id'] ?? '',
+      tweetId: json['tweet_id'] ?? 0,
       userId: json['user_id'] ?? '',
       userName: json['user_name'] ?? '',
-      visitedDate: DateTime.parse(json['visited_date'] ?? '1990-01-01'),
-      tweetedDate: DateTime.parse(json['tweeted_date'] ?? '1990-01-01'),
+      visitedDate:
+          DateTime.tryParse(json['visited_date'] ?? '') ?? DateTime(1990, 1, 1),
+      tweetedDate:
+          DateTime.tryParse(json['tweeted_date'] ?? '') ?? DateTime(1990, 1, 1),
       gymId: json['gym_id'] ?? 0,
       tweetContents: json['tweet_contents'] ?? '',
-      likedCount: json['liked_count'] ?? 0,
-      movieUrl: json['movie_url'] ?? '',
+      likedCount: json['liked_counts'] ?? 0,
+      movieUrl: json['movie_url'],
       gymName: json['gym_name'] ?? '',
       prefecture: json['prefecture'] ?? '',
     );

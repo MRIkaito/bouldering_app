@@ -15,13 +15,14 @@ class SpecificGymTweetsState {
 
 class SpecificGymTweetsNotifier extends StateNotifier<SpecificGymTweetsState> {
   // コンストラクタ
-  SpecificGymTweetsNotifier()
+  SpecificGymTweetsNotifier({required this.gymId})
       : super(SpecificGymTweetsState(specificGymTweets: [], hasMore: true)) {
     _fetchMoreSpecificGymTweets();
   }
 
   // プロパティ
   bool _isLoading = false;
+  final String gymId;
 
   /// ■ メソッド
   /// - 特定のジムのツイートを取得するメソッド
@@ -39,6 +40,7 @@ class SpecificGymTweetsNotifier extends StateNotifier<SpecificGymTweetsState> {
         .replace(queryParameters: {
       'request_id': '24',
       'limit': '20',
+      'gym_id': gymId,
       if (cursor != null) 'cursor': cursor,
     });
 
@@ -53,17 +55,21 @@ class SpecificGymTweetsNotifier extends StateNotifier<SpecificGymTweetsState> {
         final List<BoulLogTweet> newSpecificGymTweetsList =
             specificGymTweetsList
                 .map((tweet) => BoulLogTweet(
-                      tweetId: tweet['tweet_id'],
-                      tweetContents: tweet['tweet_contents'],
-                      visitedDate: tweet['visited_date'],
-                      tweetedDate: tweet['tweeted_date'],
-                      likedCount: tweet['liked_count'],
+                      tweetId: tweet['tweet_id'] ?? 0,
+                      tweetContents: tweet['tweet_contents'] ?? '',
+                      visitedDate:
+                          DateTime.tryParse(tweet['visited_date'] ?? '') ??
+                              DateTime(1990, 1, 1),
+                      tweetedDate:
+                          DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
+                              DateTime(1990, 1, 1),
+                      likedCount: tweet['liked_counts'] ?? 0,
                       movieUrl: tweet['movie_url'],
-                      userId: tweet['user_id'],
-                      userName: tweet['user_name'],
-                      gymId: tweet['gym_id'],
-                      gymName: tweet['gym_name'],
-                      prefecture: tweet['prefecture'],
+                      userId: tweet['user_id'] ?? '',
+                      userName: tweet['user_name'] ?? '',
+                      gymId: tweet['gym_id'] ?? 0,
+                      gymName: tweet['gym_name'] ?? '',
+                      prefecture: tweet['prefecture'] ?? '',
                     ))
                 .toList();
 
@@ -93,7 +99,7 @@ class SpecificGymTweetsNotifier extends StateNotifier<SpecificGymTweetsState> {
 }
 
 // StateNotifierProviderの定義
-final specificGymTweetsProvider =
-    StateNotifierProvider<SpecificGymTweetsNotifier, SpecificGymTweetsState>(
-  (ref) => SpecificGymTweetsNotifier(),
+final specificGymTweetsProvider = StateNotifierProvider.family<
+    SpecificGymTweetsNotifier, SpecificGymTweetsState, String>(
+  (ref, gymId) => SpecificGymTweetsNotifier(gymId: gymId),
 );

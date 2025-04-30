@@ -12,11 +12,11 @@ import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/facility_info_provider.dart';
 
 class FacilityInfoPage extends ConsumerStatefulWidget {
-  final String gymId;
   const FacilityInfoPage({
     Key? key,
     required this.gymId,
   }) : super(key: key);
+  final String gymId;
 
   @override
   FacilityInfoPageState createState() => FacilityInfoPageState(gymId: gymId);
@@ -47,7 +47,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >
         _scrollController.position.maxScrollExtent - 100) {
-      ref.read(specificGymTweetsProvider.notifier).loadMore();
+      ref.read(specificGymTweetsProvider(gymId).notifier).loadMore();
     }
   }
 
@@ -69,7 +69,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
     // ログイン状態を取得
     final isLoggedIn = ref.watch(authProvider);
     // ジム施設のツイート
-    final specificGymTweetsState = ref.watch(specificGymTweetsProvider);
+    final specificGymTweetsState = ref.watch(specificGymTweetsProvider(gymId));
     final specificGymTweets = specificGymTweetsState.specificGymTweets;
     final _hasMoreSpecificGymTweets = specificGymTweetsState.hasMore;
     // イキタイジム情報を取得
@@ -125,7 +125,6 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                           children: [
                             // タイトルとタグ
                             Text(
-                              // TODO：値をもらう箇所
                               gymInfo.gymName,
                               style: const TextStyle(
                                   fontSize: 24, fontWeight: FontWeight.bold),
@@ -136,7 +135,6 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                               children: [
                                 if (gymInfo.isBoulderingGym) ...[
                                   const GimCategory(
-                                    // TODO：値をもらう箇所
                                     gimCategory: 'ボルダリング',
                                     colorCode: 0xFFF44336,
                                   ),
@@ -144,7 +142,6 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                                 ],
                                 if (gymInfo.isLeadGym) ...[
                                   const GimCategory(
-                                    // TODO：値をもらう箇所
                                     gimCategory: 'リード',
                                     colorCode: 0xFFF44336,
                                   ),
@@ -152,14 +149,12 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                                 ],
                                 if (gymInfo.isSpeedGym) ...[
                                   const GimCategory(
-                                    // TODO：値をもらう箇所
                                     gimCategory: 'スピード',
                                     colorCode: 0xFFF44336,
                                   ),
                                   const SizedBox(height: 8),
                                 ],
                                 GymIkitaiBoullogCount(
-                                  // TODO：値をもらう箇所
                                   ikitaiCount: gymInfo.ikitaiCount.toString(),
                                   boullogCount: gymInfo.boulCount.toString(),
                                 ),
@@ -172,8 +167,8 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                             SizedBox(
                               height: 100, // ギャラリーの高さ
                               child: ListView.builder(
-                                scrollDirection: Axis.horizontal, // 横スクロール
-                                itemCount: 5, // 画像の枚数←外部DBから取得した枚数にする
+                                scrollDirection: Axis.horizontal, // 横スクロール可
+                                itemCount: 5, // 画像の枚数 // TODO：外部DBから取得した枚数にする
                                 itemBuilder: (context, index) {
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8),
@@ -191,16 +186,14 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
-                            // TODO：値をもらう箇所
                             _buildInfoRow('住所',
                                 '${gymInfo.prefecture}${gymInfo.city}${gymInfo.addressLine}'),
-                            _buildInfoRow('TEL', gymInfo.telNo), // TODO：値をもらう箇所
+                            _buildInfoRow('TEL', gymInfo.telNo),
                             _buildInfoRow(
                               'HP',
-                              gymInfo.hpLink, // TODO：値をもらう箇所
+                              gymInfo.hpLink,
                               isLink: true,
-                              onTap: () =>
-                                  _launchUrl(gymInfo.hpLink), // TODO：値をもらう箇所
+                              onTap: () => _launchUrl(gymInfo.hpLink),
                             ),
                             _buildInfoRow('定休日', 'なし'), // TODO；値をもらう箇所
                             _buildInfoRow(
@@ -212,35 +205,17 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
 
                             // 料金情報
                             _buildSectionTitle('料金'),
-                            Text(
-                                // TODO：値をもらう箇所
-                                // '20歳以上 会員登録：1,500円\n20歳以上2時間：1,700円\n20歳以上1日利用：1,900円\n\n'
-                                // '中学生〜19歳会員登録：1,500円\n中学生〜19歳2時間：1,500円\n中学生〜19歳1日：1,700円\n\n'
-                                // '4歳から小学生会員登録：1,500円\n4歳から小学生2時間：1,000円\n4歳から小学生1日：1,500円\n\n'
-                                // 'その他\n4歳から小学生1時間体験利用：1,200円\n※4歳から小学生限定プラン\n※レンタルシューズ代込み\n\n'
-                                // 'OYAKO体験利用：2,500円/1時間\n※大人1名+子ども1名\n※大人追加+1,300円/1時間\n※利用時間の延長はできません\n\n'
-                                // 'キッズスクール：12,000円(30DAYS)\n※小学生のみ\n※毎週、月・水・金 17:00〜18:00のクライミングスクール\n'
-                                // '30DAYS PASS付き\n※人数上限があるため、気になる方はお問い合わせください。\n\n'
-                                // '30DAYS PASS\n一般：14,000円\n※7日以内の更新で、更新ごとに1,000円OFF。割引額最大12,000円\n'
-                                // '中学生〜19歳：12,000円\n4歳〜小学生：10,000円\n\n'
-                                // 'PUNCH TICKET\n購入日から半年間有効の10回利用回数券。シェアOK\n一般：17,000円\n中学生〜19歳：15,000円\n\n'
-                                '${gymInfo.fee}'
+                            Text('${gymInfo.fee}'
                                 '\n\n'
-                                'レンタル'
-                                '${gymInfo.equipmentRentalFee}'
-                                // 'レンタル\nシューズ：400円\n※靴下の着用が必要となります\nチョーク：200円\n\n'
-                                // 'その他\n会員カード再発行：500円\n',
-                                ),
+                                '■レンタル'
+                                '\n'
+                                '${gymInfo.equipmentRentalFee}'),
                             const SizedBox(height: 16),
-
-                            // 設備情報
-                            // _buildSectionTitle('設備'),
-                            // const Text('◯ 駐車場（1台）'), // TODO：値をもらう箇所 ← このセクションは不要
                           ],
                         ),
                       ),
 
-                      // 施設名と同じ名称のボル活を時系列順に表示する予定
+                      // 表示ジム施設のツイートを時系列順に表示
                       ListView.builder(
                         controller: _scrollController,
                         itemCount: specificGymTweets.length +
@@ -263,6 +238,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                                 .toIso8601String()
                                 .split('T')[0],
                             // DateTime.parse(tweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                            gymId: specificGymTweet.gymId.toString(),
                             gymName: specificGymTweet.gymName,
                             prefecture: specificGymTweet.prefecture,
                             tweetContents: specificGymTweet.tweetContents,

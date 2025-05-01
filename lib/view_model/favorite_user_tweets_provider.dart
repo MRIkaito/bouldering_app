@@ -66,7 +66,8 @@ class FavoriteUserTweetsNotifier
                           : DateTime(1990, 1, 1),
                       likedCount: tweet['liked_count'] ?? 0,
                       movieUrl: tweet['movie_url'] ?? '',
-                      userId: tweet['user_id'] ?? '',
+                      userId: tweet['user_id'] ??
+                          '', // このお気に入りユーザーツイートのuser_idとは，バックエンドのSQL文では"likee_user_id"のことを指す
                       userName: tweet['user_name'] ?? '',
                       gymId: tweet['gym_id'] ?? 0,
                       gymName: tweet['gym_name'] ?? '',

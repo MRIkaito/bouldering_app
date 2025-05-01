@@ -150,9 +150,7 @@ class HomePage extends StatelessWidget {
                   top: 55.59,
                   child: InkWell(
                     onTap: () {
-                      print("タップしたよ");
-                      // TODO：ページ遷移 実装
-                      // context.push("/home/searchGimOnMap");
+                      context.push('/Home/SearchGymOnMap');
                     },
                     child: Container(
                       width: 176,

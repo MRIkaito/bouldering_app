@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/pages/other_user_page.dart';
+import 'package:bouldering_app/view/pages/search_gym_on_map_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -75,6 +76,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                                 const NoTransitionPage(
                                     child: SearchedGimListPage())),
                       ],
+                    ),
+                    GoRoute(
+                      // ← 地図ページのルート追加
+                      path: 'SearchGymOnMap',
+                      pageBuilder: (context, state) =>
+                          const NoTransitionPage(child: SearchGymOnMapPage()),
                     ),
                   ],
                 ),

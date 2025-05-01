@@ -65,3 +65,7 @@ firebase.json
 # 環境設定ファイル
 .env
 assets/*
+
+# Google Maps APIキーが含まれるファイルを除外
+/android/app/src/main/AndroidManifest.xml
+/ios/Runner/AppDelegate.swift

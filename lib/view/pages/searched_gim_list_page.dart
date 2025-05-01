@@ -119,6 +119,7 @@ class SearchedGimListPage extends StatelessWidget {
                           itemCount: 3, // ダミーデータとして3つのジムを表示
                           itemBuilder: (context, index) {
                             return const GimCard(
+                              gymId: '1',
                               gymName: 'Folkボルダリングジム',
                               gymPrefecture: '神奈川県',
                               ikitaiCount: 200,

@@ -118,6 +118,7 @@ class WannaGoGymsSectionState
 
           // TODO：gymPhotosを渡す仕様に変更する
           return GimCard(
+            gymId: gym.gymId.toString(),
             gymName: gym.gymName,
             gymPrefecture: gym.prefecture,
             ikitaiCount: gym.ikitaiCount,

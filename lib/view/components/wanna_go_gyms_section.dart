@@ -109,6 +109,7 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
 
           // TODO：gymPhotosを渡す仕様に変更する
           return GimCard(
+            gymId: gymCard.gymId.toString(),
             gymName: gymCard.gymName,
             gymPrefecture: gymCard.prefecture,
             ikitaiCount: gymCard.ikitaiCount,

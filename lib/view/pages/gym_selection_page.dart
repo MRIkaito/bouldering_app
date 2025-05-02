@@ -1,9 +1,47 @@
-import 'package:bouldering_app/view/components/gym_tile.dart';
+import 'package:bouldering_app/view_model/facility_info_provider.dart';
+import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class GymSelectionPage extends StatelessWidget {
+class GymSelectionPage extends ConsumerStatefulWidget {
   const GymSelectionPage({Key? key}) : super(key: key);
+
+  @override
+  GymSelectionPageState createState() => GymSelectionPageState();
+}
+
+class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
+  final TextEditingController _controller = TextEditingController();
+
+  // 全ジムとフィルター済ジムのリスト
+  List<Map<String, dynamic>> allGyms = [];
+  List<Map<String, dynamic>> filteredGyms = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final gymRef = ref.read(gymProvider);
+    gymRef.forEach((id, gym) {
+      if (gym.gymName != null && gym.prefecture != null && gym.city != null) {
+        allGyms.add({
+          'id': id,
+          'name': gym.gymName,
+          'location': '${gym.prefecture}${gym.city}'
+        });
+      }
+    });
+    filteredGyms = List.from(allGyms);
+  }
+
+  void _filterGyms(String query) {
+    setState(() {
+      filteredGyms = allGyms
+          .where(
+              (gym) => gym['name'].toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +61,7 @@ class GymSelectionPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _controller,
                     autofocus: true,
                     decoration: InputDecoration(
                       hintText: 'エリア・施設名・キーワード',
@@ -32,14 +71,15 @@ class GymSelectionPage extends StatelessWidget {
                       ),
                       prefixIcon: const Icon(Icons.search),
                     ),
-                    onChanged: (value) {
-                      // 検索フィルタ処理（必要なら追加）
-                    },
+                    onChanged: _filterGyms,
                   ),
                 ),
                 TextButton(
                   onPressed: () {
-                    print("クリアボタン押下");
+                    _controller.clear();
+                    setState(() {
+                      filteredGyms = List.from(allGyms);
+                    });
                   },
                   child:
                       const Text('クリア', style: TextStyle(color: Colors.blue)),
@@ -49,35 +89,61 @@ class GymSelectionPage extends StatelessWidget {
           ),
 
           // ジムリスト表示
-          GymTile(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredGyms.length,
+              itemBuilder: (context, index) {
+                final gym = filteredGyms[index];
+                return ListTile(
+                  title: Text(gym['name']),
+                  subtitle: Text(gym['location']),
+                  onTap: () async {
+                    final gymId = gym['id'].toString();
+                    final gymInfo =
+                        await ref.read(facilityInfoProvider(gymId).future);
+
+                    if (gymInfo != null) {
+                      context.push('/FacilityInfo/$gymId');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("ジム情報の取得に失敗しました")),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+          ),
 
           // 検索ボタン
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('20 件',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ElevatedButton(
-                  onPressed: () {
-                    context
-                        .push("/Home/SearchGim/GymSelection/SearchedGimList");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(304, 32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Text('${filteredGyms.length} 件',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context
+                          .push("/Home/SearchGim/GymSelection/SearchedGimList");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size(0, 32), // 高さ：固定 / 幅：自動
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      backgroundColor: Colors.blue,
                     ),
-                    backgroundColor: Colors.blue,
-                  ),
-                  child: const Text(
-                    '検　索',
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900),
+                    child: const Text(
+                      '検　索',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ),
               ],

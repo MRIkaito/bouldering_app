@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // アプリ名テキスト : test実行する
+          // アプリ名テキスト
           SizedBox(
             width: 209,
             height: 25,

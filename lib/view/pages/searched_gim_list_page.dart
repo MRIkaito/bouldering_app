@@ -1,4 +1,3 @@
-/// ✅ 1. SearchedGimListPage の修正（GymInfo型 + extra経由で受け取る）
 import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view_model/utility/is_open.dart';

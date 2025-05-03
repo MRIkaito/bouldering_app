@@ -1,15 +1,14 @@
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
-// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view/components/this_month_boul_log.dart';
 import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class UserProfileSection extends ConsumerWidget {
   const UserProfileSection({super.key});

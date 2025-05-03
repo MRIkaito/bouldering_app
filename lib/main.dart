@@ -41,8 +41,6 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final routerRef = ref.watch(routerProvider);
 
-    // ref.read(gymProvider.notifier).fetchGymData();
-    // gymProvider → gymInfoProvider に変更
     ref.read(gymInfoProvider.notifier).fetchGymInfoData();
 
     return MaterialApp.router(

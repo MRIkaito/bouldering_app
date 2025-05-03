@@ -1,8 +1,6 @@
-// import 'package:bouldering_app/model/gym.dart';
 import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/pages/gym_search_page.dart';
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
-// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

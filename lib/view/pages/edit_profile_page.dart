@@ -1,4 +1,12 @@
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
+import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
+import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
+import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
+import 'package:bouldering_app/view/pages/edit_username_page.dart';
+import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
+import 'package:bouldering_app/view/components/edit_setting_item.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,15 +17,6 @@ import 'package:path/path.dart' as path;
 import 'package:crypto/crypto.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
-import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
-import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
-import 'package:bouldering_app/view/pages/edit_username_page.dart';
-import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
-import 'package:bouldering_app/view/components/edit_setting_item.dart';
-// import 'package:bouldering_app/view_model/gym_provider.dart';
-import 'package:bouldering_app/view_model/user_provider.dart';
-import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -278,9 +277,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '生年月日(非公開)',
-                  subtitle: (userRef?.birthday == null)
+                  subtitle: (userRef.birthday == null)
                       ? "未設定"
-                      : "${userRef!.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
+                      : "${userRef.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
                 ),
               ),
 

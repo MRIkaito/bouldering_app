@@ -1,5 +1,6 @@
 import 'package:bouldering_app/model/boulder.dart';
-import 'package:bouldering_app/model/gym.dart';
+// import 'package:bouldering_app/model/gym.dart';
+import 'package:bouldering_app/model/gym_info.dart';
 
 /// ■ メソッド
 /// - ユーザーの登録しているホームジム名を表示する
@@ -8,7 +9,7 @@ import 'package:bouldering_app/model/gym.dart';
 /// 引数：
 /// - [userRef] ユーザークラスの情報
 /// - [gymRef] ジム情報のクラス
-String showGymName(Boulder? userRef, Map<int, Gym>? gymRef) {
+String showGymName(Boulder? userRef, Map<int, GymInfo>? gymRef) {
   String gymName = " - ";
 
   // nullチェック

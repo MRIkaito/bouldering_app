@@ -64,7 +64,7 @@ class GimCard extends ConsumerWidget {
                       color: Colors.black,
                     ),
                   ),
-                  const TextSpan(text: ' '), // スペースを追加
+                  const TextSpan(text: ' '),
                   TextSpan(
                     text: '[$gymPrefecture]',
                     style: const TextStyle(
@@ -79,16 +79,21 @@ class GimCard extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // ジムカテゴリ
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
+          Row(
             children: [
               if (isBoulderingGym)
-                const GimCategory(gimCategory: 'ボルダリング', colorCode: 0xFFF44336),
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child:
+                      GimCategory(gimCategory: 'ボルダリング', colorCode: 0xFFFF0F00),
+                ),
               if (isLeadGym)
-                const GimCategory(gimCategory: 'リード', colorCode: 0xFFFF0F00),
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: GimCategory(gimCategory: 'リード', colorCode: 0xFF00A24C),
+                ),
               if (isSpeedGym)
-                const GimCategory(gimCategory: 'スピード', colorCode: 0xFFFF0F00),
+                const GimCategory(gimCategory: 'スピード', colorCode: 0xFF0057FF),
             ],
           ),
           const SizedBox(height: 8),

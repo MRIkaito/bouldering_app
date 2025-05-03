@@ -1,7 +1,7 @@
-import 'package:bouldering_app/model/gym.dart';
+import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view/pages/gym_search_page.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,12 +30,24 @@ class _SelectHomeGymDialogPageState
   String presetGymName = "";
   String displayedGymName = "";
   // ジム名を検索しても見つからないとき用のダミーデータ
-  Gym dummyGym = Gym(
+  GymInfo dummyGym = GymInfo(
+    gymId: 1,
     gymName: "-",
-    latitude: 0,
-    longitude: 0,
+    hpLink: "-",
     prefecture: "-",
     city: "-",
+    addressLine: "-",
+    latitude: 0,
+    longitude: 0,
+    telNo: "000-0000-000",
+    fee: " -- ",
+    minimumFee: 500,
+    equipmentRentalFee: " abc ",
+    ikitaiCount: 100,
+    boulCount: 100,
+    isBoulderingGym: true,
+    isLeadGym: false,
+    isSpeedGym: false,
   );
 
   @override
@@ -138,7 +150,7 @@ class _SelectHomeGymDialogPageState
                     Navigator.of(context).pop();
                     confirmedDialog(context, true);
                   } else {
-                    final gymMap = ref.read(gymProvider);
+                    final gymMap = ref.read(gymInfoProvider);
                     final int updateGymId = gymMap.entries
                         .firstWhere(
                           (entry) => entry.value.gymName == displayedGymName,

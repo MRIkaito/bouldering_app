@@ -1,6 +1,8 @@
-import 'package:bouldering_app/model/gym.dart';
+// import 'package:bouldering_app/model/gym.dart';
+import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/pages/gym_search_page.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +61,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   ///
   /// 返り値
   /// - なし
-  void getGymIdFromSelectedGym(String? selectedGym, Map<int, Gym> gymRef) {
+  void getGymIdFromSelectedGym(String? selectedGym, Map<int, GymInfo> gymRef) {
     if (selectedGym == null) {
       // DO NOTHING
     } else {
@@ -244,7 +246,8 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   @override
   Widget build(BuildContext context) {
     // ジム情報参照
-    final gymRef = ref.read(gymProvider);
+    // final gymRef = ref.read(gymProvider);
+    final gymRef = ref.read(gymInfoProvider);
     // ユーザー情報を取得して、ログイン状態にあるかを確認
     final userRef = ref.watch(userProvider);
 

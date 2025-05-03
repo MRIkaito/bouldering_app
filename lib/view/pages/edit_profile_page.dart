@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,7 @@ import 'package:bouldering_app/view/pages/gender_selection_dialog_page.dart';
 import 'package:bouldering_app/view/pages/edit_username_page.dart';
 import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
 import 'package:bouldering_app/view/components/edit_setting_item.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 
@@ -103,7 +104,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final userRef = ref.watch(userProvider);
-    final gymRef = ref.watch(gymProvider);
+    // final gymRef = ref.watch(gymProvider);
+    final gymRef = ref.watch(gymInfoProvider);
     final String gender;
 
     if (userRef?.gender == null) {

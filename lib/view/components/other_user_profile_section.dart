@@ -1,6 +1,7 @@
 import 'package:bouldering_app/view/components/button.dart';
 import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/other_user_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
@@ -87,7 +88,8 @@ class _OtherUserProfileSectionState
                 child: Center(child: Text("ユーザー情報が取得できませんでした")));
           }
 
-          final gymRef = ref.read(gymProvider);
+          // final gymRef = ref.read(gymProvider);
+          final gymRef = ref.read(gymInfoProvider);
           String boulLogDuration = calcBoulderingDuration(user);
 
           return SliverToBoxAdapter(

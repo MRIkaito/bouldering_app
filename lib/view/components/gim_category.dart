@@ -5,29 +5,42 @@ class GimCategory extends StatelessWidget {
     Key? key,
     required this.gimCategory,
     required this.colorCode,
+    this.isSelected,
+    this.isTappable = false,
+    this.onTap,
   }) : super(key: key);
 
   final String gimCategory;
   final int colorCode;
+  final bool? isSelected;
+  final bool isTappable;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft, // Container全体を左寄せ
+    final bool showSelected = isSelected != null;
+    final Color bgColor = showSelected
+        ? (isSelected! ? Color(colorCode) : Colors.grey.shade300)
+        : Color(colorCode);
+    final Color textColor = showSelected
+        ? (isSelected! ? Colors.white : Colors.black)
+        : Colors.white;
+
+    final categoryWidget = Align(
+      alignment: Alignment.centerLeft,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 4), // 高さを調整
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: ShapeDecoration(
-          color: Color(colorCode),
+          color: bgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        // 以下のように幅を文字列の長さに応じて自動調整
+        // 幅を文字列の長さに応じて自動調整
         child: Text(
           gimCategory,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: textColor,
             fontSize: 16,
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
@@ -37,5 +50,12 @@ class GimCategory extends StatelessWidget {
         ),
       ),
     );
+
+    return isTappable
+        ? GestureDetector(
+            onTap: onTap,
+            child: categoryWidget,
+          )
+        : categoryWidget;
   }
 }

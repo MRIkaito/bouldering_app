@@ -1,4 +1,5 @@
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,7 +27,8 @@ class _GymSearchPageState extends ConsumerState<GymSearchPage> {
     super.initState();
 
     // すべてのジムをallGymsに格納
-    final gymRef = ref.read(gymProvider);
+    // final gymRef = ref.read(gymProvider);
+    final gymRef = ref.read(gymInfoProvider);
     final gymsLength = gymRef.length;
     for (int i = 0; i < gymsLength; i++) {
       final gym = gymRef[i];

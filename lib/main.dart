@@ -3,7 +3,7 @@
  * インポート
  * ============================================ */
 import 'package:bouldering_app/router.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,7 +40,10 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routerRef = ref.watch(routerProvider);
-    ref.read(gymProvider.notifier).fetchGymData();
+
+    // ref.read(gymProvider.notifier).fetchGymData();
+    // gymProvider → gymInfoProvider に変更
+    ref.read(gymInfoProvider.notifier).fetchGymInfoData();
 
     return MaterialApp.router(
       routerConfig: routerRef,

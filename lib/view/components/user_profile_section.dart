@@ -1,4 +1,5 @@
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:bouldering_app/view_model/utility/calc_bouldering_duration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,8 @@ class UserProfileSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    final gymRef = ref.read(gymProvider);
+    // final gymRef = ref.read(gymProvider);
+    final gymRef = ref.read(gymInfoProvider);
     String boulLogDuration = calcBoulderingDuration(user);
 
     return SliverToBoxAdapter(

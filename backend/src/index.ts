@@ -27,9 +27,35 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
   switch(requestId) {
     // requestId：1
-    // なし
+    case 1:
+      try {
+        const { liker_user_id, likee_user_id } = req.query;
 
-     // requestId：2
+        // パラメータが揃っているか確認
+        if (!liker_user_id || !likee_user_id) {
+          res.status(400).send("liker_user_id または likee_user_id が不足しています");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // お気に入り関係が存在するか確認
+        const result = await client.query(`
+          SELECT * FROM favorite_user_relation
+          WHERE liker_user_id = $1 AND likee_user_id = $2
+        `, [liker_user_id, likee_user_id]);
+
+        client.release();
+
+        res.status(200).json(result.rows); // 存在するなら1件、なければ空配列
+      } catch (error) {
+        console.error("お気に入り確認中にエラー:", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // requestId：2
     // ツイートを最新順から取得する処理
     case 2:
       try {
@@ -297,7 +323,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-     // requestId：6
+    // requestId：6
     // お気に入り登録しているユーザーのツイートを取得する処理
     //
     // クエリパラメータ：
@@ -326,7 +352,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               BLT.tweet_id,
               B.user_name,
-              FUR.likee_user_id,
+              FUR.likee_user_id AS user_id,
               BLT.visited_date,
               BLT.tweeted_date,
               BLT.tweet_contents,
@@ -358,7 +384,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               BLT.tweet_id,
               B.user_name,
-              FUR.likee_user_id,
+              FUR.likee_user_id AS user_id,
               BLT.visited_date,
               BLT.tweeted_date,
               BLT.tweet_contents,
@@ -499,7 +525,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           // DB接続を解放
           client.release();
 
-          // 挿入が成功されたか確認
+          // 挿入が成功されたかを確認する
+          // TO DO：正常時，異常時の処理が適切なのかを確認する
           if((result.rowCount ?? 0) > 0)  {
             // tweet_idを取得
             const insertedTweetId = result.rows[0].tweet_id;
@@ -563,8 +590,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
           // 挿入が成功されたかを確認する
           // TO DO：正常時，異常時の処理が適切なのかを確認する
-          if((result.rowCount ?? 0) === 0)  {
-            res.status(201).send("データが正常に挿入されました");
+          if((result.rowCount ?? 0) > 0)  {
+            res.status(200).send("データが正常に挿入されました");
           } else {
             res.status(400).send("データ挿入に失敗しました");
           }
@@ -575,7 +602,50 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // requestId：10  なし
+    // requestId：10
+    // ユーザーのお気に入り登録を解除する
+    //
+    // クエリパラメータ：
+    // liker_user_id：お気に入りしていた側のユーザーID
+    // likee_user_id：お気に入りされていた側のユーザーID
+    case 10:
+      try {
+        const { liker_user_id, likee_user_id } = req.query;
+
+        // パラメータが不足している場合
+        if (!liker_user_id || !likee_user_id) {
+          res
+            .status(400)
+            .send("liker_user_id または likee_user_id パラメータが不足しています");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // 該当するお気に入り関係を削除
+        const result = await client.query(
+          `
+            DELETE FROM favorite_user_relation
+            WHERE liker_user_id = $1 AND likee_user_id = $2
+          `,
+          [liker_user_id, likee_user_id]
+        );
+
+        // DB接続を解放
+        client.release();
+
+        // 削除が成功したかを確認
+        if ((result.rowCount ?? 0) > 0) {
+          res.status(200).send("お気に入りを解除しました");
+        } else {
+          res.status(404).send("該当するデータが見つかりませんでした");
+        }
+      } catch (error) {
+        console.error("お気に入り解除エラー:", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
 
 
     // requestId：11
@@ -752,19 +822,44 @@ exports.getData = functions.https.onRequest(async (req, res) => {
         // すべてのジムの情報を取得する
         const result = await client.query(`
           SELECT
-            gym_id,
-            gym_name,
-            latitude,
-            longitude,
-            prefecture,
-            city
-          FROM
-            gym_info;
+            GI.gym_id,
+            GI.gym_name,
+            GI.hp_link,
+            GI.prefecture,
+            GI.city,
+            GI.address_line,
+            GI.latitude,
+            GI.longitude,
+            GI.tel_no,
+            GI.fee,
+            GI.minimum_fee,
+            GI.equipment_rental_fee,
+            (SELECT COUNT(*) FROM wanna_go_relation WGR WHERE WGR.gym_id = GI.gym_id) AS ikitai_count,
+            (SELECT COUNT(*) FROM boul_log_tweet BLT WHERE BLT.gym_id = GI.gym_id) AS boul_count,
+            CT.is_bouldering_gym,
+            CT.is_lead_gym,
+            CT.is_speed_gym,
+            GH.sun_open,
+            GH.sun_close,
+            GH.mon_open,
+            GH.mon_close,
+            GH.tue_open,
+            GH.tue_close,
+            GH.wed_open,
+            GH.wed_close,
+            GH.thu_open,
+            GH.thu_close,
+            GH.fri_open,
+            GH.fri_close,
+            GH.sat_open,
+            GH.sat_close
+          FROM gym_info GI
+          INNER JOIN climbing_types CT ON CT.gym_id = GI.gym_id
+          INNER JOIN gym_hours GH ON GH.gym_id = GI.gym_id;
         `);
 
         // DB接続を解放
         client.release();
-
 
         // データが見つからないケース
         if(result.rows.length === 0){
@@ -1074,6 +1169,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 
     // request_id: 20 - 21
     // なし
+
 
     // request_id: 22
     // - 指定した月の「ボル活回数」「訪問したジム施設数」「週当たりのボルダリング活動数」を取得する
@@ -1389,10 +1485,11 @@ exports.getData = functions.https.onRequest(async (req, res) => {
 // - limit : ツイートを一度に読み込んで取得する数
 // - cursor : フロント側で取得している最も古いツイート日時
 case 25:
-  // let client; の定義はcase 24:の中にある
+    let localClient : any;
+
   try {
     // クエリパラメータ取得
-    const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string, 10) : NaN; // 修正箇所
+    const gym_id = req.query.gym_id ? parseInt(req.query.gym_id as string, 10) : NaN;
 
     // gym_idがない(null)ケース
     if (isNaN(gym_id)) {
@@ -1402,12 +1499,12 @@ case 25:
     }
 
     // DB接続
-    client = await pool.connect();
+    // client を関数スコープ外からではなく、ここだけで定義して使う
+    localClient = await pool.connect();
 
     // お気に入り登録しているジム情報（ジムカード）を取得(お気に入り登録した順番に取得)
-    const result = await client.query(
-      `
-      SELECT
+    const result = await localClient.query(`
+    SELECT
         GI.gym_id,
         GI.gym_name,
         GI.hp_link,
@@ -1439,28 +1536,27 @@ case 25:
         GH.fri_close,
         GH.sat_open,
         GH.sat_close
-      FROM gym_info GI
-      INNER JOIN climbing_types CT
-        ON CT.gym_id = GI.gym_id
-      INNER JOIN gym_hours GH
-        ON GH.gym_id = GI.gym_id
-      WHERE GI.gym_id = $1;
-      `, [gym_id]);
+    FROM gym_info GI
+    INNER JOIN climbing_types CT ON CT.gym_id = GI.gym_id
+    INNER JOIN gym_hours GH ON GH.gym_id = GI.gym_id
+    WHERE GI.gym_id = $1;
+    `, [gym_id]);
 
     if (result.rows.length > 0) {
-      res.status(200).json(result.rows);
+      // res.status(200).json(result.rows);
+      res.status(200).json(result.rows[0]); // ← 配列の中の1件を返す
       return;
     } else {
-      res.status(500).send("Error querying database");
+      res.status(500).send("No data found for the given gym_id");
       return;
     }
   } catch (error) {
     console.error("Error querying database: ", error);
-    res.status(500).send("Error querying database");
+    res.status(500).send("Exception occurred while querying database");
   } finally {
     // 修正：clientがnullでない場合のみrelease
-    if (client) {
-      client.release();
+    if (localClient) {
+      localClient.release();
     }
   }
   break;

@@ -1,5 +1,6 @@
 import 'package:bouldering_app/view_model/facility_info_provider.dart';
-import 'package:bouldering_app/view_model/gym_provider.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +22,8 @@ class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
   @override
   void initState() {
     super.initState();
-    final gymRef = ref.read(gymProvider);
+    // final gymRef = ref.read(gymProvider);
+    final gymRef = ref.read(gymInfoProvider);
     gymRef.forEach((id, gym) {
       if (gym.gymName != null && gym.prefecture != null && gym.city != null) {
         allGyms.add({
@@ -49,7 +51,7 @@ class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
       appBar: AppBar(
         title: const Text('ジム検索', style: TextStyle(color: Colors.black)),
         elevation: 0.0,
-        backgroundColor: Color(0xFEF7FF),
+        backgroundColor: const Color(0x00FEF7FF),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Column(
@@ -103,7 +105,7 @@ class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                         await ref.read(facilityInfoProvider(gymId).future);
 
                     if (gymInfo != null) {
-                      context.push('/FacilityInfo/$gymId');
+                      await context.push('/FacilityInfo/$gymId');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("ジム情報の取得に失敗しました")),
@@ -112,41 +114,6 @@ class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                   },
                 );
               },
-            ),
-          ),
-
-          // 検索ボタン
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Text('${filteredGyms.length} 件',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context
-                          .push("/Home/SearchGim/GymSelection/SearchedGimList");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      fixedSize: const Size(0, 32), // 高さ：固定 / 幅：自動
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      '検　索',
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ],

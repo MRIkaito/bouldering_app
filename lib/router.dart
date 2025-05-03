@@ -65,10 +65,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                                     child: GymSelectionPage()),
                             routes: [
                               GoRoute(
-                                  path: 'SearchedGimList',
-                                  pageBuilder: (context, state) =>
-                                      const NoTransitionPage(
-                                          child: SearchedGimListPage())),
+                                path: 'SearchedGimList',
+                                pageBuilder: (context, state) =>
+                                    NoTransitionPage(
+                                  child: SearchedGimListPage(),
+                                ),
+                              )
                             ]),
                         GoRoute(
                             path: 'SearchedGimList',

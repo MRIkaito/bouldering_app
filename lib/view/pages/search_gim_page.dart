@@ -1,16 +1,64 @@
+// import 'package:bouldering_app/model/gym.dart';
+import 'package:bouldering_app/model/gym_info.dart';
 import 'package:bouldering_app/view/components/gim_category.dart';
+// import 'package:bouldering_app/view_model/gym_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bouldering_app/view_model/gym_info_provider.dart'; // ← この1行を追加
 
-class SearchGimPage extends StatefulWidget {
+class SearchGimPage extends ConsumerStatefulWidget {
   const SearchGimPage({super.key});
 
   @override
   _SearchGimPageState createState() => _SearchGimPageState();
 }
 
-class _SearchGimPageState extends State<SearchGimPage> {
-  // String selectedGym = '';
+class _SearchGimPageState extends ConsumerState<SearchGimPage> {
+  // 選択状態を保持
+  final Map<String, bool> selectedPrefectures = {};
+  final Map<String, bool> selectedGymTypes = {
+    "ボルダリング": false,
+    "リード": false,
+  };
+
+  //ジムデータ保持
+  List<GymInfo> allGyms = [];
+  List<GymInfo> filterdGyms = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final gymMap = ref.read(gymInfoProvider);
+    allGyms = gymMap.values.toList();
+    _applyFilters(); // 初期表示
+  }
+
+  /// ■ メソッド
+  /// - 選択した都道府県・ジム種別をフィルタリングして，状態保存する
+  void _applyFilters() {
+    final selectedPrefs = selectedPrefectures.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toSet();
+    final selectedTypes = selectedGymTypes.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toSet();
+
+    setState(() {
+      filterdGyms = allGyms.where((gym) {
+        final matchesPref =
+            selectedPrefs.isEmpty || selectedPrefs.contains(gym.prefecture);
+
+        final matchesType = selectedTypes.isEmpty ||
+            (selectedTypes.contains('ボルダリング') && gym.isBoulderingGym) ||
+            (selectedTypes.contains('リード') && gym.isLeadGym);
+
+        return matchesPref && matchesType;
+      }).toList();
+    });
+  }
 
   final List<String> hokkaidoTohoku = [
     '北海道',
@@ -54,8 +102,6 @@ class _SearchGimPageState extends State<SearchGimPage> {
     '沖縄県'
   ];
 
-  final Map<String, bool> selectedPrefectures = {};
-
   @override
   void initState() {
     super.initState();
@@ -92,33 +138,7 @@ class _SearchGimPageState extends State<SearchGimPage> {
                   child: TextField(
                     readOnly: true, // 選択のみを可能にする
                     onTap: () async {
-                      // GymSelectionPage に遷移して選択したジム名を取得
                       await context.push("/Home/SearchGim/GymSelection");
-                      // 下記コードは上記コードが上手く実行されれば不要．
-                      // await Navigator.push(
-                      //   context,
-                      //   PageRouteBuilder(
-                      //     pageBuilder: (context, animation1, animation2) =>
-                      //         const GymSelectionPage(),
-                      //     transitionDuration: Duration.zero, // アニメーションを無効化
-                      //     reverseTransitionDuration:
-                      //         Duration.zero, // 戻り時のアニメーションも無効化
-                      //   ),
-                      // );
-
-                      // final result = await Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const GymSelectionPage(),
-                      //   ),
-                      // );
-
-                      // 選択したジム名を設定
-                      // if ((result != null) && (result is String)) {
-                      //   setState(() {
-                      //     selectedGym = result;
-                      //   });
-                      // }
                     },
                     decoration: InputDecoration(
                       hintText: 'エリア・施設名・キーワード',
@@ -130,17 +150,6 @@ class _SearchGimPageState extends State<SearchGimPage> {
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    // 検索ボックスのクリア
-                    // setState(() {
-                    //   selectedGym = '';
-                    // });
-                    print("クリアボタン押下");
-                  },
-                  child:
-                      const Text('クリア', style: TextStyle(color: Colors.blue)),
-                ),
               ],
             ),
           ),
@@ -149,16 +158,14 @@ class _SearchGimPageState extends State<SearchGimPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 _buildCategoryButton('ボルダリング', 0xFFFF0F00),
-                _buildCategoryButton('スピード', 0xFF0056FF),
+                const SizedBox(width: 8),
                 _buildCategoryButton('リード', 0xFF00A24C),
-                _buildCategoryButton('キッズ', 0xFFFFA115),
               ],
             ),
           ),
-
           const SizedBox(height: 8),
 
           // 地域選択ボタン
@@ -182,36 +189,60 @@ class _SearchGimPageState extends State<SearchGimPage> {
             ),
           ),
 
-          // 検索ボタン
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('??? 件',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ElevatedButton(
-                  onPressed: () {
-                    // 設定した条件に応じて、検索押下
-                    context.push("/Home/SearchGim/SearchedGimList");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(304, 32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    backgroundColor: Colors.blue,
-                  ),
-                  child: const Text(
-                    '検　索',
-                    style: TextStyle(
+          // 検索欄（件数 + 検索ボタン）
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  // 件数（残り幅を全て使う）
+                  IntrinsicWidth(
+                    child: Text(
+                      '${filterdGyms.length} 件',
+                      style: const TextStyle(
                         fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final gymInfoMap =
+                            ref.read(gymInfoProvider); // ✅ GymInfoのMapを読む
+                        final List<GymInfo> gymInfos = filterdGyms
+                            .map((gym) => gymInfoMap[gym.gymId]) // ✅ GymInfoを参照
+                            .whereType<GymInfo>() // ✅ null除外
+                            .toList();
+
+                        context.push(
+                          "/Home/SearchGim/SearchedGimList",
+                          extra: gymInfos,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        '検　索',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -219,21 +250,48 @@ class _SearchGimPageState extends State<SearchGimPage> {
     );
   }
 
+  /// ■ メソッド(ウィジェット)
+  /// - ジムカテゴリーボタンを選択することができるボタン
+  ///
+  /// 引数
+  /// - [category] ジムのカテゴリー('ボルダリング', 'リード')
+  /// - [colorCode] ジムカテゴリーボタンのカラーコード
+  ///
+  /// 返り値
+  /// - 指定したカテゴリー・カラーコードのジムカテゴリーボタン
   Widget _buildCategoryButton(String category, int colorCode) {
+    final isSelected = selectedGymTypes[category]!;
     return GestureDetector(
       onTap: () {
         setState(() {
-          // カテゴリボタン押下時の処理を追加
-          print("押下");
+          selectedGymTypes[category] == !isSelected;
+          _applyFilters();
         });
       },
       child: GimCategory(
-        gimCategory: category,
-        colorCode: colorCode,
-      ),
+          gimCategory: category,
+          colorCode: colorCode,
+          isSelected: isSelected,
+          isTappable: true,
+          onTap: () {
+            setState(() {
+              selectedGymTypes[category] = !isSelected;
+              _applyFilters();
+            });
+          }),
     );
   }
 
+  /// ■ メソッド(ウィジェット)
+  /// - 都道府県を選択するボタン
+  ///
+  /// 引数
+  /// - [regionName] 次に示すそれぞれの都道府県の地域名
+  ///   '北海道・東北', '関東','北陸・甲信越','東海’,'近畿','中国・四国','九州・沖縄',
+  /// - [prefectures] 各地域の都道府県をリストにしたもの
+  ///
+  /// 返り値
+  /// - 各都道府県のボタン
   Widget _buildRegionSection(String regionName, List<String> prefectures) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,6 +315,7 @@ class _SearchGimPageState extends State<SearchGimPage> {
               onTap: () {
                 setState(() {
                   selectedPrefectures[prefecture] = !isSelected;
+                  _applyFilters();
                 });
               },
               child: Container(

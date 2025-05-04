@@ -47,4 +47,5 @@ flutter:
     - lib/view/assets/test_user_icon.png
     - lib/view/assets/gym_facilitation.png
     - assets/keys/service_account.json
+    - assets/
   uses-material-design: true

@@ -78,11 +78,11 @@ class UnloginedMyPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     _buildSectionText('気になるジムをお気に入り登録して，行きたいジムリストを作ることができます．'),
                     const SizedBox(height: 24),
-                    _buildSectionTitle('2. 行きたいジムを保存'),
+                    _buildSectionTitle('2. ボル活を記録'),
                     const SizedBox(height: 8),
                     _buildSectionText('ジムで登った記録や感想を残すことができます．'),
                     const SizedBox(height: 24),
-                    _buildSectionTitle('3. コンペ'),
+                    _buildSectionTitle('3. コンペ（今後追加予定）'),
                     const SizedBox(height: 8),
                     _buildSectionText(
                         'ジムのコンペやイベント，セッションの情報を確認できます．気になるジムをのぞいてみよう！'),

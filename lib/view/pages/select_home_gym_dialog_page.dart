@@ -113,9 +113,14 @@ class _SelectHomeGymDialogPageState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        displayedGymName,
-                        style: const TextStyle(fontSize: 18),
+                      Expanded(
+                        child: Text(
+                          displayedGymName,
+                          style: const TextStyle(fontSize: 18),
+                          maxLines: 2, // ← 改行を許可（必要に応じて2以上に）
+                          overflow: TextOverflow.visible, // ← 「…」を消して、全体表示
+                          softWrap: true, // ← 改行を許可
+                        ),
                       ),
                       SvgPicture.asset('lib/view/assets/date_range.svg'),
                     ],

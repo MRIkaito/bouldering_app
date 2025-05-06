@@ -3,7 +3,7 @@ import 'package:bouldering_app/view/components/gim_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bouldering_app/view_model/gym_info_provider.dart'; // ← この1行を追加
+import 'package:bouldering_app/view_model/gym_info_provider.dart';
 
 class SearchGimPage extends ConsumerStatefulWidget {
   const SearchGimPage({super.key});
@@ -211,10 +211,10 @@ class _SearchGimPageState extends ConsumerState<SearchGimPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         final gymInfoMap =
-                            ref.read(gymInfoProvider); // ✅ GymInfoのMapを読む
+                            ref.read(gymInfoProvider); // GymInfoのMapを読む
                         final List<GymInfo> gymInfos = filterdGyms
-                            .map((gym) => gymInfoMap[gym.gymId]) // ✅ GymInfoを参照
-                            .whereType<GymInfo>() // ✅ null除外
+                            .map((gym) => gymInfoMap[gym.gymId]) // GymInfoを参照
+                            .whereType<GymInfo>() // null除外
                             .toList();
 
                         context.push(

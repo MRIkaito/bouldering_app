@@ -57,9 +57,13 @@ class FavoriteUserPage extends ConsumerWidget {
                 // TODO：今は、上記のuser_icon_urlがnullの場合は直接記述している
                 // URL(ダミーデータ)として標示しているが、これはいずれDBに記述するようにする。
                 // 設定していない場合は上記のURLを記述して埋めるようにする
-                final String favoriteUserName = favoriteUser['user_name'];
-                final String favoriteUserHomeGym = favoriteUser['gym_name'];
-                final String favoriteUserId = favoriteUser['likee_user_id'];
+                final String favoriteUserName =
+                    favoriteUser['user_name'] ?? '-';
+                final String favoriteUserHomeGym =
+                    favoriteUser['gym_name'] ?? '-';
+                final String favoriteUserId = (type == 'favorite')
+                    ? favoriteUser['likee_user_id'] ?? ''
+                    : favoriteUser['liker_user_id'] ?? '';
 
                 return FavoriteUserItem(
                   name: favoriteUserName,

@@ -56,7 +56,6 @@ class StaticsReportPage extends ConsumerWidget {
       data: (boulActivityStats) {
         return Container(
           width: 344,
-          height: 328,
           padding: const EdgeInsets.all(16),
           decoration: ShapeDecoration(
             color: bgColor,
@@ -66,6 +65,7 @@ class StaticsReportPage extends ConsumerWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 title,
@@ -107,16 +107,47 @@ class StaticsReportPage extends ConsumerWidget {
                   letterSpacing: -0.50,
                 ),
               ),
-              Expanded(
-                child: ListView(
-                  physics: const NeverScrollableScrollPhysics(), // スクロール表示をオフ
-                  children: List.generate(5, (index) {
-                    return _buildTop5Item(
-                      boulActivityStats.topGyms[index]['gym_name'],
-                      '${boulActivityStats.topGyms[index]['visit_count']} 回',
-                    );
-                  }),
-                ),
+              const SizedBox(height: 4),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: boulActivityStats.topGyms.length,
+                itemBuilder: (context, index) {
+                  final gym = boulActivityStats.topGyms[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // ★ 改行できるように修正
+                        Expanded(
+                          child: Text(
+                            gym['gym_name'],
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.50,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${gym['visit_count']} 回',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.50,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),

@@ -221,62 +221,72 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
     });
 
     try {
-      // ここでAPIリクエストを投げて「イキタイ」登録 or 解除
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        final List<dynamic> wannaGoRelationList = jsonDecode(response.body);
-        final List<GymInfo> newRegisteredGymList = wannaGoRelationList
-            .map((gymCard) => GymInfo(
-                  gymId: int.tryParse(gymCard['gym_id']) ?? 0,
-                  gymName: gymCard['gym_name'] ?? '',
-                  hpLink: gymCard['hp_link'] ?? '',
-                  prefecture: gymCard['prefecture'] ?? '',
-                  city: gymCard['city'] ?? '',
-                  addressLine: gymCard['address_line'] ?? '',
-                  latitude:
-                      double.tryParse(gymCard['latitude'].toString()) ?? 0.0,
-                  longitude:
-                      double.tryParse(gymCard['longitude'].toString()) ?? 0.0,
-                  telNo: gymCard['tel_no'] ?? '',
-                  fee: gymCard['fee'] ?? '',
-                  minimumFee: int.tryParse(gymCard['minimum_fee']) ?? 0,
-                  equipmentRentalFee: gymCard['equipment_rental_fee'] ?? '',
-                  ikitaiCount: int.tryParse(gymCard['ikitai_count']) ?? 0,
-                  boulCount: int.tryParse(gymCard['boul_count']) ?? 0,
-                  isBoulderingGym: gymCard['is_bouldering_gym'] == 'true',
-                  isLeadGym: gymCard['is_lead_gym'] == 'true',
-                  isSpeedGym: gymCard['is_speed_gym'] == 'true',
-                  sunOpen: gymCard['sun_open'] ?? '-',
-                  sunClose: gymCard['sun_close'] ?? '-',
-                  monOpen: gymCard['mon_open'] ?? '-',
-                  monClose: gymCard['mon_close'] ?? '-',
-                  tueOpen: gymCard['tue_open'] ?? '-',
-                  tueClose: gymCard['tue_close'] ?? '-',
-                  wedOpen: gymCard['wed_open'] ?? '-',
-                  wedClose: gymCard['wed_close'] ?? '-',
-                  thuOpen: gymCard['thu_open'] ?? '-',
-                  thuClose: gymCard['thu_close'] ?? '-',
-                  friOpen: gymCard['fri_open'] ?? '-',
-                  friClose: gymCard['fri_close'] ?? '-',
-                  satOpen: gymCard['sat_open'] ?? '-',
-                  satClose: gymCard['sat_close'] ?? '-',
-                ))
-            .toList();
+        /// Map<String, dynamic> もしくは List<Map<String, dynamic>> 両方に対応
+        final decoded = jsonDecode(response.body);
 
-        final Map<int, GymInfo> newRegisteredGymMap = {
-          for (var newRegisteredGym in newRegisteredGymList)
-            newRegisteredGym.gymId: newRegisteredGym
-        };
+        final List<Map<String, dynamic>> gymCards = decoded is List
+            ? List<Map<String, dynamic>>.from(decoded)
+            : [Map<String, dynamic>.from(decoded)];
 
-        state.addAll(newRegisteredGymMap);
-        // 状態更新：イキタイ登録したジム情報を更新
-        // state = [...newWannaGoRelationList, ...state];
+        for (final gymCard in gymCards) {
+          final GymInfo newRegisteredGym = GymInfo(
+            gymId: gymCard['gym_id'] is int
+                ? gymCard['gym_id']
+                : int.tryParse(gymCard['gym_id'].toString()) ?? 0,
+            gymName: gymCard['gym_name'] ?? '',
+            hpLink: gymCard['hp_link'] ?? '',
+            prefecture: gymCard['prefecture'] ?? '',
+            city: gymCard['city'] ?? '',
+            addressLine: gymCard['address_line'] ?? '',
+            latitude: double.tryParse(gymCard['latitude'].toString()) ?? 0.0,
+            longitude: double.tryParse(gymCard['longitude'].toString()) ?? 0.0,
+            telNo: gymCard['tel_no'] ?? '',
+            fee: gymCard['fee'] ?? '',
+            minimumFee: gymCard['minimum_fee'] is int
+                ? gymCard['minimum_fee']
+                : int.tryParse(gymCard['minimum_fee'].toString()) ?? 0,
+            equipmentRentalFee: gymCard['equipment_rental_fee'] ?? '',
+            ikitaiCount: gymCard['ikitai_count'] is int
+                ? gymCard['ikitai_count']
+                : int.tryParse(gymCard['ikitai_count'].toString()) ?? 0,
+            boulCount: gymCard['boul_count'] is int
+                ? gymCard['boul_count']
+                : int.tryParse(gymCard['boul_count'].toString()) ?? 0,
+            isBoulderingGym:
+                gymCard['is_bouldering_gym'].toString().toLowerCase() == 'true',
+            isLeadGym:
+                gymCard['is_lead_gym'].toString().toLowerCase() == 'true',
+            isSpeedGym:
+                gymCard['is_speed_gym'].toString().toLowerCase() == 'true',
+            sunOpen: gymCard['sun_open'] ?? '-',
+            sunClose: gymCard['sun_close'] ?? '-',
+            monOpen: gymCard['mon_open'] ?? '-',
+            monClose: gymCard['mon_close'] ?? '-',
+            tueOpen: gymCard['tue_open'] ?? '-',
+            tueClose: gymCard['tue_close'] ?? '-',
+            wedOpen: gymCard['wed_open'] ?? '-',
+            wedClose: gymCard['wed_close'] ?? '-',
+            thuOpen: gymCard['thu_open'] ?? '-',
+            thuClose: gymCard['thu_close'] ?? '-',
+            friOpen: gymCard['fri_open'] ?? '-',
+            friClose: gymCard['fri_close'] ?? '-',
+            satOpen: gymCard['sat_open'] ?? '-',
+            satClose: gymCard['sat_close'] ?? '-',
+          );
+
+          state = {
+            ...state,
+            newRegisteredGym.gymId: newRegisteredGym,
+          };
+        }
       } else {
         throw Exception("イキタイジム登録に失敗しました");
       }
     } catch (error) {
-      print("エラーメッセージ:${error}");
+      print("エラーメッセージ:$error");
     }
   }
 

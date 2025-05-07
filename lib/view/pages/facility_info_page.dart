@@ -26,6 +26,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
   /// ■ プロパティ
   final String gymId;
   final ScrollController _scrollController = ScrollController();
+  bool _isWannaGoRegistered = false;
 
   /// ■ コンストラクタ
   FacilityInfoPageState({
@@ -40,6 +41,15 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
 
     // スクロール発生時,_onScroll()を実行するリスナを追加
     _scrollController.addListener(_onScroll);
+
+    /// ✨✨✨ 変更箇所あり：initStateでイキタイ登録状態を取得して変数に代入 ✨✨✨
+    Future.microtask(() {
+      final wannaGoGymState = ref.read(wannaGoRelationProvider);
+      final isRegistered = wannaGoGymState.containsKey(int.parse(gymId));
+      setState(() {
+        _isWannaGoRegistered = isRegistered;
+      });
+    });
   }
 
   /// ■ 内部メソッド
@@ -73,8 +83,8 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
     final specificGymTweets = specificGymTweetsState.specificGymTweets;
     final _hasMoreSpecificGymTweets = specificGymTweetsState.hasMore;
     // イキタイジム情報を取得
-    final wannaGoGymState = ref.read(wannaGoRelationProvider);
-    bool isRegisteredGym = wannaGoGymState.containsKey(int.parse(gymId));
+    // final wannaGoGymState = ref.read(wannaGoRelationProvider);
+    // bool isRegisteredGym = wannaGoGymState.containsKey(int.parse(gymId));
 
     return asyncGymInfo.when(
         // ロード中
@@ -195,9 +205,8 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                               isLink: true,
                               onTap: () => _launchUrl(gymInfo.hpLink),
                             ),
-                            _buildInfoRow('定休日', 'なし'), // TODO；値をもらう箇所
+                            _buildInfoRow('定休日', 'なし'),
                             _buildInfoRow(
-                              // TODO：値をもらう箇所
                               '営業時間',
                               '月曜日 ${gymInfo.monOpen}〜${gymInfo.monClose}\n火曜日 ${gymInfo.tueOpen}〜${gymInfo.tueClose}\n水曜日 ${gymInfo.wedOpen}〜${gymInfo.wedClose}\n木曜日 ${gymInfo.thuOpen}〜${gymInfo.thuClose}\n金曜日 ${gymInfo.friOpen}〜${gymInfo.friClose}\n土曜日 ${gymInfo.satOpen}〜${gymInfo.satClose}\n日曜日 ${gymInfo.sunOpen}〜${gymInfo.sunClose}',
                             ),
@@ -242,7 +251,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                             gymName: specificGymTweet.gymName,
                             prefecture: specificGymTweet.prefecture,
                             tweetContents: specificGymTweet.tweetContents,
-                          ); // TODO：バックエンド処理をして値をもらったやつをここに入れる必要がある
+                          );
                         },
                       ),
                     ]),
@@ -260,59 +269,48 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                isRegisteredGym
-                                    ? OutlinedButton(
-                                        onPressed: () async {
-                                          await ref
-                                              .read(wannaGoRelationProvider
-                                                  .notifier)
-                                              .deleteWannaGoGym(
-                                                  ref
-                                                      .read(userProvider)!
-                                                      .userId,
-                                                  gymId);
-
-                                          setState(
-                                              () => isRegisteredGym = false);
-                                        },
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 32),
-                                          side: const BorderSide(
-                                              color: Colors.blue),
-                                        ),
-                                        child: const Text('イキタイ',
-                                            style: TextStyle(
-                                              color: Colors.blue,
-                                            )),
-                                      )
-                                    : OutlinedButton(
-                                        onPressed: () async {
-                                          await ref
-                                              .read(wannaGoRelationProvider
-                                                  .notifier)
-                                              .registerWannaGoGym(
-                                                  ref
-                                                      .read(userProvider)!
-                                                      .userId,
-                                                  gymId);
-                                          setState(
-                                              () => isRegisteredGym = true);
-                                        },
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 32),
-                                          side: const BorderSide(
-                                              color: Colors
-                                                  .grey), // 登録されていないときは、グレー
-                                        ),
-                                        child: const Text('イキタイ',
-                                            style: TextStyle(
-                                              color: Colors.blue,
-                                            )),
-                                      ),
+                                /// ✨✨✨ 変更箇所あり：イキタイボタンの見た目と動作を変数で制御 ✨✨✨
+                                OutlinedButton(
+                                  onPressed: () async {
+                                    final userId =
+                                        ref.read(userProvider)!.userId;
+                                    if (_isWannaGoRegistered) {
+                                      await ref
+                                          .read(
+                                              wannaGoRelationProvider.notifier)
+                                          .deleteWannaGoGym(userId, gymId);
+                                    } else {
+                                      await ref
+                                          .read(
+                                              wannaGoRelationProvider.notifier)
+                                          .registerWannaGoGym(userId, gymId);
+                                    }
+                                    setState(() {
+                                      _isWannaGoRegistered =
+                                          !_isWannaGoRegistered;
+                                    });
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: _isWannaGoRegistered
+                                        ? Colors.blue
+                                        : Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 32),
+                                    side: BorderSide(
+                                      color: _isWannaGoRegistered
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'イキタイ',
+                                    style: TextStyle(
+                                      color: _isWannaGoRegistered
+                                          ? Colors.white
+                                          : Colors.blue,
+                                    ),
+                                  ),
+                                ),
                                 ElevatedButton(
                                   onPressed: () async {
                                     await context.push('/activitypost',

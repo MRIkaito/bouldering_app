@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/pages/activity_post_from_facility_info_page.dart';
 import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:bouldering_app/view/pages/search_gym_on_map_page.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +144,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: FacilityInfoPage(gymId: gymId),
             );
           },
+          routes: [
+            GoRoute(
+              parentNavigatorKey: _rootNavigatorKey,
+              path: 'ActivityPostFromFacilityInfo',
+              pageBuilder: (context, state) {
+                final String gymId = state.pathParameters['gymId'] ?? ''; // 再取得
+                return MaterialPage(
+                  fullscreenDialog: true,
+                  child: ActivityPostFromFacilityInfoPage(gymId: gymId),
+                );
+              },
+            ),
+          ],
         ),
         GoRoute(
             parentNavigatorKey: _rootNavigatorKey,

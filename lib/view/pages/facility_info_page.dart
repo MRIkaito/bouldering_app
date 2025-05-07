@@ -313,8 +313,8 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () async {
-                                    await context.push('/activitypost',
-                                        extra: {'fromFacilityInfoPage': true});
+                                    await context.push(
+                                        '/FacilityInfo/${gymInfo.gymId}/ActivityPostFromFacilityInfo');
                                   },
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(

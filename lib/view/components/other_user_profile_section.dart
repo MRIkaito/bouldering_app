@@ -101,6 +101,7 @@ class _OtherUserProfileSectionState
                   UserLogoAndName(
                     userName: user.userName,
                     userLogo: user.userIconUrl,
+                    heroTag: 'user_icon_${user.userId}', // 各ユーザーのユーザーIDを識別子タグ化
                   ),
                   const SizedBox(height: 16),
 

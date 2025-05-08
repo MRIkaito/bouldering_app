@@ -30,6 +30,7 @@ class UserProfileSection extends ConsumerWidget {
             UserLogoAndName(
               userName: user?.userName ?? "名無し",
               userLogo: user?.userIconUrl,
+              heroTag: 'login_user_icon',
             ),
             const SizedBox(height: 16),
 

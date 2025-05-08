@@ -6,12 +6,14 @@ class UserLogoAndName extends StatelessWidget {
   // プロパティ
   final String userName;
   final String? userLogo;
+  final String? heroTag; // ユーザーアイコン写真を拡大表示するために必要な識別子タグ
 
   // コンストラクタ
   const UserLogoAndName({
     super.key,
     required this.userName,
     this.userLogo,
+    this.heroTag,
   });
 
   /// ■ メソッド
@@ -33,24 +35,72 @@ class UserLogoAndName extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 画像
-          ClipOval(
-            child: (_isValidUrl(userLogo))
-                ? Image.network(
-                    userLogo!,
-                    width: 72,
-                    height: 72,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return _buildPlaceholderIcon();
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      debugPrint(
-                          "❌ [UserLogoAndName] Image load failed. URL: $userLogo");
-                      return _buildPlaceholderIcon();
-                    },
-                  )
-                : _buildPlaceholderIcon(),
+          GestureDetector(
+            onTap: () {
+              if (_isValidUrl(userLogo)) {
+                showGeneralDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  barrierLabel: "ProfileImageDialog",
+                  barrierColor: Colors.white.withOpacity(0.8),
+                  transitionDuration: const Duration(milliseconds: 300),
+                  pageBuilder: (context, _, __) {
+                    return Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            color: Colors.transparent,
+                          ),
+                        ),
+                        Center(
+                          child: Hero(
+                            tag: 'profile_image',
+                            child: InteractiveViewer(
+                              minScale: 1.0,
+                              maxScale: 20.0,
+                              child: Image.network(
+                                userLogo!,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  transitionBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                );
+              }
+            },
+            child: Hero(
+              tag: heroTag ?? 'user_icon',
+              child: ClipOval(
+                child: (_isValidUrl(userLogo))
+                    ? Image.network(
+                        userLogo!,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _buildPlaceholderIcon();
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                              "❌ [UserLogoAndName] Image load failed. URL: $userLogo");
+                          return _buildPlaceholderIcon();
+                        },
+                      )
+                    : _buildPlaceholderIcon(),
+              ),
+            ),
           ),
           const SizedBox(width: 8),
 

@@ -115,7 +115,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           // 余白
                           const SizedBox(height: 32),
                           // アイコン
-                          const AppLogo(),
+                          const Center(child: AppLogo()),
                           // 余白
                           const SizedBox(height: 24),
                           // メールアドレスの入力欄

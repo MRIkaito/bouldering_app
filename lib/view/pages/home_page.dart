@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bouldering_app/view/components/app_logo.dart';
-// import 'package:flutter_svg/svg.dart';
-// import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -19,27 +17,6 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-
-                // アプリアイコン
-                // SvgPicture.asset(
-                //   'lib/view/assets/app_main_icon.svg',
-                // ),
-
-                // // アプリ名テキスト
-                // FittedBox(
-                //   fit: BoxFit.scaleDown,
-                //   child: Text(
-                //     'イワノボリタイ',
-                //     textAlign: TextAlign.center,
-                //     style: GoogleFonts.rocknRollOne(
-                //       color: Colors.black,
-                //       fontSize: 28,
-                //       fontWeight: FontWeight.w400,
-                //       height: 1.2,
-                //       letterSpacing: -0.5,
-                //     ),
-                //   ),
-                // ),
                 // ロゴ
                 const AppLogo(),
                 const SizedBox(height: 48),

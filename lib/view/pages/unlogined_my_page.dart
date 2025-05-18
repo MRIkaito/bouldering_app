@@ -1,7 +1,7 @@
-import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bouldering_app/view/components/app_logo.dart';
+import 'package:bouldering_app/view/components/user_logo_and_name.dart';
 
 class UnloginedMyPage extends StatelessWidget {
   const UnloginedMyPage({super.key});
@@ -18,8 +18,6 @@ class UnloginedMyPage extends StatelessWidget {
               // ユーザーのロゴ・ユーザ名部分
               const UserLogoAndName(userName: 'ゲストボルダー'),
 
-              const SizedBox(height: 24),
-
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEEEEE).withOpacity(0.2),
@@ -29,33 +27,7 @@ class UnloginedMyPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: SizedBox(
-                        width: 72,
-                        height: 72,
-                        child: SvgPicture.asset(
-                          'lib/view/assets/app_main_icon.svg',
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 「イワノボリタイに登録しよう」のタイトル
-                    const Center(
-                      child: Text(
-                        'イワノボリタイに\n登録しよう',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF0056FF),
-                          fontSize: 32,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w700,
-                          height: 1.2,
-                          letterSpacing: -0.50,
-                        ),
-                      ),
-                    ),
+                    const Center(child: AppLogo()),
                     const SizedBox(height: 16),
 
                     // 説明テキスト
@@ -75,18 +47,18 @@ class UnloginedMyPage extends StatelessWidget {
 
                     // 各項目のリスト
                     _buildSectionTitle('1. 行きたいジムを保存'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     _buildSectionText('気になるジムをお気に入り登録して，行きたいジムリストを作ることができます．'),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildSectionTitle('2. ボル活を記録'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     _buildSectionText('ジムで登った記録や感想を残すことができます．'),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildSectionTitle('3. コンペ（今後追加予定）'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     _buildSectionText(
                         'ジムのコンペやイベント，セッションの情報を確認できます．気になるジムをのぞいてみよう！'),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
 
                     // 画面遷移ボタン
                     InkWell(

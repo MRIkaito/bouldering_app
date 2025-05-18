@@ -34,16 +34,37 @@ class ScaffoldWithNavBar extends StatelessWidget {
     );
   }
 
+  // void _onTap(BuildContext context, int index) {
+  //   // 場合によっては，インデックスが3のとき(マイページのとき)は反応しない
+  //   // という仕様にすることも考える
+  //   if (index == navigationShell.currentIndex) {
+  //     return;
+  //   }
+
+  //   navigationShell.goBranch(
+  //     index,
+  //     initialLocation: index == navigationShell.currentIndex,
+  //   );
+  // }
   void _onTap(BuildContext context, int index) {
-    // 場合によっては，インデックスが3のとき(マイページのとき)は反応しない
-    // という仕様にすることも考える
     if (index == navigationShell.currentIndex) {
       return;
     }
 
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
+    // 明示的にルート指定する
+    switch (index) {
+      case 0:
+        context.go('/Home');
+        break;
+      case 1:
+        context.go('/boullog');
+        break;
+      case 2:
+        context.go('/activitypost');
+        break;
+      case 3:
+        context.go('/mypage'); // ← ここを明示的に指定！
+        break;
+    }
   }
 }

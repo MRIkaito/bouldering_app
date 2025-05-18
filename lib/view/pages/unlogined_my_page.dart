@@ -63,7 +63,8 @@ class UnloginedMyPage extends StatelessWidget {
                     // 画面遷移ボタン
                     InkWell(
                       onTap: () {
-                        context.push("/Unlogined/LoginOrSignUp");
+                        // context.push("/Unlogined/LoginOrSignUp");
+                        context.push("/LoginOrSignUp");
                       },
                       borderRadius: BorderRadius.circular(10),
                       child: Container(

@@ -15,7 +15,7 @@ class ShowLogoutConfirmationDialogPage extends ConsumerWidget {
       if (Navigator.canPop(context)) {
         Navigator.of(context).pop();
       }
-      context.go("/Unlogined");
+      context.go("/mypage");
     } catch (e) {
       showPopup(context, "エラー発生", "登録に失敗しました");
     }

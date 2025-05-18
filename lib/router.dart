@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/pages/activity_post_from_facility_info_page.dart';
+import 'package:bouldering_app/view/pages/my_page_gate.dart';
 import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:bouldering_app/view/pages/search_gym_on_map_page.dart';
 import 'package:flutter/material.dart';
@@ -111,25 +112,40 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ],
             ),
-            StatefulShellBranch(navigatorKey: _mypageNavigatorKey, routes: [
-              GoRoute(
-                  path: '/Unlogined',
+            // StatefulShellBranch(
+            //   navigatorKey: _mypageNavigatorKey,
+            //   routes: [
+            //     GoRoute(
+            //         path: '/Unlogined',
+            //         pageBuilder: (context, state) =>
+            //             const NoTransitionPage(child: UnloginedMyPage()),
+            //         routes: [
+            //           GoRoute(
+            //               path: 'LoginOrSignUp',
+            //               pageBuilder: (context, state) =>
+            //                   const NoTransitionPage(
+            //                       child: LoginOrSignUpPage()),
+            //               routes: [
+            //                 GoRoute(
+            //                   path: 'Logined',
+            //                   pageBuilder: (context, state) =>
+            //                       const NoTransitionPage(
+            //                           child: LoginedMyPage()),
+            //                 ),
+            //               ]),
+            //         ]),
+            //   ],
+            // ),
+            StatefulShellBranch(
+              navigatorKey: _mypageNavigatorKey,
+              routes: [
+                GoRoute(
+                  path: '/mypage',
                   pageBuilder: (context, state) =>
-                      const NoTransitionPage(child: UnloginedMyPage()),
-                  routes: [
-                    GoRoute(
-                        path: 'LoginOrSignUp',
-                        pageBuilder: (context, state) =>
-                            const NoTransitionPage(child: LoginOrSignUpPage()),
-                        routes: [
-                          GoRoute(
-                            path: 'Logined',
-                            pageBuilder: (context, state) =>
-                                const NoTransitionPage(child: LoginedMyPage()),
-                          ),
-                        ]),
-                  ]),
-            ]),
+                      const NoTransitionPage(child: MyPageGate()),
+                ),
+              ],
+            ),
           ],
         ),
 
@@ -157,6 +173,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               },
             ),
           ],
+        ),
+        GoRoute(
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/LoginOrSignUp',
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: LoginOrSignUpPage()),
+        ),
+        GoRoute(
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/LoginOrSignUp',
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: LoginOrSignUpPage()),
         ),
         GoRoute(
             parentNavigatorKey: _rootNavigatorKey,

@@ -97,7 +97,8 @@ class AuthNotifier extends StateNotifier<bool> {
       state = true;
 
       if (mounted) {
-        context.push("/Unlogined/LoginOrSignUp/Logined");
+        // context.push("/Unlogined/LoginOrSignUp/Logined");
+        context.go("/mypage");
       }
     } on FirebaseAuthException catch (e) {
       final errorMap = {
@@ -149,7 +150,8 @@ class AuthNotifier extends StateNotifier<bool> {
       state = true;
       // マイページへ画面遷移する
       if (mounted) {
-        context.push("/Unlogined/LoginOrSignUp/Logined");
+        // context.push("/Unlogined/LoginOrSignUp/Logined");
+        context.go("/mypage");
       }
     } on FirebaseAuthException catch (e) {
       final errorMap = {

@@ -103,7 +103,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final userRef = ref.watch(userProvider);
-    // final gymRef = ref.watch(gymProvider);
     final gymRef = ref.watch(gymInfoProvider);
     final String gender;
 

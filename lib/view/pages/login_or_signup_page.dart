@@ -26,7 +26,6 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: false, // 戻るボタンを非表示
             elevation: 0,
           ),
           body: Column(
@@ -47,7 +46,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           // 余白
                           const SizedBox(height: 32),
                           // ロゴ
-                          const AppLogo(),
+                          const Center(child: AppLogo()),
                           // 余白
                           const SizedBox(height: 24),
                           // メールアドレスの入力欄

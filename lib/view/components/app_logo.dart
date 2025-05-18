@@ -9,26 +9,22 @@ class AppLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Align(
-        alignment: Alignment.center, // 中央揃え
-        child: SvgPicture.asset(
-          'lib/view/assets/app_main_icon.svg',
-        ),
+      // アプリアイコン
+      SvgPicture.asset(
+        'lib/view/assets/app_main_icon.svg',
       ),
-      Center(
-        child: SizedBox(
-          width: 209,
-          height: 25,
-          child: Text(
-            'イワノボリタイ',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.rocknRollOne(
-              color: Colors.black,
-              fontSize: 28,
-              fontWeight: FontWeight.w400,
-              height: 0.8, // ここでは正しいline heightを指定
-              letterSpacing: -0.50,
-            ),
+      // アプリ名テキスト
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'イワノボリタイ',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.rocknRollOne(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 1.2,
+            letterSpacing: -0.5,
           ),
         ),
       ),

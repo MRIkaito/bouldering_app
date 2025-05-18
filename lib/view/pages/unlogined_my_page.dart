@@ -105,7 +105,7 @@ class UnloginedMyPage extends StatelessWidget {
                         ),
                         child: const Center(
                           child: Text(
-                            '新規登録（無料）またはログイン',
+                            '新規登録 / ログイン',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,

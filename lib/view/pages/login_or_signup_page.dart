@@ -64,7 +64,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           // メールアドレス テキストフォーム
                           SubmitFormWidget(
                             isObscure: false,
-                            hintText: "mri.benkyochannel@gmail.com",
+                            hintText: "boulder@example.com",
                             onSubmitTextChanged: (mailAddress) {
                               setState(() {
                                 _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る
@@ -131,7 +131,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                           const SizedBox(height: 8),
                           SubmitFormWidget(
                             isObscure: false,
-                            hintText: "mri.benkyochannel@gmail.com",
+                            hintText: "boulder@example.com",
                             onSubmitTextChanged: (mailAddress) {
                               setState(() {
                                 _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る

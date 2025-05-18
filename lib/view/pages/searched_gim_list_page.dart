@@ -30,57 +30,61 @@ class SearchedGimListPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.tune),
-                  onPressed: () {},
-                ),
-                Container(
-                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                  child: const Text("神奈川県のジム施設"),
-                ),
-                Container(
-                  height: 36,
-                  padding: const EdgeInsets.only(left: 16, right: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEEEEEE),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "300件",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            "↑↓",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text(
-                              "イキタイ多い順",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                // TODO
+                // 250517記載：退会機能は後に実装予定
+                /*
+                // IconButton(
+                //   icon: const Icon(Icons.tune),
+                //   onPressed: () {},
+                // ),
+                // Container(
+                //   padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                //   child: const Text("神奈川県のジム施設"),  // TODO：検索対象の県名を出力するよう変更
+                // ),
+                // Container(
+                //   height: 36,
+                //   padding: const EdgeInsets.only(left: 16, right: 4),
+                //   decoration: BoxDecoration(
+                //     color: const Color(0xFFEEEEEE),
+                //     borderRadius: BorderRadius.circular(8),
+                //   ),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //     children: [
+                //       const Text(
+                //         "300件",
+                //         style: TextStyle(
+                //           fontSize: 16,
+                //           fontWeight: FontWeight.w400,
+                //         ),
+                //       ),
+                //       Row(
+                //         children: [
+                //           const Text(
+                //             "↑↓",
+                //             style: TextStyle(
+                //               fontSize: 20,
+                //               color: Colors.blue,
+                //               fontWeight: FontWeight.w900,
+                //             ),
+                //           ),
+                //           TextButton(
+                //             onPressed: () {},
+                //             child: const Text(
+                //               "イキタイ多い順",
+                //               style: TextStyle(
+                //                 fontSize: 16,
+                //                 color: Colors.blue,
+                //                 fontWeight: FontWeight.w900,
+                //               ),
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                */
               ],
             ),
           ),

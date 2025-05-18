@@ -134,12 +134,44 @@ class UserProfileSection extends ConsumerWidget {
             const SizedBox(height: 8),
 
             // ホームジム
+            // Row(
+            //   children: [
+            //     SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
+            //     const SizedBox(width: 8),
+            //     const Text("ホームジム："),
+            //     Text(showGymName(user, gymRef)),
+            //   ],
+            // ),
+
+            // ホームジム
             Row(
               children: [
                 SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
                 const SizedBox(width: 8),
                 const Text("ホームジム："),
-                Text(showGymName(user, gymRef)),
+                GestureDetector(
+                  onTap: () {
+                    // ジムIDが null または存在しないときの処理
+                    if (user?.homeGymId == null ||
+                        !gymRef.containsKey(user!.homeGymId)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("ジム情報の取得に失敗しました")),
+                      );
+                      return;
+                    }
+
+                    final gymId = user!.homeGymId!;
+                    context.push('/FacilityInfo/$gymId');
+                  },
+                  child: Text(
+                    showGymName(user, gymRef),
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),

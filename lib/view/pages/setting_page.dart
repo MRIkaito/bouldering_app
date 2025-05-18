@@ -44,6 +44,9 @@ class SettingPage extends StatelessWidget {
           },
           child: const SettingItem(text: "ログアウト"),
         ),
+        // TODO
+        // 250517記載：退会機能は後に実装予定
+        /* ここから退会機能
         InkWell(
           onTap: () => {
             // ページ遷移する処理を実装
@@ -51,6 +54,7 @@ class SettingPage extends StatelessWidget {
           },
           child: const SettingItem(text: "退会"),
         ),
+        ここまで退会機能 */
       ])),
     );
   }

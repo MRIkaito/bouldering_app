@@ -2,10 +2,12 @@ import 'package:bouldering_app/view_model/facility_info_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bouldering_app/view_model/utility/user_icon_url.dart';
 
 class BoulLog extends ConsumerWidget {
   final String userId;
   final String userName;
+  final String? userIconUrl;
   final String visitedDate;
   final String gymId;
   final String gymName;
@@ -16,6 +18,7 @@ class BoulLog extends ConsumerWidget {
     super.key,
     required this.userId,
     required this.userName,
+    required this.userIconUrl,
     required this.visitedDate,
     required this.gymId,
     required this.gymName,
@@ -34,10 +37,14 @@ class BoulLog extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ユーザーアイコン
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 24,
-                backgroundImage: AssetImage(
-                    "lib/view/assets/test_user_icon.png"), // TODO：値をもらう箇所 + ユーザークラスでユーザーアイコンを設定する必要がある
+                backgroundColor: Colors.grey[200],
+                backgroundImage:
+                    isValidUrl(userIconUrl) ? NetworkImage(userIconUrl!) : null,
+                child: isValidUrl(userIconUrl)
+                    ? null
+                    : const Icon(Icons.person, color: Colors.grey, size: 24),
               ),
               const SizedBox(width: 12),
 

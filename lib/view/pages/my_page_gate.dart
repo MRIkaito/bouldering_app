@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 
+/// ■ クラス
+/// - View
+/// - ログイン状態か否かで遷移するページを変更するインタフェース部分のページ
 class MyPageGate extends ConsumerWidget {
   const MyPageGate({super.key});
 

@@ -129,6 +129,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
               return BoulLog(
                 userId: favoriteUserTweet.userId,
                 userName: favoriteUserTweet.userName,
+                userIconUrl: favoriteUserTweet.userIconUrl,
                 visitedDate: favoriteUserTweet.visitedDate
                     .toLocal()
                     .toIso8601String()

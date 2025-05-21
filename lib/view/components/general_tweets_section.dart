@@ -56,6 +56,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
         return BoulLog(
           userId: generalTweet.userId,
           userName: generalTweet.userName,
+          userIconUrl: generalTweet.userIconUrl,
           visitedDate: generalTweet.visitedDate
               .toLocal()
               .toIso8601String()

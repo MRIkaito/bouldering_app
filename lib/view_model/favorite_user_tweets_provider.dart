@@ -69,6 +69,7 @@ class FavoriteUserTweetsNotifier
                       userId: tweet['user_id'] ??
                           '', // このお気に入りユーザーツイートのuser_idとは，バックエンドのSQL文では"likee_user_id"のことを指す
                       userName: tweet['user_name'] ?? '',
+                      userIconUrl: tweet['user_icon_url'] ?? '',
                       gymId: tweet['gym_id'] ?? 0,
                       gymName: tweet['gym_name'] ?? '',
                       prefecture: tweet['prefecture'] ?? '',
@@ -107,8 +108,3 @@ final favoriteUserTweetsProvider = StateNotifierProvider.family<
   // ↑ String = userIdの型
   (ref, userId) => FavoriteUserTweetsNotifier(userId),
 );
-
-// final favoriteUserTweetsProvider =
-//     StateNotifierProvider<FavoriteUserTweetsNotifier, FavoriteUserTweetsState>(
-//   (ref) => FavoriteUserTweetsNotifier(),
-// );

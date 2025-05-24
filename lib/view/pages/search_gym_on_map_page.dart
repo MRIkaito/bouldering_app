@@ -7,7 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 
+/// ■ クラス
+/// - ジムの位置を表示するページ
 class SearchGymOnMapPage extends ConsumerStatefulWidget {
   const SearchGymOnMapPage({super.key});
 
@@ -15,9 +18,11 @@ class SearchGymOnMapPage extends ConsumerStatefulWidget {
   _SearchGymOnMapPageState createState() => _SearchGymOnMapPageState();
 }
 
+/// ■ クラス
+/// - ジムの位置を表示するページ(状態)
 class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
   Set<Marker> _markers = {};
-  final LatLng _center = const LatLng(35.681236, 139.767125);
+  final LatLng _center = const LatLng(35.681236, 139.767125); // 東京駅
   late GoogleMapController mapController;
   late BitmapDescriptor customGymMarker;
 
@@ -29,6 +34,31 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     super.initState();
   }
 
+  /// ■ メソッド
+  /// - 現在地を取得するメソッド
+  Future<LatLng?> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+        if (permission != LocationPermission.whileInUse &&
+            permission != LocationPermission.always) {
+          return null;
+        }
+      }
+
+      final position = await Geolocator.getCurrentPosition();
+      return LatLng(position.latitude, position.longitude);
+    } catch (e) {
+      debugPrint("位置情報取得エラー: $e");
+      return null;
+    }
+  }
+
   void _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
 
@@ -37,10 +67,19 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
 
     final icon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(24, 24)),
-      'assets/pin_64.png',
+      'assets/pin_48.png',
     );
     customGymMarker = icon;
 
+    // 位置情報を一度だけ取得（permission 重複防止）
+    final currentLocation = await _getCurrentLocation();
+    if (currentLocation != null) {
+      await mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(currentLocation, 14.5),
+      );
+    }
+
+    // マーカー設定
     final gymMap = ref.read(gymInfoProvider);
     final gyms = gymMap.values.toList();
 
@@ -65,9 +104,6 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
             _focusedGymIndex = index;
           });
           _scrollToCard(index);
-          mapController.animateCamera(
-            CameraUpdate.newLatLngZoom(LatLng(gym.latitude, gym.longitude), 15),
-          );
         },
         infoWindow: InfoWindow(
           title: gym.gymName,
@@ -80,9 +116,16 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
       _markers = markers;
     });
 
-    if (markers.isNotEmpty) {
-      final bounds = _createLatLngBoundsFromMarkers(markers);
-      mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+    if (currentLocation != null) {
+      // 現在地を優先して表示
+      await mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(currentLocation, 12.5),
+      );
+    } else {
+      // 現在地の取得ができないとき or 現在地取得を拒否されたときのケース：東京駅を中心表示
+      await mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(_center, 12.5),
+      );
     }
   }
 
@@ -137,6 +180,9 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
               zoom: 14.5,
             ),
             markers: _markers,
+            myLocationEnabled: true, // 現在地アイコンを表示
+            myLocationButtonEnabled: true, // 現在地に戻るボタンを表示
+            padding: const EdgeInsets.only(bottom: 268), // ボタンをジムカード分だけ上に表示する
           ),
           Positioned(
             bottom: 0,

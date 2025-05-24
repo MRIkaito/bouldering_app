@@ -63,15 +63,15 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     }
   }
 
-  // 1. リフレッシュ開始
+  /// ■ メソッド
+  /// - リフレッシュ開始
+  /// - もらった引数を反映した状態
   Future<void> _refetchTweets() async {
-    // 2. ツイート取得状態を初期状態(false)に戻す
-    // 3. 今持っているツイートをすべて破棄する
+    // 今持っているツイートをすべて破棄する
     ref.read(myTweetsProvider.notifier).disposeMyTweets();
 
-    // 4. 新しく取得しなおす
+    // ツイートを新しく取得しなおす
     await _fetchTweets();
-
     return;
   }
 
@@ -85,8 +85,8 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     return tweets.isEmpty
         ? Center(
             child: _showNoTweetsText
-                ? const Text("ツイートがありません") // 👈 5秒後にこれが出る
-                : const CircularProgressIndicator(), // 👈 それまではこれ
+                ? const Text("ツイートがありません") // 5秒後にこれが出る
+                : const CircularProgressIndicator(), // ツイートが出るまでローディング表示
           )
         :
         // 自分のツイート
@@ -109,6 +109,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 return BoulLog(
                   userId: tweet.userId,
                   userName: ref.read(userProvider)?.userName ?? ' 取得できませんでした ',
+                  userIconUrl: tweet.userIconUrl,
                   visitedDate: tweet.visitedDate
                       .toLocal()
                       .toIso8601String()
@@ -118,6 +119,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                   gymName: tweet.gymName,
                   prefecture: tweet.prefecture,
                   tweetContents: tweet.tweetContents,
+                  tweetImageUrls: tweet.mediaUrls,
                 );
               },
             ),

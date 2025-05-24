@@ -21,12 +21,6 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
   /// ■ メソッド
   /// 自身の保持しているツイートを破棄する
   ///
-  /// 引数
-  /// - なし
-  ///
-  /// 返り値
-  /// - なし
-  ///
   /// 備考
   /// - リフレッシュ時に保持しているツイート情報をすべて破棄する処理として実装
   /// - fetchTweetsに状態通知の処理が既に実装されているため、当処理では状態通知(=copyWith)不要
@@ -46,14 +40,8 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
   Future<void> fetchTweets(String userId) async {
     // すでにローディング中の時、またはすべてツイート取得済みの時は実行しない
     if (_isLoading || !_hasMore) {
-      print(
-          "🟡 [DEBUG] fetchTweets() skipped. isLoading: $_isLoading, hasMore: $_hasMore");
       return;
     }
-
-    // 🟢 デバッグ用：関数が呼ばれたことを確認
-    print(
-        "🟢 [DEBUG] fetchTweets() started. isLoading: $_isLoading, hasMore: $_hasMore");
 
     // ツイート取得開始
     _isLoading = true;
@@ -71,66 +59,60 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
     });
 
     try {
-      print("🔵 [DEBUG] Fetching tweets from: $url");
-
       final response = await http.get(url);
-      print("🟣 [DEBUG] Response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
-        print("🟢 [DEBUG] Response body: $jsonData");
+        // print("🟢 [DEBUG] Response body: $jsonData");
 
-        final List<BoulLogTweet> newTweets = jsonData
-            .map((tweet) => BoulLogTweet(
-                  tweetId: (tweet['tweet_id'] as int?) ?? 0,
-                  tweetContents: tweet['tweet_contents'],
-                  visitedDate: DateTime.tryParse(tweet['visited_date'] ?? '') ??
-                      DateTime.now(),
-                  tweetedDate: DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
-                      DateTime.now(),
-                  likedCount: (tweet['liked_count'] as int?) ?? 0,
-                  movieUrl: tweet['movie_url'] ?? '',
-                  userId: tweet['user_id'] ?? '',
-                  userName: tweet['user_name'] ?? '',
-                  gymId: (tweet['gym_id'] as int?) ?? 0,
-                  gymName: tweet['gym_name'] ?? '',
-                  prefecture: tweet['prefecture'] ?? '',
-                ))
-            .toList();
+        final List<BoulLogTweet> newTweets =
+            jsonData.map((tweet) => BoulLogTweet.fromJson(tweet)).toList();
+
+        // final List<BoulLogTweet> newTweets = jsonData
+        //     .map((tweet) => BoulLogTweet(
+        //           tweetId: (tweet['tweet_id'] as int?) ?? 0,
+        //           tweetContents: tweet['tweet_contents'],
+        //           visitedDate: DateTime.tryParse(tweet['visited_date'] ?? '') ??
+        //               DateTime.now(),
+        //           tweetedDate: DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
+        //               DateTime.now(),
+        //           likedCount: (tweet['liked_count'] as int?) ?? 0,
+        //           movieUrl: tweet['movie_url'] ?? '',
+        //           userId: tweet['user_id'] ?? '',
+        //           userName: tweet['user_name'] ?? '',
+        //           userIconUrl: tweet['user_icon_url'] ?? '',
+        //           gymId: (tweet['gym_id'] as int?) ?? 0,
+        //           gymName: tweet['gym_name'] ?? '',
+        //           prefecture: tweet['prefecture'] ?? '',
+        //         ))
+        //     .toList();
 
         // 🟡 デバッグ用：受け取ったツイートの内容を一部表示
         if (newTweets.isNotEmpty) {
-          print(
-              "🟡 [DEBUG] First tweet: ${newTweets.first.tweetContents}, ID: ${newTweets.first.tweetId}");
+          // print("🟡 [DEBUG] First tweet: ${newTweets.first.tweetContents}, ID: ${newTweets.first.tweetId}");
         } else {
-          print("🟡 [DEBUG] No new tweets found.");
+          // print("🟡 [DEBUG] No new tweets found.");
         }
 
-        /// ✅ copyWith を使って state を更新
+        // copyWith を使って state を更新
         state = List.from(state)
           ..addAll(newTweets.map((tweet) => tweet.copyWith()));
-
         if (newTweets.length < 20) {
           _hasMore = false;
         } else {
-          print(
-              "🟡 [DEBUG] Before updating state, tweet count: ${state.length}");
-          // TODO：下記の実装は不要であると思うので確認する
-          // state = [...state, ...newTweets];
-          print(
-              "🟢 [DEBUG] After updating state, tweet count: ${state.length}");
+          // print("🟡 [DEBUG] Before updating state, tweet count: ${state.length}");
+          // print("🟢 [DEBUG] After updating state, tweet count: ${state.length}");
         }
       } else {
-        print(
-            "❌ [ERROR] Failed to fetch tweets. Status: ${response.statusCode}");
-        print("❌ [ERROR] Response body: ${response.body}");
+        // print("❌ [ERROR] Failed to fetch tweets. Status: ${response.statusCode}");
+        // print("❌ [ERROR] Response body: ${response.body}");
       }
     } catch (error) {
-      print("❌ [ERROR] Exception in _fetchTweets(): $error");
+      // print("❌ [ERROR] Exception in _fetchTweets(): $error");
     } finally {
-      print("🟡 [DEBUG] Before setting isLoading to false, value: $_isLoading");
+      // print("🟡 [DEBUG] Before setting isLoading to false, value: $_isLoading");
+      // print("🟢 [DEBUG] isLoading is now: $_isLoading");
       _isLoading = false;
-      print("🟢 [DEBUG] isLoading is now: $_isLoading");
     }
   }
 }

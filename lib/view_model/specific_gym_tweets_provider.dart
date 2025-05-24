@@ -54,24 +54,30 @@ class SpecificGymTweetsNotifier extends StateNotifier<SpecificGymTweetsState> {
 
         final List<BoulLogTweet> newSpecificGymTweetsList =
             specificGymTweetsList
-                .map((tweet) => BoulLogTweet(
-                      tweetId: tweet['tweet_id'] ?? 0,
-                      tweetContents: tweet['tweet_contents'] ?? '',
-                      visitedDate:
-                          DateTime.tryParse(tweet['visited_date'] ?? '') ??
-                              DateTime(1990, 1, 1),
-                      tweetedDate:
-                          DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
-                              DateTime(1990, 1, 1),
-                      likedCount: tweet['liked_counts'] ?? 0,
-                      movieUrl: tweet['movie_url'],
-                      userId: tweet['user_id'] ?? '',
-                      userName: tweet['user_name'] ?? '',
-                      gymId: tweet['gym_id'] ?? 0,
-                      gymName: tweet['gym_name'] ?? '',
-                      prefecture: tweet['prefecture'] ?? '',
-                    ))
+                .map((tweet) => BoulLogTweet.fromJson(tweet))
                 .toList();
+
+        // final List<BoulLogTweet> newSpecificGymTweetsList =
+        //     specificGymTweetsList
+        //         .map((tweet) => BoulLogTweet(
+        //               tweetId: tweet['tweet_id'] ?? 0,
+        //               tweetContents: tweet['tweet_contents'] ?? '',
+        //               visitedDate:
+        //                   DateTime.tryParse(tweet['visited_date'] ?? '') ??
+        //                       DateTime(1990, 1, 1),
+        //               tweetedDate:
+        //                   DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
+        //                       DateTime(1990, 1, 1),
+        //               likedCount: tweet['liked_counts'] ?? 0,
+        //               movieUrl: tweet['movie_url'],
+        //               userId: tweet['user_id'] ?? '',
+        //               userName: tweet['user_name'] ?? '',
+        //               userIconUrl: tweet['user_icon_url'] ?? '',
+        //               gymId: tweet['gym_id'] ?? 0,
+        //               gymName: tweet['gym_name'] ?? '',
+        //               prefecture: tweet['prefecture'] ?? '',
+        //             ))
+        //         .toList();
 
         state = SpecificGymTweetsState(
           specificGymTweets: [

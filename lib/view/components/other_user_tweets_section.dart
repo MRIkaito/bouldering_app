@@ -90,6 +90,7 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
                 return BoulLog(
                   userId: tweet.userId,
                   userName: tweet.userName,
+                  userIconUrl: tweet.userIconUrl,
                   visitedDate: tweet.visitedDate
                       .toLocal()
                       .toIso8601String()
@@ -99,6 +100,7 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
                   gymName: tweet.gymName,
                   prefecture: tweet.prefecture,
                   tweetContents: tweet.tweetContents,
+                  tweetImageUrls: tweet.mediaUrls,
                 );
               },
             ),

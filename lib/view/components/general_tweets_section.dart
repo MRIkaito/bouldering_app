@@ -65,6 +65,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
           gymName: generalTweet.gymName,
           prefecture: generalTweet.prefecture,
           tweetContents: generalTweet.tweetContents,
+          tweetImageUrls: generalTweet.mediaUrls,
         );
       },
     );

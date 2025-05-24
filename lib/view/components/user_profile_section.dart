@@ -134,16 +134,6 @@ class UserProfileSection extends ConsumerWidget {
             const SizedBox(height: 8),
 
             // ホームジム
-            // Row(
-            //   children: [
-            //     SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
-            //     const SizedBox(width: 8),
-            //     const Text("ホームジム："),
-            //     Text(showGymName(user, gymRef)),
-            //   ],
-            // ),
-
-            // ホームジム
             Row(
               children: [
                 SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),

@@ -139,6 +139,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 gymName: favoriteUserTweet.gymName,
                 prefecture: favoriteUserTweet.prefecture,
                 tweetContents: favoriteUserTweet.tweetContents,
+                tweetImageUrls: favoriteUserTweet.mediaUrls,
               );
             },
           )

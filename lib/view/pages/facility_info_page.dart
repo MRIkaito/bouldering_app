@@ -242,6 +242,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                           return BoulLog(
                             userId: specificGymTweet.userId,
                             userName: specificGymTweet.userName,
+                            userIconUrl: specificGymTweet.userIconUrl,
                             visitedDate: specificGymTweet.visitedDate
                                 .toLocal()
                                 .toIso8601String()
@@ -251,6 +252,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                             gymName: specificGymTweet.gymName,
                             prefecture: specificGymTweet.prefecture,
                             tweetContents: specificGymTweet.tweetContents,
+                            tweetImageUrls: specificGymTweet.mediaUrls,
                           );
                         },
                       ),

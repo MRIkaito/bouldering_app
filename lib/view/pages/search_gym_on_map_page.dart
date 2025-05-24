@@ -23,7 +23,8 @@ class SearchGymOnMapPage extends ConsumerStatefulWidget {
 class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
   Set<Marker> _markers = {};
   final LatLng _center = const LatLng(35.681236, 139.767125); // 東京駅
-  late GoogleMapController mapController;
+  // late GoogleMapController mapController;
+  GoogleMapController? mapController;
   late BitmapDescriptor customGymMarker;
 
   final ScrollController _scrollController = ScrollController();
@@ -32,6 +33,17 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
   @override
   void initState() {
     super.initState();
+    _initializeMap();
+  }
+
+  /// ■ メソッド
+  /// - ジム情報を取得したら，ピンを地図上に表示する機能
+  Future<void> _initializeMap() async {
+    final icon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(24, 24)),
+      'assets/pin_48.png',
+    );
+    customGymMarker = icon;
   }
 
   /// ■ メソッド
@@ -59,30 +71,7 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     }
   }
 
-  void _onMapCreated(GoogleMapController controller) async {
-    mapController = controller;
-
-    final style = await rootBundle.loadString('assets/map_style.json');
-    mapController.setMapStyle(style);
-
-    final icon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(24, 24)),
-      'assets/pin_48.png',
-    );
-    customGymMarker = icon;
-
-    // 位置情報を一度だけ取得（permission 重複防止）
-    final currentLocation = await _getCurrentLocation();
-    if (currentLocation != null) {
-      await mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(currentLocation, 14.5),
-      );
-    }
-
-    // マーカー設定
-    final gymMap = ref.read(gymInfoProvider);
-    final gyms = gymMap.values.toList();
-
+  Future<void> _updateMarkers(List gyms) async {
     final markers = gyms
         .asMap()
         .entries
@@ -115,18 +104,6 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     setState(() {
       _markers = markers;
     });
-
-    if (currentLocation != null) {
-      // 現在地を優先して表示
-      await mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(currentLocation, 12.5),
-      );
-    } else {
-      // 現在地の取得ができないとき or 現在地取得を拒否されたときのケース：東京駅を中心表示
-      await mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(_center, 12.5),
-      );
-    }
   }
 
   void _scrollToCard(int index) {
@@ -138,26 +115,17 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     );
   }
 
-  LatLngBounds _createLatLngBoundsFromMarkers(Set<Marker> markers) {
-    final latitudes = markers.map((m) => m.position.latitude);
-    final longitudes = markers.map((m) => m.position.longitude);
-
-    final southWest = LatLng(
-      latitudes.reduce((a, b) => a < b ? a : b),
-      longitudes.reduce((a, b) => a < b ? a : b),
-    );
-    final northEast = LatLng(
-      latitudes.reduce((a, b) => a > b ? a : b),
-      longitudes.reduce((a, b) => a > b ? a : b),
-    );
-
-    return LatLngBounds(southwest: southWest, northeast: northEast);
-  }
-
   @override
   Widget build(BuildContext context) {
     final gymMap = ref.watch(gymInfoProvider);
     final gyms = gymMap.values.toList();
+
+    // ✅ ジム情報が更新されたときにマーカーを再設定
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_markers.isEmpty && gyms.isNotEmpty && mapController != null) {
+        _updateMarkers(gyms);
+      }
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -174,7 +142,25 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
       body: Stack(
         children: [
           GoogleMap(
-            onMapCreated: _onMapCreated,
+            onMapCreated: (controller) async {
+              mapController = controller;
+              final style =
+                  await rootBundle.loadString('assets/map_style.json');
+              mapController?.setMapStyle(style);
+
+              final currentLocation = await _getCurrentLocation();
+              if (currentLocation != null) {
+                await mapController?.animateCamera(
+                  CameraUpdate.newLatLngZoom(currentLocation, 12.5),
+                );
+              } else {
+                await mapController?.animateCamera(
+                  CameraUpdate.newLatLngZoom(_center, 12.5),
+                );
+              }
+
+              await _updateMarkers(gyms); // データ取得後にマーカー更新
+            },
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 14.5,

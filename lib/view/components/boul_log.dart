@@ -133,74 +133,6 @@ class BoulLog extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // 画像 // TODO：画像を横スクロールできるような実装に変更する必要がある
-                // 画像部分
-                // GestureDetector(
-                //   onTap: () {
-                //     showGeneralDialog(
-                //       context: context,
-                //       barrierDismissible: true,
-                //       barrierLabel: "TweetImageDialog",
-                //       barrierColor: Colors.white.withOpacity(0.8),
-                //       transitionDuration: const Duration(milliseconds: 300),
-                //       pageBuilder: (context, _, __) {
-                //         return Stack(
-                //           children: [
-                //             GestureDetector(
-                //               onTap: () => Navigator.of(context).pop(),
-                //               child: Container(color: Colors.transparent),
-                //             ),
-                //             Center(
-                //               child: Hero(
-                //                 tag:
-                //                     'tweet_image_${userId}_$visitedDate', // 任意のユニークIDに
-                //                 child: InteractiveViewer(
-                //                   minScale: 1.0,
-                //                   maxScale: 20.0,
-                //                   child: Image.asset(
-                //                     "lib/view/assets/map_image.png",
-                //                     fit: BoxFit.contain,
-                //                   ),
-                //                   // ↑ ここは必要に応じて Image.network (下記のよう)に変更する
-                //                   // child: Image.network(
-                //                   //   tweetImageUrl, // ← 実際の画像URL  // TODO：値をもらう箇所
-                //                   //   fit: BoxFit.contain,
-                //                   // ),
-                //                 ),
-                //               ),
-                //             ),
-                //           ],
-                //         );
-                //       },
-                //       transitionBuilder:
-                //           (context, animation, secondaryAnimation, child) {
-                //         return FadeTransition(
-                //           opacity: animation,
-                //           child: child,
-                //         );
-                //       },
-                //     );
-                //   },
-                //   child: Hero(
-                //     tag: 'tweet_image_${userId}_$visitedDate',
-                //     child: Container(
-                //       width: 359,
-                //       height: 136,
-                //       decoration: ShapeDecoration(
-                //         image: const DecorationImage(
-                //           image: AssetImage("lib/view/assets/map_image.png"),
-                //           // ↑ ここを下記のように変更する
-                //           // image: NetworkImage(tweetImageUrl),  // TODO：値をもらう箇所
-                //           fit: BoxFit.fill,
-                //         ),
-                //         shape: RoundedRectangleBorder(
-                //           borderRadius: BorderRadius.circular(16),
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-
                 // 画像がある場合だけ表示（横スクロール）
                 if (tweetImageUrls != null && tweetImageUrls!.isNotEmpty)
                   SizedBox(
@@ -220,34 +152,40 @@ class BoulLog extends ConsumerWidget {
                               transitionDuration:
                                   const Duration(milliseconds: 300),
                               pageBuilder: (context, _, __) {
-                                return Stack(
-                                  children: [
-                                    GestureDetector(
+                                return PageView.builder(
+                                  controller:
+                                      PageController(initialPage: index),
+                                  itemCount: tweetImageUrls!.length,
+                                  itemBuilder: (context, pageIndex) {
+                                    return GestureDetector(
                                       onTap: () => Navigator.of(context).pop(),
-                                      child:
-                                          Container(color: Colors.transparent),
-                                    ),
-                                    Center(
-                                      child: Hero(
-                                        tag:
-                                            'tweet_image_${userId}_${visitedDate}_$index',
-                                        child: InteractiveViewer(
-                                          minScale: 1.0,
-                                          maxScale: 20.0,
-                                          child: Image.network(
-                                            imageUrl,
-                                            fit: BoxFit.contain,
+                                      child: Container(
+                                        color: Colors.transparent,
+                                        child: Center(
+                                          child: Hero(
+                                            tag:
+                                                'tweet_image_${userId}_${visitedDate}_$pageIndex',
+                                            child: InteractiveViewer(
+                                              minScale: 1.0,
+                                              maxScale: 5.0,
+                                              child: Image.network(
+                                                tweetImageUrls![pageIndex],
+                                                fit: BoxFit.contain,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 );
                               },
                               transitionBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 return FadeTransition(
-                                    opacity: animation, child: child);
+                                  opacity: animation,
+                                  child: child,
+                                );
                               },
                             );
                           },

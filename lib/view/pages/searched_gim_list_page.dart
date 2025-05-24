@@ -12,8 +12,15 @@ class SearchedGimListPage extends StatelessWidget {
     final gyms = GoRouterState.of(context).extra as List<GymInfo>?;
 
     if (gyms == null || gyms.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text("該当するジムはありません")),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("検索結果"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: const Center(child: Text("該当するジムはありません")),
       );
     }
 

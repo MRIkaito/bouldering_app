@@ -16,7 +16,6 @@ class UserProfileSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    // final gymRef = ref.read(gymProvider);
     final gymRef = ref.read(gymInfoProvider);
     String boulLogDuration = calcBoulderingDuration(user);
 

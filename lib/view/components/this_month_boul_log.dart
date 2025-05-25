@@ -1,6 +1,7 @@
 import 'package:bouldering_app/view_model/statics_report_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class ThisMonthBoulLog extends ConsumerWidget {
@@ -33,7 +34,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
         return Center(
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: ShapeDecoration(
               color: const Color(0xFF0056FF),
               shape: RoundedRectangleBorder(
@@ -46,16 +47,33 @@ class ThisMonthBoulLog extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      '今月のボル活',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.50,
-                      ),
+                    Row(
+                      children: [
+                        // 今月のボル活 テキスト
+                        const Text(
+                          '今月のボル活',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.50,
+                          ),
+                        ),
+                        // 統計情報更新ボタン
+                        IconButton(
+                          onPressed: () {
+                            ref.invalidate(
+                              boulActivityStatsProvider(
+                                  (userId: userId!, monthsAgo: monthsAgo)),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ],
                     ),
                     GestureDetector(
                       onTap: () {
@@ -66,7 +84,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
                         textAlign: TextAlign.right,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 12,
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.50,
@@ -75,7 +93,8 @@ class ThisMonthBoulLog extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+
+                // ボル活・施設数・ペース 表記部分
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -103,7 +122,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
           title,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 16,
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
             letterSpacing: -0.50,
@@ -116,7 +135,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
               value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 40,
+                fontSize: 28,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.50,

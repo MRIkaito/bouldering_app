@@ -22,14 +22,14 @@ class SearchGymOnMapPage extends ConsumerStatefulWidget {
 /// - ジムの位置を表示するページ(状態)
 class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
   Set<Marker> _markers = {};
-  final LatLng _center = const LatLng(35.681236, 139.767125); // 東京駅
-  // late GoogleMapController mapController;
+  final LatLng _center =
+      const LatLng(35.681236, 139.767125); // 東京駅(35.681236, 139.767125)
   GoogleMapController? mapController;
   late BitmapDescriptor customGymMarker;
-
   final ScrollController _scrollController = ScrollController();
   int _focusedGymIndex = -1;
 
+  /// ■ メソッド(イニシャライザ)
   @override
   void initState() {
     super.initState();
@@ -71,6 +71,11 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     }
   }
 
+  /// ■ メソッド
+  /// - 取得したジム情報をもとに，地図上に表示する各ジムのピンを作成する
+  ///
+  /// 引数
+  /// - [gyms] すべてのジムの情報(のリスト)
   Future<void> _updateMarkers(List gyms) async {
     final markers = gyms
         .asMap()
@@ -106,6 +111,11 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     });
   }
 
+  /// ■ メソッド
+  /// - ピンを押下したときに，そのジムのカードが画面下部に表示されるようにする機能
+  ///
+  /// 引数
+  /// - [index] ジムのインデックス番号
   void _scrollToCard(int index) {
     final width = MediaQuery.of(context).size.width * 0.8 + 16;
     _scrollController.animateTo(
@@ -115,6 +125,8 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
     );
   }
 
+  /// ■ Widget
+  /// - 地図を表示
   @override
   Widget build(BuildContext context) {
     final gymMap = ref.watch(gymInfoProvider);
@@ -222,7 +234,20 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // ジム名 + 都道府県
                           GestureDetector(
+                            child: SizedBox(
+                              height: 44, // ジム名表示部分が一定の高さになるように固定化
+                              child: Text(
+                                '${gym.gymName} [${gym.prefecture}]',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             onTap: () async {
                               final gymId = gym.gymId.toString();
                               final gymInfo = await ref
@@ -237,16 +262,10 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                                 );
                               }
                             },
-                            child: Text(
-                              '${gym.gymName} [${gym.prefecture}]',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
                           ),
                           const SizedBox(height: 4),
+
+                          // ジムカテゴリ
                           Row(
                             children: [
                               if (gym.isBoulderingGym)
@@ -266,13 +285,18 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                                   ),
                                 ),
                               if (gym.isSpeedGym)
-                                const GimCategory(
-                                  gimCategory: 'スピード',
-                                  colorCode: 0xFF0057FF,
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 8.0),
+                                  child: GimCategory(
+                                    gimCategory: 'スピード',
+                                    colorCode: 0xFF0057FF,
+                                  ),
                                 ),
                             ],
                           ),
                           const SizedBox(height: 8),
+
+                          // ジム写真
                           Container(
                             width: double.infinity,
                             height: 100,
@@ -283,13 +307,22 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                             child: const Center(child: Text('写真なし')),
                           ),
                           const SizedBox(height: 8),
+
+                          // 最小利用価格 / 営業状態(OPEN・営業時間外)
                           Row(
                             children: [
                               const Icon(Icons.currency_yen, size: 18),
                               Text('${gym.minimumFee}〜'),
                               const SizedBox(width: 16),
                               const Icon(Icons.access_time, size: 18),
-                              Text(open ? 'OPEN' : 'CLOSE'),
+                              open
+                                  ? const Text('OPEN')
+                                  : const Text(
+                                      '営業時間外',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    )
                             ],
                           ),
                         ],

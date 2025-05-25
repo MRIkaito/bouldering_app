@@ -177,7 +177,14 @@ class GimCard extends ConsumerWidget {
               const SizedBox(width: 16),
               const Icon(Icons.access_time, size: 18),
               const SizedBox(width: 4),
-              isOpened ? const Text('OPEN') : const Text("CLOSE"),
+              isOpened
+                  ? const Text('OPEN')
+                  : const Text(
+                      "CLOSE",
+                      style: TextStyle(
+                        color: Colors.red,
+                      ),
+                    ),
             ],
           ),
           const SizedBox(height: 8),

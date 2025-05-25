@@ -42,7 +42,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
     // スクロール発生時,_onScroll()を実行するリスナを追加
     _scrollController.addListener(_onScroll);
 
-    /// ✨✨✨ 変更箇所あり：initStateでイキタイ登録状態を取得して変数に代入 ✨✨✨
+    /// initStateでイキタイ登録状態を取得して変数に代入
     Future.microtask(() {
       final wannaGoGymState = ref.read(wannaGoRelationProvider);
       final isRegistered = wannaGoGymState.containsKey(int.parse(gymId));
@@ -82,9 +82,6 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
     final specificGymTweetsState = ref.watch(specificGymTweetsProvider(gymId));
     final specificGymTweets = specificGymTweetsState.specificGymTweets;
     final _hasMoreSpecificGymTweets = specificGymTweetsState.hasMore;
-    // イキタイジム情報を取得
-    // final wannaGoGymState = ref.read(wannaGoRelationProvider);
-    // bool isRegisteredGym = wannaGoGymState.containsKey(int.parse(gymId));
 
     return asyncGymInfo.when(
         // ロード中
@@ -140,37 +137,42 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                                   fontSize: 24, fontWeight: FontWeight.bold),
                             ),
 
-                            Column(
+                            Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (gymInfo.isBoulderingGym) ...[
-                                  const GimCategory(
-                                    gimCategory: 'ボルダリング',
-                                    colorCode: 0xFFF44336,
+                                if (gymInfo.isBoulderingGym)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8.0),
+                                    child: GimCategory(
+                                      gimCategory: 'ボルダリング',
+                                      colorCode: 0xFFFF0F00,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                if (gymInfo.isLeadGym) ...[
-                                  const GimCategory(
-                                    gimCategory: 'リード',
-                                    colorCode: 0xFFF44336,
+                                if (gymInfo.isLeadGym)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8.0),
+                                    child: GimCategory(
+                                      gimCategory: 'リード',
+                                      colorCode: 0xFF00A24C,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                if (gymInfo.isSpeedGym) ...[
-                                  const GimCategory(
-                                    gimCategory: 'スピード',
-                                    colorCode: 0xFFF44336,
+                                if (gymInfo.isSpeedGym)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8.0),
+                                    child: GimCategory(
+                                      gimCategory: 'スピード',
+                                      colorCode: 0xFF0057FF,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                GymIkitaiBoullogCount(
-                                  ikitaiCount: gymInfo.ikitaiCount.toString(),
-                                  boullogCount: gymInfo.boulCount.toString(),
-                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
+
+                            GymIkitaiBoullogCount(
+                              ikitaiCount: gymInfo.ikitaiCount.toString(),
+                              boullogCount: gymInfo.boulCount.toString(),
+                            ),
+                            const SizedBox(height: 12),
 
                             // ギャラリー
                             // TODO：値をもらう箇所 + 写真オブジェクトを取得して表示するように実装する必要が（前段階で）ある
@@ -224,7 +226,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                         ),
                       ),
 
-                      // 表示ジム施設のツイートを時系列順に表示
+                      // 表示ジム施設のツイート(時系列順に表示)
                       ListView.builder(
                         controller: _scrollController,
                         itemCount: specificGymTweets.length +
@@ -271,7 +273,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                /// ✨✨✨ 変更箇所あり：イキタイボタンの見た目と動作を変数で制御 ✨✨✨
+                                /// キタイボタンの見た目と動作を変数で制御
                                 OutlinedButton(
                                   onPressed: () async {
                                     final userId =

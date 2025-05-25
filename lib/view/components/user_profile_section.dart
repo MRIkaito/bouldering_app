@@ -50,7 +50,7 @@ class UserProfileSection extends ConsumerWidget {
                   },
                   buttonName: "お気に入り",
                   buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                  buttonHeight: 36,
+                  buttonHeight: 28,
                   buttonColorCode: 0xFFE3DCE4,
                   buttonTextColorCode: 0xFF000000,
                 ),
@@ -59,7 +59,7 @@ class UserProfileSection extends ConsumerWidget {
                       {context.push("/FavoriteUser/favoredBy")},
                   buttonName: "お気に入られ",
                   buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                  buttonHeight: 36,
+                  buttonHeight: 28,
                   buttonColorCode: 0xFFE3DCE4,
                   buttonTextColorCode: 0xFF000000,
                 ),
@@ -78,7 +78,7 @@ class UserProfileSection extends ConsumerWidget {
                 maxLines: null,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 12,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,
                   height: 1.4,
@@ -93,7 +93,7 @@ class UserProfileSection extends ConsumerWidget {
               "好きなジム",
               style: TextStyle(
                 color: Color(0xFF8D8D8D),
-                fontSize: 16,
+                fontSize: 12,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.bold,
                 height: 1.4,
@@ -111,7 +111,7 @@ class UserProfileSection extends ConsumerWidget {
                 maxLines: null,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 12,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,
                   height: 1.4,
@@ -126,8 +126,8 @@ class UserProfileSection extends ConsumerWidget {
               children: [
                 SvgPicture.asset('lib/view/assets/date_range.svg'),
                 const SizedBox(width: 8),
-                const Text("ボルダリング歴："),
-                Text(boulLogDuration),
+                const Text("ボルダリング歴：", style: const TextStyle(fontSize: 12)),
+                Text(boulLogDuration, style: const TextStyle(fontSize: 12)),
               ],
             ),
             const SizedBox(height: 8),
@@ -137,7 +137,7 @@ class UserProfileSection extends ConsumerWidget {
               children: [
                 SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
                 const SizedBox(width: 8),
-                const Text("ホームジム："),
+                const Text("ホームジム：", style: const TextStyle(fontSize: 12)),
                 GestureDetector(
                   onTap: () {
                     // ジムIDが null または存在しないときの処理
@@ -156,6 +156,7 @@ class UserProfileSection extends ConsumerWidget {
                     showGymName(user, gymRef),
                     style: const TextStyle(
                       color: Colors.blue,
+                      fontSize: 12,
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w500,
                     ),

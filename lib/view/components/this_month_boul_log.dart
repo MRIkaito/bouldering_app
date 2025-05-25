@@ -34,7 +34,8 @@ class ThisMonthBoulLog extends ConsumerWidget {
         return Center(
           child: Container(
             width: 400,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: const EdgeInsets.fromLTRB(
+                14, 0, 14, 8), // left: 14, top: 0, right: 14, bottom: 8
             decoration: ShapeDecoration(
               color: const Color(0xFF0056FF),
               shape: RoundedRectangleBorder(
@@ -54,7 +55,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
                           '今月のボル活',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                             letterSpacing: -0.50,
                           ),
@@ -135,7 +136,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
               value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 28,
+                fontSize: 24,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.50,
@@ -146,7 +147,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
               unit,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 14,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.50,

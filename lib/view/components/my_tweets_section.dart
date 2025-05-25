@@ -42,7 +42,6 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
   Future<void> _fetchTweets() async {
     // ユーザーID
     final userId = ref.read(userProvider)?.userId;
-    print("🟡 [DEBUG] user_id before request: $userId");
 
     // ユーザーID取得できていない時、実行しない
     if (userId == null) {
@@ -80,8 +79,6 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     final tweets = ref.watch(myTweetsProvider);
     final hasMore = ref.watch(myTweetsProvider.notifier).hasMore;
 
-    print("🟡 [DEBUG] UI tweets length: ${tweets.length}");
-
     return tweets.isEmpty
         ? Center(
             child: _showNoTweetsText
@@ -118,6 +115,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                   gymId: tweet.gymId.toString(),
                   gymName: tweet.gymName,
                   prefecture: tweet.prefecture,
+                  tweetId: tweet.tweetId,
                   tweetContents: tweet.tweetContents,
                   tweetImageUrls: tweet.mediaUrls,
                 );

@@ -28,10 +28,9 @@ class OtherUserTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
   Future<void> fetchTweets() async {
     // ローディング状態にない，または取得するツイートがこれ以上ない時に取得処理に遷移せずに終了
     if (_isLoading || !_hasMore) {
-      // print("🟡 [DEBUG] fetchTweets() skipped. isLoading: $_isLoading, hasMore: $_hasMore");
+      // [DEBUG] fetchTweets() skipped.
       return;
     }
-    // print("🟢 [DEBUG] fetchTweets() started for userId: $userId");
 
     _isLoading = true;
 
@@ -49,32 +48,12 @@ class OtherUserTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
 
     try {
       final response = await http.get(url);
-      // print("🟣 [DEBUG] Response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
 
         final List<BoulLogTweet> newTweets =
             jsonData.map((tweet) => BoulLogTweet.fromJson(tweet)).toList();
-
-        // final List<BoulLogTweet> newTweets = jsonData.map((tweet) {
-        //   return BoulLogTweet(
-        //     tweetId: (tweet['tweet_id'] as int?) ?? 0,
-        //     tweetContents: tweet['tweet_contents'],
-        //     visitedDate: DateTime.tryParse(tweet['visited_date'] ?? '') ??
-        //         DateTime.now(),
-        //     tweetedDate: DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
-        //         DateTime.now(),
-        //     likedCount: (tweet['liked_count'] as int?) ?? 0,
-        //     movieUrl: tweet['movie_url'] ?? '',
-        //     userId: tweet['user_id'] ?? '',
-        //     userName: tweet['user_name'] ?? '',
-        //     userIconUrl: tweet['user_icon_url'] ?? '',
-        //     gymId: (tweet['gym_id'] as int?) ?? 0,
-        //     gymName: tweet['gym_name'] ?? '',
-        //     prefecture: tweet['prefecture'] ?? '',
-        //   );
-        // }).toList();
 
         state = List.from(state)
           ..addAll(newTweets.map((tweet) => tweet.copyWith()));
@@ -83,13 +62,14 @@ class OtherUserTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
           _hasMore = false;
         }
       } else {
-        // print("❌ [ERROR] Failed to fetch tweets. Status: ${response.statusCode}");
-        // print("❌ [ERROR] Response body: ${response.body}");
+        // ❌ [ERROR] Failed to fetch tweets.
+        // DO NOTHING
       }
     } catch (error) {
-      // print("❌ [ERROR] Exception in fetchTweets(): $error");
+      // ❌ [ERROR] Exception in fetchTweets();
+      // DO NOTHING
     } finally {
-      // print("🟢 [DEBUG] isLoading set to false");
+      // [DEBUG] isLoading set to false
       _isLoading = false;
     }
   }

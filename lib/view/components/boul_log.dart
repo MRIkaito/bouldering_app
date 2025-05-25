@@ -1,8 +1,11 @@
-import 'package:bouldering_app/view_model/facility_info_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:bouldering_app/view_model/facility_info_provider.dart';
+import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/user_icon_url.dart';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BoulLog extends ConsumerWidget {
   final String userId;
@@ -14,6 +17,7 @@ class BoulLog extends ConsumerWidget {
   final String prefecture;
   final String tweetContents;
   final List<String>? tweetImageUrls; // 画像がある場合のみ使用される
+  final int? tweetId;
 
   const BoulLog({
     super.key,
@@ -26,10 +30,13 @@ class BoulLog extends ConsumerWidget {
     required this.prefecture,
     required this.tweetContents,
     this.tweetImageUrls, // null許容にすることで未添付もOK
+    this.tweetId,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final myUserId = ref.watch(userProvider)?.userId;
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -77,6 +84,62 @@ class BoulLog extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              // ツイートのユーザーIDが，ログインしているユーザーのユーザーIDと同じ場合「⋮」を表示する
+              // 編集・削除 機能
+              if (userId == myUserId)
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) async {
+                    if (value == 'delete') {
+                      final shouldDelete = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("削除しますか？"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text("いいえ"),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("はい"),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (shouldDelete == true && tweetId != null) {
+                        final uri = Uri.parse(
+                          'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
+                        ).replace(queryParameters: {
+                          'request_id': '28',
+                          'tweet_id': tweetId.toString(),
+                          'user_id': userId,
+                          'gym_id': gymId,
+                        });
+
+                        final response = await http.delete(uri);
+                        if (response.statusCode == 200) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('削除しました')),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('削除に失敗しました: ${response.body}')),
+                          );
+                        }
+                      }
+                    } else if (value == 'edit' && tweetId != null) {
+                      // context.push('/EditTweetPage/$tweetId');
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'delete', child: Text('削除する')),
+                    const PopupMenuItem(value: 'edit', child: Text('編集する')),
+                  ],
+                ),
+//
             ],
           ),
           const SizedBox(height: 8),

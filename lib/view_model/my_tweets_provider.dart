@@ -45,7 +45,6 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
 
     // ツイート取得開始
     _isLoading = true;
-
     final String? cursor =
         state.isNotEmpty ? state.last.tweetedDate.toString() : null;
 
@@ -63,36 +62,8 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
-        // print("🟢 [DEBUG] Response body: $jsonData");
-
         final List<BoulLogTweet> newTweets =
             jsonData.map((tweet) => BoulLogTweet.fromJson(tweet)).toList();
-
-        // final List<BoulLogTweet> newTweets = jsonData
-        //     .map((tweet) => BoulLogTweet(
-        //           tweetId: (tweet['tweet_id'] as int?) ?? 0,
-        //           tweetContents: tweet['tweet_contents'],
-        //           visitedDate: DateTime.tryParse(tweet['visited_date'] ?? '') ??
-        //               DateTime.now(),
-        //           tweetedDate: DateTime.tryParse(tweet['tweeted_date'] ?? '') ??
-        //               DateTime.now(),
-        //           likedCount: (tweet['liked_count'] as int?) ?? 0,
-        //           movieUrl: tweet['movie_url'] ?? '',
-        //           userId: tweet['user_id'] ?? '',
-        //           userName: tweet['user_name'] ?? '',
-        //           userIconUrl: tweet['user_icon_url'] ?? '',
-        //           gymId: (tweet['gym_id'] as int?) ?? 0,
-        //           gymName: tweet['gym_name'] ?? '',
-        //           prefecture: tweet['prefecture'] ?? '',
-        //         ))
-        //     .toList();
-
-        // 🟡 デバッグ用：受け取ったツイートの内容を一部表示
-        if (newTweets.isNotEmpty) {
-          // print("🟡 [DEBUG] First tweet: ${newTweets.first.tweetContents}, ID: ${newTweets.first.tweetId}");
-        } else {
-          // print("🟡 [DEBUG] No new tweets found.");
-        }
 
         // copyWith を使って state を更新
         state = List.from(state)
@@ -100,18 +71,16 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
         if (newTweets.length < 20) {
           _hasMore = false;
         } else {
-          // print("🟡 [DEBUG] Before updating state, tweet count: ${state.length}");
-          // print("🟢 [DEBUG] After updating state, tweet count: ${state.length}");
+          // DO NOTHING
         }
       } else {
-        // print("❌ [ERROR] Failed to fetch tweets. Status: ${response.statusCode}");
-        // print("❌ [ERROR] Response body: ${response.body}");
+        // ❌ [ERROR] Failed to fetch tweets
+        // DO NOTHING
       }
     } catch (error) {
-      // print("❌ [ERROR] Exception in _fetchTweets(): $error");
+      // ❌ [ERROR] Exception in _fetchTweets()
+      // DO NOTHING
     } finally {
-      // print("🟡 [DEBUG] Before setting isLoading to false, value: $_isLoading");
-      // print("🟢 [DEBUG] isLoading is now: $_isLoading");
       _isLoading = false;
     }
   }

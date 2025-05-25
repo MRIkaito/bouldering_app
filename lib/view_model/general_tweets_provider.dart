@@ -54,27 +54,6 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
             .map((tweet) => BoulLogTweet.fromJson(tweet))
             .toList();
 
-        // final List<BoulLogTweet> newGeneralTweetsList = generalTweetsList
-        //     .map((tweet) => BoulLogTweet(
-        //           tweetId: tweet['tweet_id'] ?? 0,
-        //           tweetContents: tweet['tweet_contents'] ?? '',
-        //           visitedDate: tweet['visited_date'] != null
-        //               ? DateTime.parse(tweet['visited_date'])
-        //               : DateTime(1990, 1, 1),
-        //           tweetedDate: tweet['tweeted_date'] != null
-        //               ? DateTime.parse(tweet['tweeted_date'])
-        //               : DateTime(1990, 1, 1),
-        //           likedCount: tweet['liked_count'] ?? 0,
-        //           movieUrl: tweet['movie_url'] ?? '',
-        //           userId: tweet['user_id'] ?? '',
-        //           userName: tweet['user_name'] ?? '',
-        //           userIconUrl: tweet['user_icon_url'] ?? '',
-        //           gymId: tweet['gym_id'] ?? 0,
-        //           gymName: tweet['gym_name'] ?? '',
-        //           prefecture: tweet['prefecture'] ?? '',
-        //         ))
-        //     .toList();
-
         state = GeneralTweetsState(
           generalTweets: [...state.generalTweets, ...newGeneralTweetsList],
           hasMore: newGeneralTweetsList.length >= 20,
@@ -87,6 +66,15 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
     } finally {
       _isLoading = false;
     }
+  }
+
+  /// ■ メソッド
+  /// - Pull-to-Refresh対応：ツイート一覧を初期化して再取得
+  Future<void> refreshTweets() async {
+    if (_isLoading) return;
+
+    state = GeneralTweetsState(generalTweets: [], hasMore: true);
+    await _fetchMoreGeneralTweets();
   }
 
   /// ■ メソッド

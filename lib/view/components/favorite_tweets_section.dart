@@ -112,36 +112,43 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
 
     return isLoggedIn
         // ログイン時
-        ? ListView.builder(
-            controller: _favoriteTweetsScrollController,
-            itemCount: favoriteUserTweets.length +
-                (_hasMoreFavoriteUserTweets ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == favoriteUserTweets.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              final favoriteUserTweet = favoriteUserTweets[index];
-
-              return BoulLog(
-                userId: favoriteUserTweet.userId,
-                userName: favoriteUserTweet.userName,
-                userIconUrl: favoriteUserTweet.userIconUrl,
-                visitedDate: favoriteUserTweet.visitedDate
-                    .toLocal()
-                    .toIso8601String()
-                    .split('T')[0],
-                // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
-                gymId: favoriteUserTweet.gymId.toString(),
-                gymName: favoriteUserTweet.gymName,
-                prefecture: favoriteUserTweet.prefecture,
-                tweetContents: favoriteUserTweet.tweetContents,
-                tweetImageUrls: favoriteUserTweet.mediaUrls,
-              );
+        ? RefreshIndicator(
+            onRefresh: () async {
+              await ref
+                  .read(favoriteUserTweetsProvider(userId).notifier)
+                  .refreshTweets();
             },
+            child: ListView.builder(
+              controller: _favoriteTweetsScrollController,
+              itemCount: favoriteUserTweets.length +
+                  (_hasMoreFavoriteUserTweets ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == favoriteUserTweets.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final favoriteUserTweet = favoriteUserTweets[index];
+
+                return BoulLog(
+                  userId: favoriteUserTweet.userId,
+                  userName: favoriteUserTweet.userName,
+                  userIconUrl: favoriteUserTweet.userIconUrl,
+                  visitedDate: favoriteUserTweet.visitedDate
+                      .toLocal()
+                      .toIso8601String()
+                      .split('T')[0],
+                  // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                  gymId: favoriteUserTweet.gymId.toString(),
+                  gymName: favoriteUserTweet.gymName,
+                  prefecture: favoriteUserTweet.prefecture,
+                  tweetContents: favoriteUserTweet.tweetContents,
+                  tweetImageUrls: favoriteUserTweet.mediaUrls,
+                );
+              },
+            ),
           )
 
         // 未ログイン時

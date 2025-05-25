@@ -40,34 +40,39 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
     final generalTweets = ref.watch(generalTweetsProvider).generalTweets;
     final _hasMoreGeneralTweets = ref.watch(generalTweetsProvider).hasMore;
 
-    return ListView.builder(
-      controller: _generalTweetsScrollController,
-      itemCount: generalTweets.length + (_hasMoreGeneralTweets ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == generalTweets.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final generalTweet = generalTweets[index];
-
-        return BoulLog(
-          userId: generalTweet.userId,
-          userName: generalTweet.userName,
-          userIconUrl: generalTweet.userIconUrl,
-          visitedDate: generalTweet.visitedDate
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0],
-          gymId: generalTweet.gymId.toString(),
-          gymName: generalTweet.gymName,
-          prefecture: generalTweet.prefecture,
-          tweetContents: generalTweet.tweetContents,
-          tweetImageUrls: generalTweet.mediaUrls,
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(generalTweetsProvider.notifier).refreshTweets();
       },
+      child: ListView.builder(
+        controller: _generalTweetsScrollController,
+        itemCount: generalTweets.length + (_hasMoreGeneralTweets ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == generalTweets.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final generalTweet = generalTweets[index];
+
+          return BoulLog(
+            userId: generalTweet.userId,
+            userName: generalTweet.userName,
+            userIconUrl: generalTweet.userIconUrl,
+            visitedDate: generalTweet.visitedDate
+                .toLocal()
+                .toIso8601String()
+                .split('T')[0],
+            gymId: generalTweet.gymId.toString(),
+            gymName: generalTweet.gymName,
+            prefecture: generalTweet.prefecture,
+            tweetContents: generalTweet.tweetContents,
+            tweetImageUrls: generalTweet.mediaUrls,
+          );
+        },
+      ),
     );
   }
 }

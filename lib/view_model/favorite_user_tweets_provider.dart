@@ -58,29 +58,6 @@ class FavoriteUserTweetsNotifier
                 .map((tweet) => BoulLogTweet.fromJson(tweet))
                 .toList();
 
-        // final List<BoulLogTweet> newFavoriteUserTweetsList =
-        //     favoriteUserTweetsList
-        //         .map((tweet) => BoulLogTweet(
-        //               tweetId: tweet['tweet_id'] ?? 0,
-        //               tweetContents: tweet['tweet_contents'] ?? '',
-        //               visitedDate: tweet['visited_date'] != null
-        //                   ? DateTime.parse(tweet['visited_date'])
-        //                   : DateTime(1990, 1, 1),
-        //               tweetedDate: tweet['tweeted_date'] != null
-        //                   ? DateTime.parse(tweet['tweeted_date'])
-        //                   : DateTime(1990, 1, 1),
-        //               likedCount: tweet['liked_count'] ?? 0,
-        //               movieUrl: tweet['movie_url'] ?? '',
-        //               userId: tweet['user_id'] ??
-        //                   '', // このお気に入りユーザーツイートのuser_idとは，バックエンドのSQL文では"likee_user_id"のことを指す
-        //               userName: tweet['user_name'] ?? '',
-        //               userIconUrl: tweet['user_icon_url'] ?? '',
-        //               gymId: tweet['gym_id'] ?? 0,
-        //               gymName: tweet['gym_name'] ?? '',
-        //               prefecture: tweet['prefecture'] ?? '',
-        //             ))
-        //         .toList();
-
         state = FavoriteUserTweetsState(
           favoriteUserTweets: [
             ...state.favoriteUserTweets,
@@ -97,6 +74,15 @@ class FavoriteUserTweetsNotifier
     } finally {
       _isLoading = false;
     }
+  }
+
+  /// ■ メソッド
+  /// - Pull-to-Refresh対応：ツイート一覧を初期化して再取得
+  Future<void> refreshTweets() async {
+    if (_isLoading) return;
+
+    state = FavoriteUserTweetsState(favoriteUserTweets: [], hasMore: true);
+    await _fetchMoreFavoriteUserTweets();
   }
 
   /// ■ メソッド

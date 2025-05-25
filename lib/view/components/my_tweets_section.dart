@@ -19,6 +19,11 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
   @override
   void initState() {
     super.initState();
+
+    // ツイートを取得する
+    _fetchTweets();
+
+    // 無限スクロール用リスナー
     _scrollController.addListener(_onScroll);
 
     // 5病後に「ツイートなし表示」に切り替える

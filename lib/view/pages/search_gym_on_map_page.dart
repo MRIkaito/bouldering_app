@@ -236,16 +236,25 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                         children: [
                           // ジム名 + 都道府県
                           GestureDetector(
-                            child: SizedBox(
-                              height: 44, // ジム名表示部分が一定の高さになるように固定化
-                              child: Text(
-                                '${gym.gymName} [${gym.prefecture}]',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                            child: Container(
+                              height: 36,
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: SizedBox(
+                                  height: 34,
+                                  child: Text(
+                                    '${gym.gymName} [${gym.prefecture}]',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    // softWrap: true,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             onTap: () async {
@@ -312,7 +321,10 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                           Row(
                             children: [
                               const Icon(Icons.currency_yen, size: 18),
-                              Text('${gym.minimumFee}〜'),
+                              Text('${gym.minimumFee}〜',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                  )),
                               const SizedBox(width: 16),
                               const Icon(Icons.access_time, size: 18),
                               open
@@ -321,6 +333,7 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                                       '営業時間外',
                                       style: TextStyle(
                                         color: Colors.red,
+                                        fontSize: 12,
                                       ),
                                     )
                             ],

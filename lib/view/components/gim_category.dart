@@ -41,7 +41,7 @@ class GimCategory extends StatelessWidget {
           gimCategory,
           style: TextStyle(
             color: textColor,
-            fontSize: 16,
+            fontSize: 12,
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
             height: 1.0, // 縦の中央にテキストを配置

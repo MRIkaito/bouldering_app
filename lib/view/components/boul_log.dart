@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/facility_info_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/user_icon_url.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-class BoulLog extends ConsumerWidget {
+class BoulLog extends ConsumerStatefulWidget {
   final String userId;
   final String userName;
   final String? userIconUrl;
@@ -34,7 +34,29 @@ class BoulLog extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BoulLog> createState() => _BoulLogState();
+}
+
+class _BoulLogState extends ConsumerState<BoulLog> {
+  late List<String> _imageUrls;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageUrls = widget.tweetImageUrls ?? [];
+  }
+
+  @override
+  void didUpdateWidget(covariant BoulLog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 新しく画像が渡された場合のみ更新（古い空リストで上書きしない）
+    if ((widget.tweetImageUrls != null && widget.tweetImageUrls!.isNotEmpty)) {
+      _imageUrls = widget.tweetImageUrls!;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final myUserId = ref.watch(userProvider)?.userId;
 
     return Padding(
@@ -49,9 +71,10 @@ class BoulLog extends ConsumerWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: Colors.grey[200],
-                backgroundImage:
-                    isValidUrl(userIconUrl) ? NetworkImage(userIconUrl!) : null,
-                child: isValidUrl(userIconUrl)
+                backgroundImage: isValidUrl(widget.userIconUrl)
+                    ? NetworkImage(widget.userIconUrl!)
+                    : null,
+                child: isValidUrl(widget.userIconUrl)
                     ? null
                     : const Icon(Icons.person, color: Colors.grey, size: 24),
               ),
@@ -64,10 +87,10 @@ class BoulLog extends ConsumerWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        context.push('/OtherUserPage/$userId');
+                        context.push('/OtherUserPage/$widget.userId');
                       },
                       child: Text(
-                        userName,
+                        widget.userName,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -75,7 +98,7 @@ class BoulLog extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      visitedDate,
+                      widget.visitedDate,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
@@ -87,7 +110,7 @@ class BoulLog extends ConsumerWidget {
 
               // ツイートのユーザーIDが，ログインしているユーザーのユーザーIDと同じ場合「⋮」を表示する
               // 編集・削除 機能
-              if (userId == myUserId)
+              if (widget.userId == myUserId)
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) async {
@@ -108,14 +131,14 @@ class BoulLog extends ConsumerWidget {
                           ],
                         ),
                       );
-                      if (shouldDelete == true && tweetId != null) {
+                      if (shouldDelete == true && widget.tweetId != null) {
                         final uri = Uri.parse(
                           'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
                         ).replace(queryParameters: {
                           'request_id': '28',
-                          'tweet_id': tweetId.toString(),
-                          'user_id': userId,
-                          'gym_id': gymId,
+                          'tweet_id': widget.tweetId.toString(),
+                          'user_id': widget.userId,
+                          'gym_id': widget.gymId,
                         });
 
                         final response = await http.delete(uri);
@@ -130,8 +153,9 @@ class BoulLog extends ConsumerWidget {
                           );
                         }
                       }
-                    } else if (value == 'edit' && tweetId != null) {
+                    } else if (value == 'edit' && widget.tweetId != null) {
                       // context.push('/EditTweetPage/$tweetId');
+                      // TODO：編集機能実装
                     }
                   },
                   itemBuilder: (context) => [
@@ -139,7 +163,6 @@ class BoulLog extends ConsumerWidget {
                     const PopupMenuItem(value: 'edit', child: Text('編集する')),
                   ],
                 ),
-//
             ],
           ),
           const SizedBox(height: 8),
@@ -152,11 +175,11 @@ class BoulLog extends ConsumerWidget {
                 // ジム名・場所
                 GestureDetector(
                   onTap: () async {
-                    final gymInfoAsync =
-                        await ref.read(facilityInfoProvider(gymId).future);
+                    final gymInfoAsync = await ref
+                        .read(facilityInfoProvider(widget.gymId).future);
 
                     if (gymInfoAsync != null) {
-                      context.push('/FacilityInfo/$gymId');
+                      context.push('/FacilityInfo/$widget.gymId');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('施設情報の取得に失敗しました')),
@@ -167,7 +190,7 @@ class BoulLog extends ConsumerWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: gymName,
+                          text: widget.gymName,
                           style: const TextStyle(
                             fontSize: 16,
                             color: Colors.blue,
@@ -175,7 +198,7 @@ class BoulLog extends ConsumerWidget {
                           ),
                         ),
                         TextSpan(
-                          text: " [$prefecture]",
+                          text: ' [${widget.prefecture}]',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -189,7 +212,7 @@ class BoulLog extends ConsumerWidget {
 
                 // 活動内容
                 Text(
-                  tweetContents,
+                  widget.tweetContents,
                   style: const TextStyle(
                     fontSize: 14,
                   ),
@@ -197,71 +220,86 @@ class BoulLog extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // 画像がある場合だけ表示（横スクロール）
-                if (tweetImageUrls != null && tweetImageUrls!.isNotEmpty)
+                if (_imageUrls.isNotEmpty)
                   SizedBox(
                     height: 160,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: tweetImageUrls!.length,
+                      itemCount: _imageUrls.length,
                       itemBuilder: (context, index) {
-                        final imageUrl = tweetImageUrls![index];
-                        return GestureDetector(
-                          onTap: () {
-                            showGeneralDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              barrierLabel: "TweetImageDialog",
-                              barrierColor: Colors.white.withOpacity(0.8),
-                              transitionDuration:
-                                  const Duration(milliseconds: 300),
-                              pageBuilder: (context, _, __) {
-                                return PageView.builder(
-                                  controller:
-                                      PageController(initialPage: index),
-                                  itemCount: tweetImageUrls!.length,
-                                  itemBuilder: (context, pageIndex) {
-                                    return GestureDetector(
-                                      onTap: () => Navigator.of(context).pop(),
-                                      child: Container(
-                                        color: Colors.transparent,
-                                        child: Center(
-                                          child: Hero(
-                                            tag:
-                                                'tweet_image_${userId}_${visitedDate}_$pageIndex',
-                                            child: InteractiveViewer(
-                                              minScale: 1.0,
-                                              maxScale: 5.0,
-                                              child: Image.network(
-                                                tweetImageUrls![pageIndex],
-                                                fit: BoxFit.contain,
+                        final imageUrl = _imageUrls[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                              right:
+                                  index != _imageUrls.length - 1 ? 8.0 : 0.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: "TweetImageDialog",
+                                barrierColor: Colors.white.withOpacity(0.8),
+                                transitionDuration:
+                                    const Duration(milliseconds: 300),
+                                pageBuilder: (context, _, __) {
+                                  return PageView.builder(
+                                    controller:
+                                        PageController(initialPage: index),
+                                    itemCount: _imageUrls.length,
+                                    itemBuilder: (context, pageIndex) {
+                                      return GestureDetector(
+                                        onTap: () =>
+                                            Navigator.of(context).pop(),
+                                        child: Container(
+                                          color: Colors.transparent,
+                                          child: Center(
+                                            child: Hero(
+                                              tag:
+                                                  'tweet_image_${widget.userId}_${widget.visitedDate}_$pageIndex',
+                                              child: InteractiveViewer(
+                                                minScale: 1.0,
+                                                maxScale: 5.0,
+                                                child: CachedNetworkImage(
+                                                  imageUrl:
+                                                      _imageUrls[pageIndex],
+                                                  fit: BoxFit.contain,
+                                                  placeholder: (context, url) =>
+                                                      const Center(
+                                                          child:
+                                                              CircularProgressIndicator()),
+                                                  errorWidget: (context, url,
+                                                          error) =>
+                                                      const Icon(Icons.error),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                              transitionBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                            );
-                          },
-                          child: Hero(
-                            tag: 'tweet_image_${userId}_${visitedDate}_$index',
-                            child: Container(
-                              width: 200,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
+                                      );
+                                    },
+                                  );
+                                },
+                                transitionBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return FadeTransition(
+                                      opacity: animation, child: child);
+                                },
+                              );
+                            },
+                            child: Hero(
+                              tag:
+                                  'tweet_image_${widget.userId}_${widget.visitedDate}_$index',
+                              child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: NetworkImage(imageUrl),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  width: 200,
+                                  height: 160,
                                   fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
                                 ),
                               ),
                             ),

@@ -1,4 +1,5 @@
 import 'package:bouldering_app/model/gym_info.dart';
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/pages/gym_search_page.dart';
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
@@ -244,14 +245,64 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   @override
   Widget build(BuildContext context) {
     // ジム情報参照
-    // final gymRef = ref.read(gymProvider);
     final gymRef = ref.read(gymInfoProvider);
     // ユーザー情報を取得して、ログイン状態にあるかを確認
     final userRef = ref.watch(userProvider);
 
     return (userRef?.userId == null)
         // 未ログイン
-        ? const Center(child: Text("投稿機能の利用は，ログインユーザーのみ可能です"))
+        ? const Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 余白
+              SizedBox(height: 128),
+
+              // ロゴ
+              Center(child: AppLogo()),
+              SizedBox(height: 16),
+
+              Text(
+                'イワノボリタイに登録しよう',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF0056FF),
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                  letterSpacing: -0.50,
+                ),
+              ),
+              SizedBox(height: 16),
+
+              Text(
+                'ログインして日々の\nボル活を投稿しよう！',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w700,
+                  height: 1.4,
+                  letterSpacing: -0.50,
+                ),
+              ),
+              SizedBox(height: 16),
+
+              Text(
+                'ジムで登った記録や\n感想を残しましょう！',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w700,
+                  height: 1.4,
+                  letterSpacing: -0.50,
+                ),
+              ),
+            ],
+          )
         // ログイン状態
         : Scaffold(
             appBar: AppBar(
@@ -386,17 +437,6 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          // children: _mediaFiles
-                          //     .map((file) => Padding(
-                          //           padding: const EdgeInsets.only(right: 8.0),
-                          //           child: Image.file(file,
-                          //               width: 100,
-                          //               height: 100,
-                          //               fit: BoxFit.cover),
-                          //         ))
-                          //     .toList(),
-
-                          // 追加
                           children: [
                             ..._mediaFiles.asMap().entries.map((entry) {
                               final index = entry.key;

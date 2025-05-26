@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view_model/favorite_user_tweets_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -33,7 +34,6 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
   void _onFavoriteUserTweetsScroll() {
     if (_favoriteTweetsScrollController.position.pixels >
         _favoriteTweetsScrollController.position.maxScrollExtent - 100) {
-      // ref.read(favoriteUserTweetsProvider.notifier).loadMore();
       final userId = ref.read(userProvider)!.userId;
       ref.read(favoriteUserTweetsProvider(userId).notifier).loadMore();
     }
@@ -48,34 +48,31 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
     print("userId: $userId");
 
     if (!isLoggedIn || userId == null) {
-      return Column(
+      return const Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 72,
-              height: 72,
-              child: SvgPicture.asset('lib/view/assets/app_main_icon.svg'),
+          // 余白
+          SizedBox(height: 32),
+
+          // ロゴ
+          Center(child: AppLogo()),
+          SizedBox(height: 16),
+
+          Text(
+            'イワノボリタイに登録しよう',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF0056FF),
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+              letterSpacing: -0.50,
             ),
           ),
-          const SizedBox(height: 16),
-          const Center(
-            child: Text(
-              'イワノボリタイに\n登録しよう',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF0056FF),
-                fontSize: 32,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-                letterSpacing: -0.50,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+
+          Text(
             'ログインしてユーザーを\nお気に入り登録しよう!',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -87,8 +84,9 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
               letterSpacing: -0.50,
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+
+          Text(
             'お気に入り登録したユーザーの\nツイートを見ることができます！',
             textAlign: TextAlign.center,
             style: TextStyle(

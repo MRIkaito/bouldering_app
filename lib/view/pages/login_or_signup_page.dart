@@ -28,6 +28,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
           appBar: AppBar(
             elevation: 0,
           ),
+          resizeToAvoidBottomInset: true, // キーボード表示時の画面非表示部分を回避
           body: Column(
             children: [
               // タブバー部分
@@ -38,8 +39,13 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                 child: TabBarView(
                   children: [
                     // ログインタブの中身
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
+                    SingleChildScrollView(
+                      padding: EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: MediaQuery.of(context).viewInsets.bottom +
+                            18, // 下部にキーボード高さ分の余白
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -107,8 +113,13 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                     ),
 
                     // 新規登録タブの中身
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
+                    SingleChildScrollView(
+                      padding: EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: MediaQuery.of(context).viewInsets.bottom +
+                            18, // 下部にキーボード高さ分の余白
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

@@ -27,48 +27,6 @@ class WannaGoGymsSectionState
     });
   }
 
-  /// ■ dispose
-  // void dispose() {
-  //   super.dispose();
-  // }
-
-  /// ■ メソッド
-  /// - イキタイ登録したジムを取得する
-  // Future<void> fetchGymCards() async {
-  //   // ユーザーID
-  //   final userId = ref.read(userProvider)?.userId;
-  //   print("🟡 [DEBUG] user_id before request: $userId");
-
-  //   // ユーザーID取得できていない時、実行しない
-  //   if (userId == null) {
-  //     print("❌ [ERROR] user_id is null! API リクエストをスキップ");
-  //     return;
-  //   }
-
-  //   // ジムカード情報取得処理
-  //   await ref
-  //       .read(wannaGoRelationProvider.notifier)
-  //       .fetchWannaGoGymCards(userId);
-  // }
-
-  /// ■ メソッド
-  /// イキタイジムを再取得する
-  ///
-  /// 引数
-  /// - なし
-  ///
-  /// 返り値
-  /// - なし
-  // Future<void> _refreshWannaGoGyms() async {
-  //   // 今持っているイキタイジムをすべて破棄する
-  //   ref.read(wannaGoRelationProvider.notifier).disposeWannaGoGymCards();
-
-  //   // イキタイに登録しているジムを新しく取得しなおす
-  //   await fetchGymCards();
-
-  //   return;
-  // }
-
   @override
   Widget build(BuildContext context) {
     final gyms = ref.watch(otherUserWannaGoRelationProvider(widget.userId));

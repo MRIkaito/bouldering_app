@@ -87,8 +87,8 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     return tweets.isEmpty
         ? Center(
             child: _showNoTweetsText
-                ? const Text("ツイートがありません") // 5秒後にこれが出る
-                : const CircularProgressIndicator(), // ツイートが出るまでローディング表示
+                ? const CircularProgressIndicator() // ツイートが出るまでローディング表示
+                : const Text("ツイートがありません"), // 5秒後にこれが出る
           )
         :
         // 自分のツイート

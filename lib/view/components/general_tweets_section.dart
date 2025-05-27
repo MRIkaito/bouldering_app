@@ -51,7 +51,9 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
           if (index == generalTweets.length) {
             return const Padding(
               padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: SizedBox.shrink(),
+              ),
             );
           }
 

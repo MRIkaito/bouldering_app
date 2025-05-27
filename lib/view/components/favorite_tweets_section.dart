@@ -124,7 +124,9 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 if (index == favoriteUserTweets.length) {
                   return const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(
+                      child: SizedBox.shrink(),
+                    ),
                   );
                 }
 

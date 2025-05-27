@@ -17,6 +17,11 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
   @override
   initState() {
     super.initState();
+
+    // 起動時に一度だけジムカードを取得する
+    Future.microtask(() async {
+      await fetchGymCards();
+    });
   }
 
   /// ■ dispose

@@ -87,7 +87,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        context.push('/OtherUserPage/$widget.userId');
+                        context.push('/OtherUserPage/${widget.userId}');
                       },
                       child: Text(
                         widget.userName,
@@ -179,7 +179,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                         .read(facilityInfoProvider(widget.gymId).future);
 
                     if (gymInfoAsync != null) {
-                      context.push('/FacilityInfo/$widget.gymId');
+                      context.push('/FacilityInfo/${widget.gymId}');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('施設情報の取得に失敗しました')),

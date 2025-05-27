@@ -93,11 +93,19 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
         markerId: MarkerId(gym.gymId.toString()),
         position: LatLng(gym.latitude, gym.longitude),
         icon: customGymMarker,
-        onTap: () {
+        onTap: () async {
           setState(() {
             _focusedGymIndex = index;
           });
           _scrollToCard(index);
+
+          // ジムの位置へカメラを移動(少し遅延を入れて初回ズレ対策)
+          await Future.delayed(const Duration(milliseconds: 150));
+          await mapController?.animateCamera(
+            CameraUpdate.newLatLng(
+              LatLng(gym.latitude, gym.longitude),
+            ),
+          );
         },
         infoWindow: InfoWindow(
           title: gym.gymName,

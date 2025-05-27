@@ -51,10 +51,11 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                         children: [
                           // 余白
                           const SizedBox(height: 32),
+
                           // ロゴ
                           const Center(child: AppLogo()),
-                          // 余白
                           const SizedBox(height: 24),
+
                           // メールアドレスの入力欄
                           const Text(
                             'メールアドレス',
@@ -64,20 +65,20 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          // 余白
                           const SizedBox(height: 8),
                           // メールアドレス テキストフォーム
                           SubmitFormWidget(
                             isObscure: false,
                             hintText: "boulder@example.com",
+                            autofillHints: [AutofillHints.username],
                             onSubmitTextChanged: (mailAddress) {
                               setState(() {
                                 _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る
                               });
                             },
                           ),
-                          // 余白
                           const SizedBox(height: 24),
+
                           // パスワードの入力欄
                           const Text(
                             'パスワード',
@@ -87,20 +88,21 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          // 余白
                           const SizedBox(height: 8),
+
                           // パスワードテキストフォーム
                           SubmitFormWidget(
                             isObscure: true,
                             hintText: "6文字以上の半角英数",
+                            autofillHints: [AutofillHints.password],
                             onSubmitTextChanged: (password) {
                               setState(() {
                                 _password = password; // 入力されたパスワードを受け取る
                               });
                             },
                           ),
-                          // 余白
                           const SizedBox(height: 24),
+
                           // ログインボタン
                           Button(
                               buttonName: "ログイン",
@@ -125,10 +127,11 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                         children: [
                           // 余白
                           const SizedBox(height: 32),
+
                           // アイコン
                           const Center(child: AppLogo()),
-                          // 余白
                           const SizedBox(height: 24),
+
                           // メールアドレスの入力欄
                           const Text(
                             'メールアドレス',
@@ -139,9 +142,11 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
+
                           SubmitFormWidget(
                             isObscure: false,
                             hintText: "boulder@example.com",
+                            autofillHints: [AutofillHints.username],
                             onSubmitTextChanged: (mailAddress) {
                               setState(() {
                                 _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る
@@ -149,6 +154,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                             },
                           ),
                           const SizedBox(height: 24),
+
                           // パスワードの入力欄
                           const Text(
                             'パスワード',
@@ -159,9 +165,11 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
+
                           SubmitFormWidget(
                             isObscure: true,
                             hintText: "6文字以上の半角英数",
+                            autofillHints: [AutofillHints.password],
                             onSubmitTextChanged: (password) {
                               setState(() {
                                 _password = password; // 入力されたパスワードを受け取る
@@ -169,6 +177,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                             },
                           ),
                           const SizedBox(height: 8),
+
                           const Text(
                             'パスワードは下記の条件を満たしてください\n・英大文字/英小文字/数字を1つずつ使用する\n・最低8文字以上',
                             style: TextStyle(
@@ -178,6 +187,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                             ),
                           ),
                           const SizedBox(height: 12),
+
                           Button(
                               buttonName: "新規登録",
                               onPressedFunction: () async {

@@ -18,6 +18,8 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
   String _password = '';
   // メールアドレスを管理する変数
   String _mailAddress = '';
+  // ローディング表示：ログイン・新規登録時の状態表示する変数
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,178 +31,198 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
             elevation: 0,
           ),
           resizeToAvoidBottomInset: true, // キーボード表示時の画面非表示部分を回避
-          body: Column(
+          body: Stack(
             children: [
-              // タブバー部分
-              const SwitcherTab(leftTabName: "ログイン", rightTabName: "新規登録"),
+              Column(
+                children: [
+                  // タブバー部分
+                  const SwitcherTab(leftTabName: "ログイン", rightTabName: "新規登録"),
 
-              // タブの内容部分
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // ログインタブの中身
-                    SingleChildScrollView(
-                      padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        bottom: MediaQuery.of(context).viewInsets.bottom +
-                            18, // 下部にキーボード高さ分の余白
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 余白
-                          const SizedBox(height: 32),
-
-                          // ロゴ
-                          const Center(child: AppLogo()),
-                          const SizedBox(height: 24),
-
-                          // メールアドレスの入力欄
-                          const Text(
-                            'メールアドレス',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+                  // タブの内容部分
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        // ログインタブの中身
+                        SingleChildScrollView(
+                          padding: EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: MediaQuery.of(context).viewInsets.bottom +
+                                18, // 下部にキーボード高さ分の余白
                           ),
-                          const SizedBox(height: 8),
-                          // メールアドレス テキストフォーム
-                          SubmitFormWidget(
-                            isObscure: false,
-                            hintText: "boulder@example.com",
-                            autofillHints: [AutofillHints.username],
-                            onSubmitTextChanged: (mailAddress) {
-                              setState(() {
-                                _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 余白
+                              const SizedBox(height: 32),
 
-                          // パスワードの入力欄
-                          const Text(
-                            'パスワード',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
+                              // ロゴ
+                              const Center(child: AppLogo()),
+                              const SizedBox(height: 24),
 
-                          // パスワードテキストフォーム
-                          SubmitFormWidget(
-                            isObscure: true,
-                            hintText: "6文字以上の半角英数",
-                            autofillHints: [AutofillHints.password],
-                            onSubmitTextChanged: (password) {
-                              setState(() {
-                                _password = password; // 入力されたパスワードを受け取る
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 24),
+                              // メールアドレスの入力欄
+                              const Text(
+                                'メールアドレス',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              // メールアドレス テキストフォーム
+                              SubmitFormWidget(
+                                isObscure: false,
+                                hintText: "boulder@example.com",
+                                autofillHints: [AutofillHints.username],
+                                onSubmitTextChanged: (mailAddress) {
+                                  setState(() {
+                                    _mailAddress =
+                                        mailAddress; // 入力されたメールアドレスを受け取る
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 24),
 
-                          // ログインボタン
-                          Button(
-                              buttonName: "ログイン",
-                              onPressedFunction: () async => {
-                                    await ref.read(authProvider.notifier).login(
-                                        context, _mailAddress, _password),
-                                  }),
-                        ],
-                      ),
+                              // パスワードの入力欄
+                              const Text(
+                                'パスワード',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // パスワードテキストフォーム
+                              SubmitFormWidget(
+                                isObscure: true,
+                                hintText: "6文字以上の半角英数",
+                                autofillHints: [AutofillHints.password],
+                                onSubmitTextChanged: (password) {
+                                  setState(() {
+                                    _password = password; // 入力されたパスワードを受け取る
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 24),
+
+                              // ログインボタン
+                              Button(
+                                buttonName: "ログイン",
+                                onPressedFunction: () async {
+                                  setState(() => _isLoading = true);
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .login(context, _mailAddress, _password);
+                                  setState(() => _isLoading = false);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // 新規登録タブの中身
+                        SingleChildScrollView(
+                          padding: EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: MediaQuery.of(context).viewInsets.bottom +
+                                18, // 下部にキーボード高さ分の余白
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 余白
+                              const SizedBox(height: 32),
+
+                              // アイコン
+                              const Center(child: AppLogo()),
+                              const SizedBox(height: 24),
+
+                              // メールアドレスの入力欄
+                              const Text(
+                                'メールアドレス',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              SubmitFormWidget(
+                                isObscure: false,
+                                hintText: "boulder@example.com",
+                                autofillHints: [AutofillHints.username],
+                                onSubmitTextChanged: (mailAddress) {
+                                  setState(() {
+                                    _mailAddress =
+                                        mailAddress; // 入力されたメールアドレスを受け取る
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 24),
+
+                              // パスワードの入力欄
+                              const Text(
+                                'パスワード',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              SubmitFormWidget(
+                                isObscure: true,
+                                hintText: "6文字以上の半角英数",
+                                autofillHints: [AutofillHints.password],
+                                onSubmitTextChanged: (password) {
+                                  setState(() {
+                                    _password = password; // 入力されたパスワードを受け取る
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 8),
+
+                              const Text(
+                                'パスワードは下記の条件を満たしてください\n・英大文字/英小文字/数字を1つずつ使用する\n・最低8文字以上',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              Button(
+                                buttonName: "新規登録",
+                                onPressedFunction: () async {
+                                  setState(() => _isLoading = true);
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .signUp(context, _mailAddress, _password);
+                                  setState(() => _isLoading = false);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-
-                    // 新規登録タブの中身
-                    SingleChildScrollView(
-                      padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        bottom: MediaQuery.of(context).viewInsets.bottom +
-                            18, // 下部にキーボード高さ分の余白
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 余白
-                          const SizedBox(height: 32),
-
-                          // アイコン
-                          const Center(child: AppLogo()),
-                          const SizedBox(height: 24),
-
-                          // メールアドレスの入力欄
-                          const Text(
-                            'メールアドレス',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          SubmitFormWidget(
-                            isObscure: false,
-                            hintText: "boulder@example.com",
-                            autofillHints: [AutofillHints.username],
-                            onSubmitTextChanged: (mailAddress) {
-                              setState(() {
-                                _mailAddress = mailAddress; // 入力されたメールアドレスを受け取る
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 24),
-
-                          // パスワードの入力欄
-                          const Text(
-                            'パスワード',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          SubmitFormWidget(
-                            isObscure: true,
-                            hintText: "6文字以上の半角英数",
-                            autofillHints: [AutofillHints.password],
-                            onSubmitTextChanged: (password) {
-                              setState(() {
-                                _password = password; // 入力されたパスワードを受け取る
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 8),
-
-                          const Text(
-                            'パスワードは下記の条件を満たしてください\n・英大文字/英小文字/数字を1つずつ使用する\n・最低8文字以上',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          Button(
-                              buttonName: "新規登録",
-                              onPressedFunction: () async {
-                                await ref
-                                    .read(authProvider.notifier)
-                                    .signUp(context, _mailAddress, _password);
-                              }),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+
+              // ローディング中に表示されるオーバーレイ
+              if (_isLoading) ...[
+                ModalBarrier(
+                    dismissible: false, color: Colors.black.withOpacity(0.3)),
+                const Center(child: CircularProgressIndicator()),
+              ],
             ],
           ),
         ),

@@ -70,6 +70,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                 ),
                               ),
                               const SizedBox(height: 8),
+
                               // メールアドレス テキストフォーム
                               SubmitFormWidget(
                                 isObscure: false,
@@ -98,7 +99,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               // パスワードテキストフォーム
                               SubmitFormWidget(
                                 isObscure: true,
-                                hintText: "6文字以上の半角英数",
+                                hintText: "8文字以上の半角英数",
                                 autofillHints: [AutofillHints.password],
                                 onSubmitTextChanged: (password) {
                                   setState(() {
@@ -178,7 +179,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
 
                               SubmitFormWidget(
                                 isObscure: true,
-                                hintText: "6文字以上の半角英数",
+                                hintText: "8文字以上の半角英数",
                                 autofillHints: [AutofillHints.password],
                                 onSubmitTextChanged: (password) {
                                   setState(() {
@@ -189,7 +190,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const SizedBox(height: 8),
 
                               const Text(
-                                'パスワードは下記の条件を満たしてください\n・英大文字/英小文字/数字を1つずつ使用する\n・最低8文字以上',
+                                'パスワードの条件：\n・8文字以上\n・英大文字・英小文字・数字をそれぞれ1文字以上含めてください',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,

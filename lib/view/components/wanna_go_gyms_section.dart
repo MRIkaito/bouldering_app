@@ -13,6 +13,8 @@ class WannaGoGymsSectrion extends ConsumerStatefulWidget {
 }
 
 class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
+  final ScrollController _scrollController = ScrollController();
+
   /// ■ 初期化
   @override
   initState() {
@@ -38,7 +40,7 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
 
     // ユーザーID取得できていない時、実行しない
     if (userId == null) {
-      print("❌ [ERROR] user_id is null! API リクエストをスキップ");
+      // ❌ [ERROR] user_id is null! API リクエストをスキップ
       return;
     }
 
@@ -81,15 +83,19 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
     return RefreshIndicator(
       onRefresh: _refreshWannaGoGyms,
       child: ListView.builder(
+        controller: _scrollController,
         key: const PageStorageKey<String>('wanna_go_gyms_section'),
         itemCount: gymCardsList.isEmpty ? 1 : gymCardsList.length,
         itemBuilder: (context, index) {
           // 登録ジムがまだないケース
           if (gymCardsList.isEmpty) {
             return const Center(
-              child: Text(
-                "登録されているジムがありません。",
-                style: TextStyle(fontSize: 16),
+              child: Padding(
+                padding: EdgeInsets.only(top: 100),
+                child: Text(
+                  "登録されているジムがありません",
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             );
           }

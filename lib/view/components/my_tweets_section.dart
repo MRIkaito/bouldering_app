@@ -19,10 +19,8 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
   @override
   void initState() {
     super.initState();
-
     // ツイートを取得する
     _fetchTweets();
-
     // 無限スクロール用リスナー
     _scrollController.addListener(_onScroll);
 
@@ -50,7 +48,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
 
     // ユーザーID取得できていない時、実行しない
     if (userId == null) {
-      print("❌ [ERROR] user_id is null! API リクエストをスキップ");
+      // ❌ [ERROR] user_id is null! API リクエストをスキップ
       return;
     }
 
@@ -62,7 +60,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 10) {
-      print("🟢 [DEBUG] トリガー条件を満たしたのでfetchTweetsを呼びます！");
+      // 🟢 [DEBUG] トリガー条件を満たしたのでfetchTweets呼び出し
       _fetchTweets();
     }
   }

@@ -16,7 +16,7 @@ class UserProfileSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    final gymRef = ref.read(gymInfoProvider);
+    final gymRef = ref.watch(gymInfoProvider);
     String boulLogDuration = calcBoulderingDuration(user);
 
     return SliverToBoxAdapter(
@@ -137,31 +137,43 @@ class UserProfileSection extends ConsumerWidget {
               children: [
                 SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
                 const SizedBox(width: 8),
-                const Text("ホームジム：", style: const TextStyle(fontSize: 12)),
-                GestureDetector(
-                  onTap: () {
-                    // ジムIDが null または存在しないときの処理
-                    if (user?.homeGymId == null ||
-                        !gymRef.containsKey(user!.homeGymId)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("ジム情報の取得に失敗しました")),
-                      );
-                      return;
-                    }
+                const Text("ホームジム：", style: TextStyle(fontSize: 12)),
+                Builder(builder: (_) {
+                  final homeGymId = user?.homeGymId;
+                  if (homeGymId == null) {
+                    // ユーザーがホームジム設定していないとき
+                    return const Text("-", style: TextStyle(fontSize: 12));
+                  } else if (!gymRef.containsKey(homeGymId)) {
+                    // ユーザーはホームジムを設定しているが，ジム情報がまだ取得できていない場合
+                    return const Text("取得中...", style: TextStyle(fontSize: 12));
+                  } else {
+                    // ジム情報の取得が完了し，ジム名を表示できる場合
+                    return GestureDetector(
+                      onTap: () {
+                        // ジムIDが null または存在しないときの処理
+                        // 念のための安全チェック（通常ここには来ない）
+                        if (user?.homeGymId == null ||
+                            !gymRef.containsKey(user!.homeGymId)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("ジム情報の取得に失敗しました")),
+                          );
+                          return;
+                        }
 
-                    final gymId = user!.homeGymId!;
-                    context.push('/FacilityInfo/$gymId');
-                  },
-                  child: Text(
-                    showGymName(user, gymRef),
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      fontSize: 12,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                        context.push('/FacilityInfo/$homeGymId');
+                      },
+                      child: Text(
+                        showGymName(user, gymRef),
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 12,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }
+                }),
               ],
             ),
             const SizedBox(height: 16),

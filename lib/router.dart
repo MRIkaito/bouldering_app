@@ -112,30 +112,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ],
             ),
-            // StatefulShellBranch(
-            //   navigatorKey: _mypageNavigatorKey,
-            //   routes: [
-            //     GoRoute(
-            //         path: '/Unlogined',
-            //         pageBuilder: (context, state) =>
-            //             const NoTransitionPage(child: UnloginedMyPage()),
-            //         routes: [
-            //           GoRoute(
-            //               path: 'LoginOrSignUp',
-            //               pageBuilder: (context, state) =>
-            //                   const NoTransitionPage(
-            //                       child: LoginOrSignUpPage()),
-            //               routes: [
-            //                 GoRoute(
-            //                   path: 'Logined',
-            //                   pageBuilder: (context, state) =>
-            //                       const NoTransitionPage(
-            //                           child: LoginedMyPage()),
-            //                 ),
-            //               ]),
-            //         ]),
-            //   ],
-            // ),
             StatefulShellBranch(
               navigatorKey: _mypageNavigatorKey,
               routes: [

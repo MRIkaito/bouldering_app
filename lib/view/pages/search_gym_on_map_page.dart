@@ -245,7 +245,7 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                           // ジム名 + 都道府県
                           GestureDetector(
                             child: Container(
-                              height: 36,
+                              height: 44,
                               alignment: Alignment.centerLeft,
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
@@ -259,7 +259,6 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                                       height: 1.2,
                                     ),
                                     maxLines: 2,
-                                    // softWrap: true,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -280,7 +279,7 @@ class _SearchGymOnMapPageState extends ConsumerState<SearchGymOnMapPage> {
                               }
                             },
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
 
                           // ジムカテゴリ
                           Row(

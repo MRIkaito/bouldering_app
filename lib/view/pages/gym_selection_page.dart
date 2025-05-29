@@ -65,7 +65,7 @@ class GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                     controller: _controller,
                     autofocus: true,
                     decoration: InputDecoration(
-                      hintText: 'エリア・施設名・キーワード',
+                      hintText: '施設名',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32),
                         borderSide: const BorderSide(color: Colors.grey),

@@ -139,7 +139,7 @@ class _SearchGimPageState extends ConsumerState<SearchGimPage> {
                       await context.push("/Home/SearchGim/GymSelection");
                     },
                     decoration: InputDecoration(
-                      hintText: 'エリア・施設名・キーワード',
+                      hintText: '施設名',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32),
                         borderSide: const BorderSide(color: Colors.grey),

@@ -35,7 +35,7 @@ class SearchGimTextform extends StatelessWidget {
               height: 48,
               child: TextFormField(
                 decoration: InputDecoration(
-                  hintText: '< エリア・施設名・キーワード',
+                  hintText: '施設名',
                   hintStyle: TextStyle(
                     color: Color(0xFFB1B1B1),
                     fontSize: 20,

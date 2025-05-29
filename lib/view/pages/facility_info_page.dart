@@ -93,10 +93,11 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
           return DefaultTabController(
             length: 2,
             child: Scaffold(
+              backgroundColor: const Color(0xFFFEF7FF),
               appBar: AppBar(
                 elevation: 0,
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFFFEF7FF),
+                surfaceTintColor: const Color(0xFFFEF7FF),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
@@ -112,11 +113,11 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
                     left: 0,
                     right: 0,
                     child: Container(
-                      color: Colors.white,
                       child: const SwitcherTab(
-                          leftTabName: "施設情報",
-                          rightTabName: "ボル活",
-                          colorCode: 0xFFFFFFFF),
+                        leftTabName: "施設情報",
+                        rightTabName: "ボル活",
+                        colorCode: 0xFFFEF7FF,
+                      ),
                     ),
                   ),
 

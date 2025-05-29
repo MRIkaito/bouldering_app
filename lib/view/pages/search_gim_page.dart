@@ -122,8 +122,8 @@ class _SearchGimPageState extends ConsumerState<SearchGimPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: const Color(0xFFFEF7FF),
+        surfaceTintColor: const Color(0xFFFEF7FF),
       ),
       body: Column(
         children: [

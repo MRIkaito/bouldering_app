@@ -26,7 +26,10 @@ class SearchedGimListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("検索結果"),
+        backgroundColor: const Color(0xFFFEF7FF),
+        surfaceTintColor: const Color(0xFFFEF7FF),
+        title:
+            const Text("検索結果", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 16),
@@ -38,7 +41,7 @@ class SearchedGimListPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // TODO
-                // 250517記載：退会機能は後に実装予定
+                // 250517記載：フィルタ機能は後に実装予定
                 /*
                 // IconButton(
                 //   icon: const Icon(Icons.tune),
@@ -95,7 +98,6 @@ class SearchedGimListPage extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 8),
 
           // ■ ジムリスト（.mapで展開）

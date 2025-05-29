@@ -10,11 +10,9 @@ import 'package:bouldering_app/view/pages/facility_info_page.dart';
 import 'package:bouldering_app/view/pages/favorite_user_page.dart';
 import 'package:bouldering_app/view/pages/gym_selection_page.dart';
 import 'package:bouldering_app/view/pages/login_or_signup_page.dart';
-import 'package:bouldering_app/view/pages/logined_my_page.dart';
 import 'package:bouldering_app/view/pages/searched_gim_list_page.dart';
 import 'package:bouldering_app/view/pages/setting_page.dart';
 import 'package:bouldering_app/view/pages/statics_report_page.dart';
-import 'package:bouldering_app/view/pages/unlogined_my_page.dart';
 import 'package:bouldering_app/view/pages/base.dart';
 import 'package:bouldering_app/view/pages/boul_log_page.dart';
 import 'package:bouldering_app/view/pages/home_page.dart';
@@ -58,7 +56,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     GoRoute(
                       path: 'SearchGim',
                       pageBuilder: (context, state) =>
-                          const NoTransitionPage(child: SearchGimPage()),
+                          const MaterialPage(child: SearchGimPage()),
                       routes: [
                         GoRoute(
                             path: 'GymSelection',
@@ -69,23 +67,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                               GoRoute(
                                 path: 'SearchedGimList',
                                 pageBuilder: (context, state) =>
-                                    NoTransitionPage(
+                                    const MaterialPage(
                                   child: SearchedGimListPage(),
                                 ),
                               )
                             ]),
                         GoRoute(
                             path: 'SearchedGimList',
-                            pageBuilder: (context, state) =>
-                                const NoTransitionPage(
-                                    child: SearchedGimListPage())),
+                            pageBuilder: (context, state) => const MaterialPage(
+                                child: SearchedGimListPage())),
                       ],
                     ),
                     GoRoute(
-                      // ← 地図ページのルート追加
                       path: 'SearchGymOnMap',
                       pageBuilder: (context, state) =>
-                          const NoTransitionPage(child: SearchGymOnMapPage()),
+                          const MaterialPage(child: SearchGymOnMapPage()),
                     ),
                   ],
                 ),
@@ -132,7 +128,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (context, state) {
             final String gymId = state.pathParameters['gymId'] ?? '';
             return MaterialPage(
-              fullscreenDialog: true,
               child: FacilityInfoPage(gymId: gymId),
             );
           },
@@ -153,8 +148,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/LoginOrSignUp',
-          pageBuilder: (context, state) =>
-              const MaterialPage(child: LoginOrSignUpPage()),
+          pageBuilder: (context, state) => const MaterialPage(
+            fullscreenDialog: true,
+            child: LoginOrSignUpPage(),
+          ),
         ),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
@@ -191,8 +188,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/EditProfile',
-          pageBuilder: (context, state) => const MaterialPage(
-              fullscreenDialog: true, child: EditProfilePage()),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: EditProfilePage()),
         ),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,

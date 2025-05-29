@@ -14,9 +14,12 @@ class LoginedMyPage extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: const Color(0xFFFEF7FF),
         appBar: AppBar(
           // 【必須】戻るボタンを非表示
           automaticallyImplyLeading: false,
+          backgroundColor: const Color(0xFFFEF7FF),
+          surfaceTintColor: const Color(0xFFFEF7FF),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),

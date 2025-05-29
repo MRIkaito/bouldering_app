@@ -122,7 +122,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(),
+      backgroundColor: const Color(0xFFFEF7FF),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEF7FF),
+        surfaceTintColor: const Color(0xFFFEF7FF),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(0.0),
@@ -293,6 +297,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   subtitle: gender,
                 ),
               ),
+
+              // 余白："性別"の部分をタップしやすくする
+              const SizedBox(height: 40),
             ],
           ),
         ),

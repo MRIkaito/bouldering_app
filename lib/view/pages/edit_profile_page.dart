@@ -193,6 +193,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: Color(0xFF0056FF),
                       ),
                     ),
                   ],

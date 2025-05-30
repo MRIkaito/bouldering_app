@@ -21,11 +21,12 @@ class FavoriteUserPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFFFEF7FF),
+        surfaceTintColor: const Color(0xFFFEF7FF),
         title: Text(
           (type == 'favorite') ? 'お気に入り' : 'お気に入られ',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),

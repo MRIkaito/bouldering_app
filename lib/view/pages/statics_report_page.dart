@@ -9,37 +9,35 @@ class StaticsReportPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🔴 【修正】今月・先月のデータ取得を `FutureProvider.family` を使用する形に変更
     final asyncCurrentMonthStats =
         ref.watch(boulActivityStatsProvider((userId: userId, monthsAgo: 0)));
     final asyncPreviousMonthStats =
         ref.watch(boulActivityStatsProvider((userId: userId, monthsAgo: 1)));
 
-    // 🔴 【修正】月の表示を修正
     final now = DateTime.now();
     final previousMonth = DateTime(now.year, now.month - 1, 1);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEF7FF),
+        surfaceTintColor: const Color(0xFFFEF7FF),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
-              // 🔴 【修正】今月のボル活統計を `asyncCurrentMonthStats` から取得
               _buildStatsContainer(
                   context,
                   "今月のボル活 - ${now.year}.${now.month} -",
                   asyncCurrentMonthStats,
                   const Color(0xFF0056FF)),
-
               const SizedBox(height: 16),
-
-              // 🔴 【修正】先月のボル活統計を `asyncPreviousMonthStats` から取得
               _buildStatsContainer(
                   context,
                   "昨月のボル活 - ${previousMonth.year}.${previousMonth.month} -",
                   asyncPreviousMonthStats,
                   const Color(0xFF8D8D8D)),
+              const SizedBox(height: 24)
             ],
           ),
         ),
@@ -47,7 +45,6 @@ class StaticsReportPage extends ConsumerWidget {
     );
   }
 
-  /// 🔴 【修正】共通の統計データウィジェットを作成
   Widget _buildStatsContainer(BuildContext context, String title,
       AsyncValue<BoulderingStats> asyncStats, Color bgColor) {
     return asyncStats.when(
@@ -156,7 +153,6 @@ class StaticsReportPage extends ConsumerWidget {
     );
   }
 
-  /// 🔴 【変更なし】統計項目を表示
   Widget _buildStatsItem(String title, String value, String unit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -201,7 +197,6 @@ class StaticsReportPage extends ConsumerWidget {
     );
   }
 
-  /// 🔴 【変更なし】TOP5リストを表示
   Widget _buildTop5Item(String gymName, String count) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),

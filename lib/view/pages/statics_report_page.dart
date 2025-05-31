@@ -2,6 +2,7 @@ import 'package:bouldering_app/model/bouldering_stats.dart';
 import 'package:bouldering_app/view_model/statics_report_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class StaticsReportPage extends ConsumerWidget {
   const StaticsReportPage({super.key, required this.userId});
@@ -111,23 +112,29 @@ class StaticsReportPage extends ConsumerWidget {
                 itemCount: boulActivityStats.topGyms.length,
                 itemBuilder: (context, index) {
                   final gym = boulActivityStats.topGyms[index];
+                  final gymId = gym['gym_id'].toString();
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // ★ 改行できるように修正
                         Expanded(
-                          child: Text(
-                            gym['gym_name'],
-                            softWrap: true,
-                            overflow: TextOverflow.visible,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.50,
+                          child: InkWell(
+                            onTap: () {
+                              context
+                                  .push('/FacilityInfo/$gymId'); // ジム詳細ページに遷移
+                            },
+                            child: Text(
+                              gym['gym_name'],
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.50,
+                              ),
                             ),
                           ),
                         ),

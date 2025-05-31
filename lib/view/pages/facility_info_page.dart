@@ -85,9 +85,43 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
 
     return asyncGymInfo.when(
         // ロード中
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Scaffold(
+              backgroundColor: const Color(0xFFFEF7FF),
+              appBar: AppBar(
+                backgroundColor: const Color(0xFFFEF7FF),
+                surfaceTintColor: const Color(0xFFFEF7FF),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              body: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.purple,
+                ),
+              ),
+            ),
+
         // エラー
-        error: (error, stack) => Center(child: Text('エラー発生:$error')),
+        error: (error, stack) => Scaffold(
+              backgroundColor: const Color(0xFFFEF7FF),
+              appBar: AppBar(
+                backgroundColor: const Color(0xFFFEF7FF),
+                surfaceTintColor: const Color(0xFFFEF7FF),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              body: const Center(child: Text("このジムデータはありません")),
+            ),
+        /*
+        // 下記デバッグ用の
+        // error: (error, stack) => Center(child: Text('エラー発生:$error')),
+        */
+
         // データ読み込み
         data: (gymInfo) {
           return DefaultTabController(

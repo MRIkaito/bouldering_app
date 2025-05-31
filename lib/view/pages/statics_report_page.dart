@@ -46,88 +46,139 @@ class StaticsReportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsContainer(BuildContext context, String title,
-      AsyncValue<BoulderingStats> asyncStats, Color bgColor) {
-    return asyncStats.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => const Center(child: Text("エラーが発生しました")),
-      data: (boulActivityStats) {
-        return Container(
-          width: 344,
-          padding: const EdgeInsets.all(16),
-          decoration: ShapeDecoration(
-            color: bgColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildStatsContainer(
+    BuildContext context,
+    String title,
+    AsyncValue<BoulderingStats> asyncStats,
+    Color bgColor,
+  ) {
+    String visits = "-";
+    String gyms = "-";
+    String pace = "-";
+    List<Map<String, dynamic>> topGyms = [];
+
+    asyncStats.when(
+      data: (data) {
+        visits = data.totalVisits.toString();
+        gyms = data.totalGymCount.toString();
+        pace = data.weeklyVisitRate.toString();
+        topGyms = data.topGyms;
+      },
+      error: (error, stack) {
+        visits = '?';
+        gyms = '?';
+        pace = '?';
+        topGyms =
+            List.generate(5, (index) => {'gym_name': '?', 'visit_count': '?'});
+      },
+      loading: () {
+        visits = '-';
+        gyms = '-';
+        pace = '-';
+        topGyms =
+            List.generate(5, (index) => {'gym_name': '-', 'visit_count': '-'});
+      },
+    );
+
+    return Container(
+      width: 344,
+      padding: const EdgeInsets.all(16),
+      decoration: ShapeDecoration(
+        color: bgColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 今月のボル活/昨月のボル活
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.50,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          const SizedBox(height: 12),
+
+          // ボル活・施設数・ペースの統計情報表示部分
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.50,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStatsItem(
-                      'ボル活', boulActivityStats.totalVisits.toString(), '回'),
-                  _buildStatsItem(
-                      '施設数', boulActivityStats.totalGymCount.toString(), '施設'),
-                  _buildStatsItem('ペース',
-                      boulActivityStats.weeklyVisitRate.toString(), '週あたり回数'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Divider(
-                color: Colors.white,
-                thickness: 1.0,
-                indent: 0,
-                endIndent: 0,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'TOP5',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.50,
-                ),
-              ),
-              const SizedBox(height: 4),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: boulActivityStats.topGyms.length,
-                itemBuilder: (context, index) {
-                  final gym = boulActivityStats.topGyms[index];
-                  final gymId = gym['gym_id'].toString();
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              context
-                                  .push('/FacilityInfo/$gymId'); // ジム詳細ページに遷移
-                            },
-                            child: Text(
-                              gym['gym_name'],
-                              softWrap: true,
-                              overflow: TextOverflow.visible,
+              _buildStatsItem('ボル活', visits, '回'),
+              _buildStatsItem('施設数', gyms, '施設'),
+              _buildStatsItem('ペース', pace, '週あたり回数'),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // 下線表示
+          const Divider(
+            color: Colors.white,
+            thickness: 1.0,
+            indent: 0,
+            endIndent: 0,
+          ),
+          const SizedBox(height: 8),
+
+          // TOP5
+          const Text(
+            'TOP5',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.50,
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // TOP5のジム名表示
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: topGyms.length,
+            itemBuilder: (context, index) {
+              final gym = topGyms[index];
+              final gymName = gym['gym_name'] ?? '-';
+              final visitCount = gym['visit_count'] ?? '-';
+              final gymId = gym['gym_id']?.toString();
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      // gymNamw(ジム名)が'?'：ジム取得エラーで表示される文字
+                      // gymNameが'-'： ジム取得処理中に表示される文字
+                      child: (gymId != null && gymName != '?' && gymName != '-')
+                          ? InkWell(
+                              onTap: () {
+                                context
+                                    .push('/FacilityInfo/$gymId'); // ジム詳細ページに遷移
+                              },
+                              child: Text(
+                                gymName,
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.50,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              gymName,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -136,27 +187,24 @@ class StaticsReportPage extends ConsumerWidget {
                                 letterSpacing: -0.50,
                               ),
                             ),
-                          ),
-                        ),
-                        Text(
-                          '${gym['visit_count']} 回',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.50,
-                          ),
-                        ),
-                      ],
                     ),
-                  );
-                },
-              ),
-            ],
+                    Text(
+                      '$visitCount 回',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.50,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

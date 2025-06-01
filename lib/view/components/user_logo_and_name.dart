@@ -8,6 +8,7 @@ class UserLogoAndName extends StatelessWidget {
   final String userName;
   final String? userLogo;
   final String? heroTag; // ユーザーアイコン写真を拡大表示するために必要な識別子タグ
+  final String? userId;
 
   // コンストラクタ
   const UserLogoAndName({
@@ -15,6 +16,7 @@ class UserLogoAndName extends StatelessWidget {
     required this.userName,
     this.userLogo,
     this.heroTag,
+    this.userId,
   });
 
   @override
@@ -49,7 +51,8 @@ class UserLogoAndName extends StatelessWidget {
                         ),
                         Center(
                           child: Hero(
-                            tag: 'profile_image',
+                            tag: heroTag ??
+                                'user_icon_default_${userId ?? userName.hashCode}',
                             child: InteractiveViewer(
                               minScale: 1.0,
                               maxScale: 20.0,
@@ -74,7 +77,8 @@ class UserLogoAndName extends StatelessWidget {
               }
             },
             child: Hero(
-              tag: heroTag ?? 'user_icon',
+              tag:
+                  heroTag ?? 'user_icon_default_${userId ?? userName.hashCode}',
               child: ClipOval(
                 child: (isValidUrl(userLogo))
                     ? Image.network(

@@ -141,7 +141,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        if (isValidUrl(userRef?.userIconUrl)) {
+                        final userId = userRef?.userId ?? 'unknown';
+                        final iconUrl = userRef?.userIconUrl;
+
+                        if (isValidUrl(iconUrl)) {
                           showGeneralDialog(
                             context: context,
                             barrierDismissible: true,
@@ -158,12 +161,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   ),
                                   Center(
                                     child: Hero(
-                                      tag: 'user_icon',
+                                      tag: 'user_icon_$userId',
                                       child: InteractiveViewer(
                                         minScale: 1.0,
                                         maxScale: 20.0,
                                         child: Image.network(
-                                          userRef!.userIconUrl,
+                                          iconUrl!,
                                           fit: BoxFit.contain,
                                         ),
                                       ),
@@ -181,7 +184,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         }
                       },
                       child: Hero(
-                        tag: 'user_icon',
+                        tag: 'user_icon_${userRef?.userId ?? 'unknown'}',
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: Colors.grey.shade300,

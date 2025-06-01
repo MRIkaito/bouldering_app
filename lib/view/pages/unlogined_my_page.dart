@@ -16,7 +16,10 @@ class UnloginedMyPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ユーザーのロゴ・ユーザ名部分
-              const UserLogoAndName(userName: 'ゲストボルダー'),
+              const UserLogoAndName(
+                userName: 'ゲストボルダー',
+                heroTag: 'guest_user_icon',
+              ),
 
               Container(
                 decoration: BoxDecoration(

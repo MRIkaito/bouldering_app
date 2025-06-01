@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 
 /// ■ クラス
@@ -16,13 +17,6 @@ class UserLogoAndName extends StatelessWidget {
     this.heroTag,
   });
 
-  /// ■ メソッド
-  /// - URLが有効な形式かを確認する
-  bool _isValidUrl(String? url) {
-    if (url == null) return false;
-    return url.startsWith('http://') || url.startsWith('https://');
-  }
-
   @override
   Widget build(BuildContext context) {
     // ユーザー名が長すぎる場合、...でカット
@@ -37,7 +31,7 @@ class UserLogoAndName extends StatelessWidget {
           // 画像
           GestureDetector(
             onTap: () {
-              if (_isValidUrl(userLogo)) {
+              if (isValidUrl(userLogo)) {
                 showGeneralDialog(
                   context: context,
                   barrierDismissible: true,
@@ -82,7 +76,7 @@ class UserLogoAndName extends StatelessWidget {
             child: Hero(
               tag: heroTag ?? 'user_icon',
               child: ClipOval(
-                child: (_isValidUrl(userLogo))
+                child: (isValidUrl(userLogo))
                     ? Image.network(
                         userLogo!,
                         width: 72,

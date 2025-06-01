@@ -7,6 +7,7 @@ import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.
 import 'package:bouldering_app/view/components/edit_setting_item.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -139,61 +140,92 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey.shade300,
-                        backgroundImage: (ref.watch(userProvider) != null) &&
-                                // ignore: unnecessary_null_comparison
-                                (ref.watch(userProvider)!.userIconUrl !=
-                                    null) &&
-                                (ref
-                                    .watch(userProvider)!
-                                    .userIconUrl
-                                    .startsWith('https://'))
-                            ? NetworkImage(ref.watch(userProvider)!.userIconUrl)
-                            : null,
-                        child: (ref.watch(userProvider) == null) ||
-                                // ignore: unnecessary_null_comparison
-                                (ref.watch(userProvider)!.userIconUrl ==
-                                    null) ||
-                                (!ref
-                                    .watch(userProvider)!
-                                    .userIconUrl
-                                    .startsWith('https://'))
-                            ? Icon(Icons.camera_alt,
-                                size: 40, color: Colors.grey.shade700)
-                            : null,
+                      onTap: () {
+                        if (isValidUrl(userRef?.userIconUrl)) {
+                          showGeneralDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierLabel: "ProfileImageDialog",
+                            barrierColor: Colors.white.withOpacity(0.8),
+                            transitionDuration:
+                                const Duration(milliseconds: 300),
+                            pageBuilder: (context, _, __) {
+                              return Stack(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: Container(color: Colors.transparent),
+                                  ),
+                                  Center(
+                                    child: Hero(
+                                      tag: 'user_icon',
+                                      child: InteractiveViewer(
+                                        minScale: 1.0,
+                                        maxScale: 20.0,
+                                        child: Image.network(
+                                          userRef!.userIconUrl,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                            transitionBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return FadeTransition(
+                                  opacity: animation, child: child);
+                            },
+                          );
+                        }
+                      },
+                      child: Hero(
+                        tag: 'user_icon',
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey.shade300,
+                          backgroundImage: (userRef != null &&
+                                  isValidUrl(userRef.userIconUrl))
+                              ? NetworkImage(userRef.userIconUrl)
+                              : null,
+                          child: (userRef == null ||
+                                  !isValidUrl(userRef.userIconUrl))
+                              ? Icon(Icons.camera_alt,
+                                  size: 40, color: Colors.grey.shade700)
+                              : null,
+                        ),
                       ),
-                      onTap: () async {
-                        // 画像選択
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () async {
                         final isPickedImage = await _pickImage();
-
-                        if ((isPickedImage == true) && (_imageFile != null)) {
-                          // CloudStorageに保存
-                          final _uploadedImageUrl =
+                        if (isPickedImage && _imageFile != null) {
+                          final uploadedImageUrl =
                               await _uploadToCloudStorage(_imageFile!);
-
-                          // 画像URLをDB保存 + 状態変更
                           final userId = ref.read(userProvider)!.userId;
                           final result = await ref
                               .read(userProvider.notifier)
-                              .updateUserIconUrl(_uploadedImageUrl!, userId);
-
+                              .updateUserIconUrl(uploadedImageUrl!, userId);
                           if (context.mounted) {
                             confirmedDialog(context, result);
                           }
-                        } else {
-                          return;
                         }
                       },
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'アイコンを編集する',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0056FF),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF0056FF), // 通常時の文字色
+                        padding: EdgeInsets.zero, // デフォルトの余白を無くす場合
+                        minimumSize: Size.zero, // デフォルトサイズ制限を外す
+                        tapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap, // 小さく収める
+                      ),
+                      child: const Text(
+                        'アイコンを編集する',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

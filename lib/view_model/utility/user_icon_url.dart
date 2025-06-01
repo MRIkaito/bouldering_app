@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-bool isValidUrl(String? url) {
-  return url != null &&
-      (url.startsWith('http://') || url.startsWith('https://'));
-}
-
 Widget buildPlaceholderIcon({double size = 72}) {
   return Container(
     width: size,

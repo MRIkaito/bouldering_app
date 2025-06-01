@@ -1,8 +1,8 @@
+import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/facility_info_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
-import 'package:bouldering_app/view_model/utility/user_icon_url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;

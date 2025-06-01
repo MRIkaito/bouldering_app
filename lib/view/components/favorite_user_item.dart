@@ -1,10 +1,12 @@
 // お気に入り項目のウィジェット
+import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 
 class FavoriteUserItem extends StatelessWidget {
   final String name;
   final String description;
   final String imageUrl;
+  final String userId;
   final VoidCallback? onTap;
 
   const FavoriteUserItem({
@@ -12,6 +14,7 @@ class FavoriteUserItem extends StatelessWidget {
     required this.name,
     required this.description,
     required this.imageUrl,
+    required this.userId,
     this.onTap,
   }) : super(key: key);
 
@@ -24,9 +27,21 @@ class FavoriteUserItem extends StatelessWidget {
         child: Row(
           children: [
             // ユーザー画像
-            CircleAvatar(
-              backgroundImage: NetworkImage(imageUrl),
-              radius: 24,
+            Hero(
+              tag: 'user_icon_$userId',
+              child: ClipOval(
+                child: isValidUrl(imageUrl)
+                    ? Image.network(
+                        imageUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildFallback();
+                        },
+                      )
+                    : _buildFallback(),
+              ),
             ),
             const SizedBox(width: 12),
 
@@ -74,4 +89,17 @@ class FavoriteUserItem extends StatelessWidget {
       ),
     );
   }
+}
+
+/// fallback placeholder
+Widget _buildFallback() {
+  return Container(
+    width: 48,
+    height: 48,
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      color: Color(0xFFE0E0E0),
+    ),
+    child: const Icon(Icons.person, size: 28, color: Colors.grey),
+  );
 }

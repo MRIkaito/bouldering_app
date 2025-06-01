@@ -243,6 +243,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               FUR.created_at,
               B.user_name,
               B.user_name,
+              B.user_icon_url,
               GI.gym_id,
               GI.gym_name
             FROM
@@ -304,6 +305,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               FUR.created_at,
               B.user_name,
               B.user_name,
+              B.user_icon_url,
               GI.gym_id,
               GI.gym_name
             FROM

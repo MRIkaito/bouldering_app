@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/components/favorite_user_item.dart';
+import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
@@ -53,11 +54,9 @@ class FavoriteUserPage extends ConsumerWidget {
               itemCount: favoirteUserData.length,
               itemBuilder: (context, index) {
                 final favoriteUser = favoirteUserData[index];
+                final String? rawUrl = favoriteUser['user_icon_url'];
                 final String favoriteUserIconUrl =
-                    favoriteUser['user_icon_url'] ?? 'https://fakeimg.pl/50x50';
-                // TODO：今は、上記のuser_icon_urlがnullの場合は直接記述している
-                // URL(ダミーデータ)として標示しているが、これはいずれDBに記述するようにする。
-                // 設定していない場合は上記のURLを記述して埋めるようにする
+                    isValidUrl(rawUrl) ? rawUrl! : '';
                 final String favoriteUserName =
                     favoriteUser['user_name'] ?? '-';
                 final String favoriteUserHomeGym =
@@ -70,6 +69,7 @@ class FavoriteUserPage extends ConsumerWidget {
                   name: favoriteUserName,
                   description: favoriteUserHomeGym,
                   imageUrl: favoriteUserIconUrl,
+                  userId: favoriteUserId,
                   onTap: () {
                     context.push('/OtherUserPage/$favoriteUserId');
                   },

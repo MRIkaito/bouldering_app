@@ -52,6 +52,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   DateTime? originalDate; // 編集前のジム訪問日
   List<String> originalUrls = []; // 編集前の写真URL
 
+  // 投稿処理中か判定する変数
+  bool _isPosting = false;
+
   @override
   void initState() {
     super.initState();
@@ -424,123 +427,148 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               title: const Text('ボル活投稿'),
               actions: [
                 TextButton(
-                  onPressed: () async {
-                    // ジムID取得
-                    getGymIdFromSelectedGym(selectedGym, gymRef);
+                  onPressed: _isPosting
+                      ? null
+                      : () async {
+                          // 投稿(編集)処理開始
+                          setState(() => _isPosting = true);
 
-                    if (gymId == null) {
-                      /* ジムIDが選択されていないときの処理 */
-                      print("ジムを選択してください．");
-                      // TODO：画面表示する何かを実装する
-                    } else {
-                      /* ジムIDが取得されているときの処理：「編集」と「新規投稿」で別れている */
-                      if (isEditMode && editingTweetId != null) {
-                        /* 編集モード */
-                        // 変更があったかを確認する
-                        final isSameText =
-                            (originalText == _textController.text);
-                        final isSameDate = (originalDate ==
-                            DateFormat('yyyy-MM-dd').format(_selectedDate));
-                        final isSameMedia = Set.from(originalUrls)
-                                .containsAll(_uploadedUrls) &&
-                            Set.from(_uploadedUrls).containsAll(originalUrls);
+                          // ジムID取得
+                          getGymIdFromSelectedGym(selectedGym, gymRef);
 
-                        // すべて変更がない状態で投稿するが押下されたときは何もせずに終了・前の画面へ戻る
-                        if (isSameText && isSameDate && isSameMedia) {
-                          // 変更がなければSnackBar表示のみで戻る
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('編集は完了しました')),
-                          );
-                          context.pop();
-                          return;
-                        }
-
-                        // 編集API呼び出し(ツイート本文，ジム，日付の更新)
-                        await updateTweet(
-                          editingTweetId!,
-                          userRef!.userId,
-                          gymId!,
-                          DateFormat('yyyy-MM-dd').format(_selectedDate),
-                          _textController.text,
-                        );
-
-                        // 差分で削除する：originalUrls にあって _uploadedUrls にないものだけを削除
-                        for (final url in originalUrls) {
-                          if (!_uploadedUrls.contains(url)) {
-                            // このURLは削除されたとみなす → Cloud Functionで個別削除処理を作って呼ぶ
-                            await deleteSingleTweetMedia(editingTweetId!, url);
-                          }
-                        }
-
-                        // 新規画像をアップロードし、アップロード成功URLは _uploadedUrls に追加
-                        for (final file in _mediaFiles) {
-                          final uploadedUrl = await uploadFileToGCS(file);
-                          if (uploadedUrl != null) {
-                            await _insertBoulLogTweetMedia(
-                                editingTweetId!, uploadedUrl, 'photo');
-                            _uploadedUrls.add(uploadedUrl); // 既存も新規もこの配列で管理
-                          }
-                        }
-
-                        // 編集完了のSnackBarを表示
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('編集が完了しました')),
-                        );
-
-                        print("画像更新完了: $_uploadedUrls");
-                        context.pop();
-                      } else {
-                        /* 新規投稿モード */
-                        // ツイート内容のDB登録処理
-                        final int? tweetId = await _insertBoulLogTweet(
-                          userRef!.userId,
-                          gymId!,
-                          DateFormat('yyyy-MM-dd').format(_selectedDate),
-                          _textController.text,
-                        );
-
-                        // メディアをGCSへアップロードする, URLをDB保存する
-                        _uploadedUrls.clear(); // 初期化・リセット
-                        for (final file in _mediaFiles) {
-                          // GCSへのアップロード
-                          final uploadedUrl = await uploadFileToGCS(file);
-                          // GCSへアップロードしたメディアURLをDB保存
-                          if ((uploadedUrl != null) && (tweetId != null)) {
-                            _insertBoulLogTweetMedia(
-                              tweetId,
-                              uploadedUrl,
-                              'photo',
+                          if (gymId == null) {
+                            /* ジムIDが選択されていないときの処理 */
+                            // ジム選択を促すメッセージのSnackBarを表示
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('ジムを選択してください')),
                             );
-                            _uploadedUrls.add(uploadedUrl);
+                          } else {
+                            /* ジムIDが取得されているときの処理：「編集」と「新規投稿」で別れている */
+                            if (isEditMode && editingTweetId != null) {
+                              /* 編集モード */
+                              // 変更があったかを確認する
+                              final isSameText =
+                                  (originalText == _textController.text);
+                              final isSameDate = (originalDate ==
+                                  DateFormat('yyyy-MM-dd')
+                                      .format(_selectedDate));
+                              final isSameMedia = Set.from(originalUrls)
+                                      .containsAll(_uploadedUrls) &&
+                                  Set.from(_uploadedUrls)
+                                      .containsAll(originalUrls);
+
+                              // すべて変更がない状態で投稿するが押下されたときは何もせずに終了・前の画面へ戻る
+                              if (isSameText && isSameDate && isSameMedia) {
+                                // 変更がなければSnackBar表示のみで戻る
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('編集は完了しました')),
+                                );
+                                context.pop();
+                                return;
+                              }
+
+                              // 編集API呼び出し(ツイート本文，ジム，日付の更新)
+                              await updateTweet(
+                                editingTweetId!,
+                                userRef!.userId,
+                                gymId!,
+                                DateFormat('yyyy-MM-dd').format(_selectedDate),
+                                _textController.text,
+                              );
+
+                              // 差分で削除する：originalUrls にあって _uploadedUrls にないものだけを削除
+                              for (final url in originalUrls) {
+                                if (!_uploadedUrls.contains(url)) {
+                                  // このURLは削除されたとみなす → Cloud Functionで個別削除処理を作って呼ぶ
+                                  await deleteSingleTweetMedia(
+                                      editingTweetId!, url);
+                                }
+                              }
+
+                              // 新規画像をアップロードし、アップロード成功URLは _uploadedUrls に追加
+                              for (final file in _mediaFiles) {
+                                final uploadedUrl = await uploadFileToGCS(file);
+                                if (uploadedUrl != null) {
+                                  await _insertBoulLogTweetMedia(
+                                      editingTweetId!, uploadedUrl, 'photo');
+                                  _uploadedUrls
+                                      .add(uploadedUrl); // 既存も新規もこの配列で管理
+                                }
+                              }
+
+                              // 編集完了のSnackBarを表示
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('編集が完了しました')),
+                              );
+
+                              print("画像更新完了: $_uploadedUrls");
+                              context.pop();
+                            } else {
+                              /* 新規投稿モード */
+                              // ツイート内容のDB登録処理
+                              final int? tweetId = await _insertBoulLogTweet(
+                                userRef!.userId,
+                                gymId!,
+                                DateFormat('yyyy-MM-dd').format(_selectedDate),
+                                _textController.text,
+                              );
+
+                              // メディアをGCSへアップロードする, URLをDB保存する
+                              _uploadedUrls.clear(); // 初期化・リセット
+                              for (final file in _mediaFiles) {
+                                // GCSへのアップロード
+                                final uploadedUrl = await uploadFileToGCS(file);
+                                // GCSへアップロードしたメディアURLをDB保存
+                                if ((uploadedUrl != null) &&
+                                    (tweetId != null)) {
+                                  _insertBoulLogTweetMedia(
+                                    tweetId,
+                                    uploadedUrl,
+                                    'photo',
+                                  );
+                                  _uploadedUrls.add(uploadedUrl);
+                                }
+                              }
+                              print("アップロード完了URL一覧: $_uploadedUrls");
+
+                              // 投稿ページ初期化
+                              setState(() {
+                                _selectedDate = DateTime.now();
+                                selectedGym = null;
+                                gymId = null;
+                                _textController.clear();
+                                _mediaFiles.clear();
+                                _uploadedUrls.clear();
+                              });
+
+                              // 投稿完了のSnackBarを表示
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('投稿が完了しました')),
+                              );
+                            }
                           }
-                        }
-                        print("アップロード完了URL一覧: $_uploadedUrls");
 
-                        // 投稿ページ初期化
-                        setState(() {
-                          _selectedDate = DateTime.now();
-                          selectedGym = null;
-                          gymId = null;
-                          _textController.clear();
-                          _mediaFiles.clear();
-                          _uploadedUrls.clear();
-                        });
+                          // 投稿(編集)処理終了
+                          setState(() => _isPosting = false);
 
-                        // 投稿完了のSnackBarを表示
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('投稿が完了しました')),
-                        );
-                      }
-                    }
-                    return;
-                  },
-                  child: const Text(
-                    '投稿する',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                          return;
+                        },
+                  child: _isPosting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.blue,
+                          ),
+                        )
+                      : const Text(
+                          '投稿する',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ],
             ),

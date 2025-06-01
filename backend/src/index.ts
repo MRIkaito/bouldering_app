@@ -1,5 +1,7 @@
 import * as functions from "firebase-functions";
 import {Pool} from "pg";
+import { PoolClient } from 'pg';
+
 
 // データベース接続情報
 const dbConfig = {
@@ -84,7 +86,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             B.user_icon_url,
             GI.gym_id,
             GI.gym_name,
-            GI.prefecture
+            GI.prefecture,
+            COALESCE(
+              (
+                SELECT json_agg(media_url)
+                FROM boul_log_tweet_media
+                WHERE tweet_id = BLT.tweet_id
+              ), '[]'
+            ) AS media_urls
           FROM
             boul_log_tweet AS BLT
           INNER JOIN
@@ -112,7 +121,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             B.user_icon_url,
             GI.gym_id,
             GI.gym_name,
-            GI.prefecture
+            GI.prefecture,
+            COALESCE(
+              (
+                SELECT json_agg(media_url)
+                FROM boul_log_tweet_media
+                WHERE tweet_id = BLT.tweet_id
+              ), '[]'
+            ) AS media_urls
           FROM
             boul_log_tweet AS BLT
           INNER JOIN
@@ -352,6 +368,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               BLT.tweet_id,
               B.user_name,
+              B.user_icon_url,
               FUR.likee_user_id AS user_id,
               BLT.visited_date,
               BLT.tweeted_date,
@@ -384,6 +401,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             SELECT
               BLT.tweet_id,
               B.user_name,
+              B.user_icon_url,
               FUR.likee_user_id AS user_id,
               BLT.visited_date,
               BLT.tweeted_date,
@@ -757,7 +775,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_icon_url,
               GI.gym_id,
               GI.gym_name,
-              GI.prefecture
+              GI.prefecture,
+              COALESCE(
+                  (
+                  SELECT json_agg(media_url)
+                  FROM boul_log_tweet_media
+                  WHERE tweet_id = BLT.tweet_id
+                  ), '[]'
+              ) AS media_urls
             FROM boul_log_tweet AS BLT
             INNER JOIN boulder AS B ON BLT.user_id = B.user_id
             INNER JOIN gym_info AS GI ON BLT.gym_id = GI.gym_id
@@ -782,7 +807,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_icon_url,
               GI.gym_id,
               GI.gym_name,
-              GI.prefecture
+              GI.prefecture,
+              COALESCE(
+                  (
+                  SELECT json_agg(media_url)
+                  FROM boul_log_tweet_media
+                  WHERE tweet_id = BLT.tweet_id
+                  ), '[]'
+              ) AS media_urls
             FROM boul_log_tweet AS BLT
             INNER JOIN boulder AS B ON BLT.user_id = B.user_id
             INNER JOIN gym_info AS GI ON BLT.gym_id = GI.gym_id
@@ -1338,10 +1370,12 @@ exports.getData = functions.https.onRequest(async (req, res) => {
             GH.fri_close,
             GH.sat_open,
             GH.sat_close
-          FROM gym_info GI
+          FROM wanna_go_relation WGR
+          JOIN gym_info GI ON GI.gym_id = WGR.gym_id
           LEFT JOIN climbing_types CT ON CT.gym_id = GI.gym_id
           LEFT JOIN gym_hours GH ON GH.gym_id = GI.gym_id
-          WHERE EXISTS (SELECT 1 FROM wanna_go_relation WGR WHERE WGR.gym_id = GI.gym_id AND WGR.user_id = $1);
+          WHERE WGR.user_id = $1
+          ORDER BY WGR.created_at DESC;
           `, [user_id]
           );
 
@@ -1654,6 +1688,155 @@ case 25:
         }
       } catch(error) {
         console.error("データ削除エラー", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+    // request_id: 28
+    // ツイート本体 + 画像URLの削除(CloudStorageの画像本体は削除しない)
+    case 28:
+    let tweetDeleteClient: PoolClient | undefined;
+    try {
+        const { tweet_id, user_id, gym_id } = req.query;
+
+        if (!tweet_id || !user_id || !gym_id) {
+        res.status(400).send("tweet_id, user_id, gym_id のいずれかが不足しています");
+        return;
+        }
+
+        tweetDeleteClient = await pool.connect();
+        await tweetDeleteClient.query("BEGIN");
+
+        // メディア情報削除
+        await tweetDeleteClient.query(
+        `DELETE FROM boul_log_tweet_media WHERE tweet_id = $1`,
+        [tweet_id]
+        );
+
+        // ツイート本体削除
+        const result = await tweetDeleteClient.query(
+        `DELETE FROM boul_log_tweet WHERE tweet_id = $1 AND user_id = $2 AND gym_id = $3`,
+        [tweet_id, user_id, gym_id]
+        );
+
+        await tweetDeleteClient.query("COMMIT");
+        tweetDeleteClient.release();
+
+        if ((result?.rowCount ?? 0) > 0) {
+        res.status(200).send("ツイートとメディア情報を正常に削除しました");
+        } else {
+        res.status(404).send("該当するツイートが見つかりませんでした");
+        }
+    } catch (error) {
+        if (tweetDeleteClient) {
+        await tweetDeleteClient.query("ROLLBACK");
+        tweetDeleteClient.release();
+        }
+        console.error("削除エラー:", error);
+        res.status(500).send("ツイート削除中にサーバーエラーが発生しました");
+    }
+    break;
+
+    // requestId：29
+    // ツイート内容を更新する
+    //
+    // クエリパラメータ：
+    // tweet_id：ツイートのID（必須）
+    // tweet_contents：ツイート内容（省略可）
+    // visited_date：ジム訪問日（省略可）
+    // gym_id：ジムID（省略可）
+    case 29:
+      try {
+        const { tweet_id, tweet_contents, visited_date, gym_id } = req.query;
+
+        // tweet_id が無ければエラー
+        if (!tweet_id) {
+          res.status(400).send("tweet_id パラメータが必要です");
+          return;
+        }
+
+        // 更新対象が1つもない場合
+        if (!tweet_contents && !visited_date && !gym_id) {
+          res.status(400).send("更新対象のパラメータが必要です");
+          return;
+        }
+
+        // 動的にUPDATE文を組み立てる
+        const fields = [];
+        const values = [];
+        let idx = 1;
+
+        if (tweet_contents) {
+          fields.push(`tweet_contents = $${idx++}`);
+          values.push(tweet_contents);
+        }
+        if (visited_date) {
+          fields.push(`visited_date = $${idx++}`);
+          values.push(visited_date);
+        }
+        if (gym_id) {
+          fields.push(`gym_id = $${idx++}`);
+          values.push(gym_id);
+        }
+
+        values.push(tweet_id); // WHERE句用
+        const setClause = fields.join(", ");
+
+        // SQL文
+        const sql = `
+          UPDATE boul_log_tweet
+          SET ${setClause}
+          WHERE tweet_id = $${idx}
+          RETURNING *;
+        `;
+
+        const client = await pool.connect();
+        const result = await client.query(sql, values);
+        client.release();
+
+        if ((result.rowCount ?? 0) > 0) {
+          res.status(200).json({
+            message: "ツイートが正常に更新されました",
+            updated: result.rows[0],
+          });
+        } else {
+          res.status(404).send("指定されたツイートが見つかりませんでした");
+        }
+      } catch (error) {
+        console.error("更新エラー:", error);
+        res.status(500).send("サーバーエラーが発生しました");
+      }
+      break;
+
+
+    // requestId：30
+    // 指定ツイートIDとメディアURLに紐づく1件の画像・動画URLを削除する
+    //
+    // クエリパラメータ：
+    // tweet_id: 対象ツイートのID
+    // media_url: 削除対象の画像または動画URL
+    case 30:
+      try {
+        const { tweet_id, media_url } = req.query;
+
+        if (!tweet_id || !media_url) {
+          res.status(400).send("tweet_idとmedia_urlの両方が必要です");
+          return;
+        }
+
+        const client = await pool.connect();
+        const result = await client.query(
+          `DELETE FROM boul_log_tweet_media WHERE tweet_id = $1 AND media_url = $2`,
+          [tweet_id, media_url]
+        );
+        client.release();
+
+        res.status(200).json({
+          message: "指定されたメディアを1件削除しました",
+          deletedCount: result.rowCount
+        });
+      } catch (error) {
+        console.error("個別メディア削除エラー:", error);
         res.status(500).send("サーバーエラーが発生しました");
       }
       break;

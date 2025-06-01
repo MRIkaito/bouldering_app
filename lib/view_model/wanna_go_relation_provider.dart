@@ -4,23 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 /// ■ クラス
-/// - (後々外部登録する予定)
-/// イキタイジムリレーションのデータ状態を表したデータ構造クラス
-
-// 現在 未使用
-// class WannaGoRelation {
-//   final String userId;
-//   final int gymId;
-//   final DateTime createdAt;
-
-//   WannaGoRelation({
-//     required this.userId,
-//     required this.gymId,
-//     required this.createdAt,
-//   });
-// }
-
-/// ■ クラス
 /// - イキタイ登録したジムを管理するクラス
 ///
 /// 状態： {ジムID：ジム情報}
@@ -147,17 +130,6 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
         print("🟢 [DEBUG] 更新後の gymCards: ${state}");
         print("🟢 [DEBUG] gymCards.keys: ${state.keys}");
         print("🟢 [DEBUG] gymCards.values.toList(): ${state.values.toList()}");
-
-        // final Map<int, GymInfo> registeredGymMap = {
-        //   for (var registeredGymCard in registeredGymCards)
-        //     registeredGymCard.gymId: registeredGymCard
-        // };
-
-        // state.addAll(registeredGymMap);
-
-        // // イキタイジム情報を保持
-        // // state = [...state, ...newGymCards];
-        // print("[DEBUG] Gym cards fetched. Total count: ${state.length}");
       } else {
         print(
             "[ERROR] Failed to fetch gym cards. Status: ${response.statusCode}");

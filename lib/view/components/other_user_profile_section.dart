@@ -111,16 +111,14 @@ class _OtherUserProfileSectionState
                   ),
                   const SizedBox(height: 8),
 
-                  if (currentUser != null &&
-                      currentUser.userId != user.userId &&
-                      isFavorited != null)
+                  if (currentUser != null && isFavorited != null)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Button(
                           onPressedFunction: _toggleFavorite,
-                          buttonName: isFavorited! ? '登録解除' : '登録',
+                          buttonName: isFavorited! ? 'お気に入り登録解除' : 'お気に入り登録',
                           buttonWidth: MediaQuery.of(context).size.width - 48,
                           buttonHeight: 36,
                           buttonColorCode:

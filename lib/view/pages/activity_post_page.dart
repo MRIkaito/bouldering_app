@@ -157,9 +157,24 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       setState(() {
         final selectedFiles = result!.paths.map((path) => File(path!)).toList();
 
-        _mediaFiles.addAll(selectedFiles);
-        if (_mediaFiles.length > 5) {
-          _mediaFiles = _mediaFiles.sublist(0, 5); // 5枚の制限
+        // 現在の枚数(既存写真+追加写真)を合算
+        int totalSelectedCount = _uploadedUrls.length + _mediaFiles.length;
+        final availableSlots = 5 - totalSelectedCount;
+
+        if (availableSlots <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('写真は最大5枚までです')),
+          );
+          return;
+        }
+
+        final filesToAdd = selectedFiles.take(availableSlots).toList();
+        _mediaFiles.addAll(filesToAdd);
+
+        if (filesToAdd.length < selectedFiles.length) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('写真は最大5枚までです')),
+          );
         }
       });
     }
@@ -574,95 +589,136 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                 ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ジム選択フィールド
-                  TextField(
-                      readOnly: true,
-                      enabled: !isEditMode, // 編集モードにある場合はタップ不可能にする
-                      decoration: InputDecoration(
-                        hintText: selectedGym ?? "ジムを選択してください",
-                        hintStyle: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        suffixIcon: const Icon(Icons.arrow_drop_down),
-                      ),
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const GymSearchPage()),
-                        );
-
-                        if (result != null) {
-                          setState(() {
-                            selectedGym = result as String;
-                          });
-                        }
-                      }),
-                  const SizedBox(height: 16),
-
-                  // 日付選択ボタン
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today, color: Colors.grey[600]),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () => _selectDate(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ジム選択フィールド
+                    TextField(
+                        readOnly: true,
+                        enabled: !isEditMode, // 編集モードにある場合はタップ不可能にする
+                        decoration: InputDecoration(
+                          hintText: selectedGym ?? "ジムを選択してください",
+                          hintStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
                           ),
-                          child: Text(
-                            "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
-                            style: const TextStyle(fontSize: 16),
+                          suffixIcon: const Icon(Icons.arrow_drop_down),
+                        ),
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const GymSearchPage()),
+                          );
+
+                          if (result != null) {
+                            setState(() {
+                              selectedGym = result as String;
+                            });
+                          }
+                        }),
+                    const SizedBox(height: 16),
+
+                    // 日付選択ボタン
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today, color: Colors.grey[600]),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => _selectDate(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // テキスト入力フィールド
-                  TextField(
-                    controller: _textController,
-                    maxLength: 400,
-                    maxLines: 10,
-                    decoration: const InputDecoration(
-                      hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
-                      border: InputBorder.none,
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 16),
 
-                  // カウンターと写真追加ボタン
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 写真一覧
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            // 編集モード時：既存画像を表示
-                            if (_uploadedUrls.isNotEmpty)
-                              ..._uploadedUrls.asMap().entries.map((entry) {
+                    // テキスト入力フィールド
+                    TextField(
+                      controller: _textController,
+                      maxLength: 400,
+                      maxLines: 10,
+                      decoration: const InputDecoration(
+                        hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
+                        border: InputBorder.none,
+                      ),
+                    ),
+
+                    // カウンターと写真追加ボタン
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 写真一覧
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              // 編集モード時：既存画像を表示
+                              if (_uploadedUrls.isNotEmpty)
+                                ..._uploadedUrls.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                  final url = entry.value;
+
+                                  return Stack(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8.0),
+                                        child: Image.network(
+                                          url,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _uploadedUrls.removeAt(index);
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.black54,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(Icons.close,
+                                                size: 16, color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+
+                              // 新規画像を表示（✗ボタン付き）
+                              ..._mediaFiles.asMap().entries.map((entry) {
                                 final index = entry.key;
-                                final url = entry.value;
-
+                                final file = entry.value;
                                 return Stack(
                                   children: [
                                     Padding(
                                       padding:
                                           const EdgeInsets.only(right: 8.0),
-                                      child: Image.network(
-                                        url,
+                                      child: Image.file(
+                                        file,
                                         width: 100,
                                         height: 100,
                                         fit: BoxFit.cover,
@@ -674,7 +730,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                       child: GestureDetector(
                                         onTap: () {
                                           setState(() {
-                                            _uploadedUrls.removeAt(index);
+                                            _mediaFiles.removeAt(index);
                                           });
                                         },
                                         child: Container(
@@ -691,78 +747,53 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                   ],
                                 );
                               }),
-
-                            // 新規画像を表示（✗ボタン付き）
-                            ..._mediaFiles.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final file = entry.value;
-                              return Stack(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Image.file(
-                                      file,
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _mediaFiles.removeAt(index);
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black54,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(Icons.close,
-                                            size: 16, color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // 写真追加ボタン
-                      GestureDetector(
-                        onTap: () {
-                          // 写真を選択してアップロード
-                          _pickMultipleImages();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.image, size: 30, color: Colors.grey),
-                              SizedBox(height: 8),
-                              Text(
-                                '写真を追加',
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(height: 16),
+
+                        // 写真追加ボタン
+                        GestureDetector(
+                          onTap: () {
+                            // 写真を選択してアップロード
+                            _pickMultipleImages();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.image, size: 30, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text(
+                                  '写真を追加',
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // 写真枚数カウンター
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            '${_uploadedUrls.length + _mediaFiles.length} / 5枚',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );

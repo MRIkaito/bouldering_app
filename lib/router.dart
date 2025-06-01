@@ -193,9 +193,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
-          path: '/activitypost',
-          pageBuilder: (context, state) =>
-              MaterialPage(fullscreenDialog: true, child: ActivityPostPage()),
+          path: '/ActivityPostEdit',
+          pageBuilder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return MaterialPage(
+              fullscreenDialog: true,
+              child: ActivityPostPage(initialData: extra),
+            );
+          },
         ),
         GoRoute(
             parentNavigatorKey: _rootNavigatorKey,

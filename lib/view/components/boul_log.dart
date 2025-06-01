@@ -118,15 +118,37 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                       final shouldDelete = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text("削除しますか？"),
+                          titlePadding: const EdgeInsets.only(
+                              top: 24, left: 24, right: 24, bottom: 0),
+                          contentPadding:
+                              const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                          title: const Center(
+                            child: Text(
+                              "削除しますか？",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          content: const Text(
+                            "一度削除すると戻すことはできません．本当にこのボル活を削除しますか？\n",
+                            style: TextStyle(fontSize: 14, color: Colors.black),
+                            textAlign: TextAlign.center,
+                          ),
+                          actionsAlignment: MainAxisAlignment.spaceBetween,
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text("いいえ"),
+                              child: const Text(
+                                "キャンセル",
+                                style: TextStyle(color: Colors.black),
+                              ),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text("はい"),
+                              child: const Text(
+                                "削除",
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ),
                           ],
                         ),
@@ -154,13 +176,35 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                         }
                       }
                     } else if (value == 'edit' && widget.tweetId != null) {
-                      // context.push('/EditTweetPage/$tweetId');
-                      // TODO：編集機能実装
+                      context.push(
+                        '/ActivityPostEdit',
+                        extra: {
+                          'tweetId': widget.tweetId,
+                          'tweetContents': widget.tweetContents,
+                          'gymId': widget.gymId,
+                          'gymName': widget.gymName,
+                          'visitedDate': widget.visitedDate,
+                          'mediaUrls': widget.tweetImageUrls,
+                        },
+                      );
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'delete', child: Text('削除する')),
-                    const PopupMenuItem(value: 'edit', child: Text('編集する')),
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Text(
+                        '編集する',
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Text(
+                        '削除する',
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
             ],

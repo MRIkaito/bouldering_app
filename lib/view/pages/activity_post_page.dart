@@ -21,6 +21,13 @@ import 'package:flutter/services.dart' show rootBundle;
 /// - StatefulWidget
 /// - 状態：テキストの長さ
 class ActivityPostPage extends ConsumerStatefulWidget {
+  // ツイートを編集するとき，すでにあるデータを受け取るための変数
+  final Map<String, dynamic>? initialData;
+  const ActivityPostPage({
+    Key? key,
+    this.initialData,
+  }) : super(key: key);
+
   @override
   _ActivityPostPageState createState() => _ActivityPostPageState();
 }
@@ -38,22 +45,46 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   List<String> _uploadedUrls = []; // アップロード完了した写真・動画のURLを保持する変数(リスト)
   FilePickerResult? result;
 
-  bool fromFacilityInfoPage = false; // 施設情報ページから遷移してきたかを判別する変数
+  // 編集時に利用する変数
+  int? editingTweetId;
+  bool isEditMode = false;
+  String? originalText; // 編集前のツイート本文
+  DateTime? originalDate; // 編集前のジム訪問日
+  List<String> originalUrls = []; // 編集前の写真URL
 
   @override
   void initState() {
     super.initState();
+
+    // 編集機能によって呼び出されたかを判定する
+    final data = widget.initialData;
+    if (data != null) {
+      // 編集モード判定 trueへ変更
+      isEditMode = true;
+      editingTweetId = data['tweetId'];
+      _textController.text = data['tweetContents'] ?? '';
+      selectedGym = data['gymName'];
+      gymId = int.tryParse(data['gymId'] ?? '');
+      _selectedDate =
+          DateTime.tryParse(data['visitedDate'] ?? '') ?? DateTime.now();
+      _uploadedUrls = List<String>.from(data['mediaUrls'] ?? []);
+      originalText = _textController.text;
+      originalDate = _selectedDate;
+      originalUrls = List<String>.from(_uploadedUrls);
+    }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-    fromFacilityInfoPage = extra?['fromPager1'] ?? false;
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // TODO：ジムからのページ遷移化を確認するやつ：使わないと思う
+  //   // final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+  //   // fromFacilityInfoPage = extra?['fromPager1'] ?? false;
+  // }
 
   /// ■ メソッド
-  /// - ジム名からジムIDを取得する
+  /// - 選択されたジム名から，ジムIDを取得する
+  /// - 選択されたジムがまだ何もないとき，押下されても何もしない
   ///
   /// 引数
   /// - [selectedGym]選ばれたジム名
@@ -225,20 +256,103 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       'media_type': mediaType,
     });
 
+    await http.post(url, headers: {'content-type': 'application/json'});
+
+    /* 下記デバッグ用 */
+    // try {
+    //   final response = await http.post(
+    //     url,
+    //     headers: {'content-type': 'application/json'},
+    //   );
+
+    //   if (response.statusCode == 200) {
+    //     print("メディア登録成功: $mediaUrl");
+    //   } else {
+    //     print("メディア登録失敗: ${response.statusCode}");
+    //   }
+    // } catch (error) {
+    //   print("例外発生: $error");
+    // }
+  }
+
+  /// ■ メソッド
+  /// ツイートを更新する関数
+  ///
+  /// 引数：
+  /// - tweetId：更新対象のツイートID（必須）
+  /// - userId：ログイン中のユーザーID（ログ使用などに使うなら）
+  /// - gymId：ジムのID
+  /// - visitedDate：ジムに行った日
+  /// - tweetContents：更新後のツイート内容
+  /// - ※ movieUrl や画像URLは別関数で更新（必要であれば）
+  ///
+  /// 返り値：
+  /// - 成功時：true
+  /// - 失敗時：false
+  Future<bool> updateTweet(
+    int tweetId,
+    String userId,
+    int gymId,
+    String visitedDate, // 形式：yyyy-MM-dd
+    String tweetContents,
+  ) async {
+    final url = Uri.parse(
+      'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
+    ).replace(queryParameters: {
+      'request_id': '29',
+      'tweet_id': tweetId.toString(),
+      'tweet_contents': tweetContents,
+      'visited_date': visitedDate,
+      'gym_id': gymId.toString(),
+    });
+
     try {
-      final response = await http.post(
-        url,
-        headers: {'content-type': 'application/json'},
-      );
+      final response = await http.post(url, headers: {
+        'Content-Type': 'application/json',
+      });
 
       if (response.statusCode == 200) {
-        print("メディア登録成功: $mediaUrl");
+        print("ツイート更新成功");
+        return true;
       } else {
-        print("メディア登録失敗: ${response.statusCode}");
+        print("ツイート更新失敗: ${response.statusCode}, ${response.body}");
+        return false;
       }
-    } catch (error) {
-      print("例外発生: $error");
+    } catch (e) {
+      print("更新リクエスト中の例外: $e");
+      return false;
     }
+  }
+
+  /// ■ メソッド
+  /// - GCSに登録した画像URLを管理しているテーブルから，削除したい画像URL
+  /// - (とその画像URLに紐づくツイートID) を受け取り，その画像URLを削除する処理
+  ///
+  /// 引数：
+  /// - [tweetId] ツイートID. 画像URLに紐づいたツイートのIDを受け取る
+  /// - [mediaUrl] 画像のURL
+  Future<void> deleteSingleTweetMedia(int tweetId, String mediaUrl) async {
+    final url = Uri.parse(
+      'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
+    ).replace(queryParameters: {
+      'request_id': '30',
+      'tweet_id': tweetId.toString(),
+      'media_url': mediaUrl,
+    });
+
+    await http.delete(url);
+
+    /* 下記デバッグ用 */
+    // try {
+    //   final response = await http.delete(url);
+    //   if (response.statusCode == 200) {
+    //     print("既存メディア削除成功");
+    //   } else {
+    //     print("削除失敗: ${response.statusCode}, ${response.body}");
+    //   }
+    // } catch (e) {
+    //   print("削除リクエストエラー: $e");
+    // }
   }
 
   /// ■ Widget build
@@ -303,6 +417,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               ),
             ],
           )
+
         // ログイン状態
         : Scaffold(
             appBar: AppBar(
@@ -310,59 +425,121 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    /* ジムID取得 */
+                    // ジムID取得
                     getGymIdFromSelectedGym(selectedGym, gymRef);
 
-                    if (gymId != null) {
-                      /* ツイート内容のDB登録処理 */
-                      final int? tweetId = await _insertBoulLogTweet(
-                        userRef!.userId,
-                        gymId!,
-                        DateFormat('yyyy-MM-dd').format(_selectedDate),
-                        _textController.text,
-                      );
+                    if (gymId == null) {
+                      /* ジムIDが選択されていないときの処理 */
+                      print("ジムを選択してください．");
+                      // TODO：画面表示する何かを実装する
+                    } else {
+                      /* ジムIDが取得されているときの処理：「編集」と「新規投稿」で別れている */
+                      if (isEditMode && editingTweetId != null) {
+                        /* 編集モード */
+                        // 変更があったかを確認する
+                        final isSameText =
+                            (originalText == _textController.text);
+                        final isSameDate = (originalDate ==
+                            DateFormat('yyyy-MM-dd').format(_selectedDate));
+                        final isSameMedia = Set.from(originalUrls)
+                                .containsAll(_uploadedUrls) &&
+                            Set.from(_uploadedUrls).containsAll(originalUrls);
 
-                      /* メディアをGCSへアップロードする, URLをDB保存する */
-                      _uploadedUrls.clear(); // リセット
-                      for (final file in _mediaFiles) {
-                        // GCSへのアップロード
-                        final uploadedUrl = await uploadFileToGCS(file);
-                        if ((uploadedUrl != null) && (tweetId != null)) {
-                          // GCSへアップロードしたメディアURLをDB保存
-                          _insertBoulLogTweetMedia(
-                            tweetId,
-                            uploadedUrl,
-                            'photo',
+                        // すべて変更がない状態で投稿するが押下されたときは何もせずに終了・前の画面へ戻る
+                        if (isSameText && isSameDate && isSameMedia) {
+                          // 変更がなければSnackBar表示のみで戻る
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('編集は完了しました')),
                           );
-                          _uploadedUrls.add(uploadedUrl);
+                          context.pop();
+                          return;
                         }
-                      }
-                      print("アップロード完了URL一覧: $_uploadedUrls");
 
-                      /* 投稿ページ初期化 */
-                      setState(() {
-                        _selectedDate = DateTime.now();
-                        selectedGym = null;
-                        gymId = null;
-                        _textController.clear();
-                        _mediaFiles.clear();
-                        _uploadedUrls.clear();
-                      });
+                        // 編集API呼び出し(ツイート本文，ジム，日付の更新)
+                        await updateTweet(
+                          editingTweetId!,
+                          userRef!.userId,
+                          gymId!,
+                          DateFormat('yyyy-MM-dd').format(_selectedDate),
+                          _textController.text,
+                        );
 
-                      /* 施設情報から遷移して投稿する場合，投稿後に戻る処理 */
-                      if (fromFacilityInfoPage) {
+                        // 差分で削除する：originalUrls にあって _uploadedUrls にないものだけを削除
+                        for (final url in originalUrls) {
+                          if (!_uploadedUrls.contains(url)) {
+                            // このURLは削除されたとみなす → Cloud Functionで個別削除処理を作って呼ぶ
+                            await deleteSingleTweetMedia(editingTweetId!, url);
+                          }
+                        }
+
+                        // 新規画像をアップロードし、アップロード成功URLは _uploadedUrls に追加
+                        for (final file in _mediaFiles) {
+                          final uploadedUrl = await uploadFileToGCS(file);
+                          if (uploadedUrl != null) {
+                            await _insertBoulLogTweetMedia(
+                                editingTweetId!, uploadedUrl, 'photo');
+                            _uploadedUrls.add(uploadedUrl); // 既存も新規もこの配列で管理
+                          }
+                        }
+
+                        // 編集完了のSnackBarを表示
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('編集が完了しました')),
+                        );
+
+                        print("画像更新完了: $_uploadedUrls");
                         context.pop();
                       } else {
-                        // DO NOTHING
+                        /* 新規投稿モード */
+                        // ツイート内容のDB登録処理
+                        final int? tweetId = await _insertBoulLogTweet(
+                          userRef!.userId,
+                          gymId!,
+                          DateFormat('yyyy-MM-dd').format(_selectedDate),
+                          _textController.text,
+                        );
+
+                        // メディアをGCSへアップロードする, URLをDB保存する
+                        _uploadedUrls.clear(); // 初期化・リセット
+                        for (final file in _mediaFiles) {
+                          // GCSへのアップロード
+                          final uploadedUrl = await uploadFileToGCS(file);
+                          // GCSへアップロードしたメディアURLをDB保存
+                          if ((uploadedUrl != null) && (tweetId != null)) {
+                            _insertBoulLogTweetMedia(
+                              tweetId,
+                              uploadedUrl,
+                              'photo',
+                            );
+                            _uploadedUrls.add(uploadedUrl);
+                          }
+                        }
+                        print("アップロード完了URL一覧: $_uploadedUrls");
+
+                        // 投稿ページ初期化
+                        setState(() {
+                          _selectedDate = DateTime.now();
+                          selectedGym = null;
+                          gymId = null;
+                          _textController.clear();
+                          _mediaFiles.clear();
+                          _uploadedUrls.clear();
+                        });
+
+                        // 投稿完了のSnackBarを表示
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('投稿が完了しました')),
+                        );
                       }
-                    } else {
-                      print("ジムを選択してください．");
                     }
+                    return;
                   },
                   child: const Text(
                     '投稿する',
                     style: TextStyle(
-                        color: Colors.blue, fontWeight: FontWeight.bold),
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -375,8 +552,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   // ジム選択フィールド
                   TextField(
                       readOnly: true,
+                      enabled: !isEditMode, // 編集モードにある場合はタップ不可能にする
                       decoration: InputDecoration(
                         hintText: selectedGym ?? "ジムを選択してください",
+                        hintStyle: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
                         suffixIcon: const Icon(Icons.arrow_drop_down),
                       ),
                       onTap: () async {
@@ -438,6 +620,49 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
+                            // 編集モード時：既存画像を表示
+                            if (_uploadedUrls.isNotEmpty)
+                              ..._uploadedUrls.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final url = entry.value;
+
+                                return Stack(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: Image.network(
+                                        url,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _uploadedUrls.removeAt(index);
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black54,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.close,
+                                              size: 16, color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+
+                            // 新規画像を表示（✗ボタン付き）
                             ..._mediaFiles.asMap().entries.map((entry) {
                               final index = entry.key;
                               final file = entry.value;
@@ -445,13 +670,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
-                                    child: Image.file(file,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover),
+                                    child: Image.file(
+                                      file,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
-
-                                  // ✗ボタン
                                   Positioned(
                                     top: 0,
                                     right: 0,
@@ -474,9 +699,8 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                   ),
                                 ],
                               );
-                            }).toList(),
+                            }),
                           ],
-                          // 追加
                         ),
                       ),
                       const SizedBox(height: 16),

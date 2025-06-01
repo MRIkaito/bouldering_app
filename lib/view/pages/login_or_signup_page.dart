@@ -27,14 +27,24 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
       return DefaultTabController(
         length: 2,
         child: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-          ),
-          resizeToAvoidBottomInset: true, // キーボード表示時の画面非表示部分を回避
           body: Stack(
             children: [
               Column(
                 children: [
+                  // AppBar相当
+                  SafeArea(
+                    child: Row(
+                      children: [
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed:
+                              _isLoading ? null : () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // タブバー部分
                   const SwitcherTab(leftTabName: "ログイン", rightTabName: "新規登録"),
 

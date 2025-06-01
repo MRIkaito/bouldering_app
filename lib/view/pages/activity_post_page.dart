@@ -425,6 +425,8 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
         : Scaffold(
             appBar: AppBar(
               title: const Text('ボル活投稿'),
+              backgroundColor: const Color(0xFFFEF7FF),
+              surfaceTintColor: const Color(0xFFFEF7FF),
               actions: [
                 TextButton(
                   onPressed: _isPosting
@@ -632,7 +634,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   TextField(
                     controller: _textController,
                     maxLength: 400,
-                    maxLines: 5,
+                    maxLines: 10,
                     decoration: const InputDecoration(
                       hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
                       border: InputBorder.none,

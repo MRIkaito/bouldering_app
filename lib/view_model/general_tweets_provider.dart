@@ -6,17 +6,23 @@ import 'package:bouldering_app/model/boul_log_tweet.dart';
 class GeneralTweetsState {
   final List<BoulLogTweet> generalTweets;
   final bool hasMore;
+  final bool isFirstFetch;
 
   GeneralTweetsState({
     required this.generalTweets,
     required this.hasMore,
+    required this.isFirstFetch,
   });
 }
 
 class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
   // コンストラクタ
   GeneralTweetsNotifier()
-      : super(GeneralTweetsState(generalTweets: [], hasMore: true)) {
+      : super(GeneralTweetsState(
+          generalTweets: [],
+          hasMore: true,
+          isFirstFetch: true,
+        )) {
     _fetchMoreGeneralTweets();
   }
 
@@ -58,6 +64,7 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
         state = GeneralTweetsState(
           generalTweets: [...state.generalTweets, ...newGeneralTweetsList],
           hasMore: newGeneralTweetsList.length >= 20,
+          isFirstFetch: false, // 最初の取得完了後は常にfalseにする
         );
       } else {
         throw Exception("ツイート取得に失敗しました");
@@ -74,7 +81,11 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
   Future<void> refreshTweets() async {
     if (_isLoading) return;
 
-    state = GeneralTweetsState(generalTweets: [], hasMore: true);
+    state = GeneralTweetsState(
+      generalTweets: [],
+      hasMore: true,
+      isFirstFetch: false, // 最初の取得完了後は常にfalse状態
+    );
     await _fetchMoreGeneralTweets();
   }
 

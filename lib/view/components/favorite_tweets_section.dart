@@ -108,6 +108,11 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
     final favoriteUserTweets = favoriteUserTweetsState.favoriteUserTweets;
     final _hasMoreFavoriteUserTweets = favoriteUserTweetsState.hasMore;
 
+    // 初回呼び出し時のみ，ローディング表示でツイート取得していることをユーザーに知らせる
+    if (favoriteUserTweetsState.isFirstFetch) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return isLoggedIn
         // ログイン時
         ? RefreshIndicator(

@@ -6,10 +6,12 @@ import 'package:bouldering_app/model/boul_log_tweet.dart';
 class FavoriteUserTweetsState {
   final List<BoulLogTweet> favoriteUserTweets;
   final bool hasMore;
+  final bool isFirstFetch;
 
   FavoriteUserTweetsState({
     required this.favoriteUserTweets,
     required this.hasMore,
+    required this.isFirstFetch,
   });
 }
 
@@ -21,7 +23,11 @@ class FavoriteUserTweetsNotifier
 
   // コンストラクタ
   FavoriteUserTweetsNotifier(this.userId)
-      : super(FavoriteUserTweetsState(favoriteUserTweets: [], hasMore: true)) {
+      : super(FavoriteUserTweetsState(
+          favoriteUserTweets: [],
+          hasMore: true,
+          isFirstFetch: true,
+        )) {
     _fetchMoreFavoriteUserTweets();
   }
 
@@ -65,6 +71,7 @@ class FavoriteUserTweetsNotifier
             ...newFavoriteUserTweetsList
           ],
           hasMore: newFavoriteUserTweetsList.length >= 20,
+          isFirstFetch: false, // 最初の取得完了後は常にfalseにする
         );
       } else {
         print("[Debug] ${response.statusCode}");
@@ -82,7 +89,11 @@ class FavoriteUserTweetsNotifier
   Future<void> refreshTweets() async {
     if (_isLoading) return;
 
-    state = FavoriteUserTweetsState(favoriteUserTweets: [], hasMore: true);
+    state = FavoriteUserTweetsState(
+      favoriteUserTweets: [],
+      hasMore: true,
+      isFirstFetch: false, // 最初の取得完了後は常にfalse状態
+    );
     await _fetchMoreFavoriteUserTweets();
   }
 

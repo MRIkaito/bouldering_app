@@ -37,8 +37,14 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final generalTweets = ref.watch(generalTweetsProvider).generalTweets;
-    final _hasMoreGeneralTweets = ref.watch(generalTweetsProvider).hasMore;
+    final generalTweetsState = ref.watch(generalTweetsProvider);
+    final generalTweets = generalTweetsState.generalTweets;
+    final _hasMoreGeneralTweets = generalTweetsState.hasMore;
+
+    // 初回呼び出し時のみ，ローディング表示でツイート取得していることをユーザーへ知らせる
+    if (generalTweetsState.isFirstFetch) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return RefreshIndicator(
       onRefresh: () async {

@@ -50,7 +50,7 @@ class _OtherUserProfileSectionState
     final likeeId = widget.userId;
     final likerId = currentUser.userId;
 
-    final endpoint =
+    const endpoint =
         'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData';
     final url = Uri.parse(endpoint).replace(queryParameters: {
       'request_id': isFavorited! ? '10' : '9', // 解除:10 / 登録:9
@@ -59,7 +59,6 @@ class _OtherUserProfileSectionState
     });
 
     final response = await (isFavorited! ? http.delete(url) : http.get(url));
-
     print('🟡 [DEBUG] status: ${response.statusCode}, body: ${response.body}');
 
     if (response.statusCode == 200) {
@@ -87,7 +86,6 @@ class _OtherUserProfileSectionState
                 child: Center(child: Text("ユーザー情報が取得できませんでした")));
           }
 
-          // final gymRef = ref.read(gymProvider);
           final gymRef = ref.read(gymInfoProvider);
           String boulLogDuration = calcBoulderingDuration(user);
 
@@ -112,7 +110,6 @@ class _OtherUserProfileSectionState
                   ),
                   const SizedBox(height: 8),
 
-                  // お気に入り登録する・解除するセクション(後で実装)
                   if (currentUser != null &&
                       currentUser.userId != user.userId &&
                       isFavorited != null)

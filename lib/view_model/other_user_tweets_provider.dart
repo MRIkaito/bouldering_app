@@ -52,8 +52,10 @@ class OtherUserTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
 
-        final List<BoulLogTweet> newTweets =
-            jsonData.map((tweet) => BoulLogTweet.fromJson(tweet)).toList();
+        final List<BoulLogTweet> newTweets = jsonData
+            .map((tweet) => BoulLogTweet.fromJson(tweet))
+            .toList()
+          ..sort((a, b) => b.tweetedDate.compareTo(a.tweetedDate));
 
         state = List.from(state)
           ..addAll(newTweets.map((tweet) => tweet.copyWith()));

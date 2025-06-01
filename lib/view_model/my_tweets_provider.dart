@@ -66,8 +66,11 @@ class MyTweetsNotifier extends StateNotifier<List<BoulLogTweet>> {
             jsonData.map((tweet) => BoulLogTweet.fromJson(tweet)).toList();
 
         // copyWith を使って state を更新
-        state = List.from(state)
-          ..addAll(newTweets.map((tweet) => tweet.copyWith()));
+        final updatedTweets = List<BoulLogTweet>.from(state)
+          ..addAll(newTweets.map((tweet) => tweet.copyWith()))
+          ..sort((a, b) => b.visitedDate.compareTo(a.visitedDate));
+
+        state = updatedTweets;
         if (newTweets.length < 20) {
           _hasMore = false;
         } else {

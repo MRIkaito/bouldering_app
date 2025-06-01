@@ -52,7 +52,8 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 
         final List<BoulLogTweet> newGeneralTweetsList = generalTweetsList
             .map((tweet) => BoulLogTweet.fromJson(tweet))
-            .toList();
+            .toList()
+          ..sort((a, b) => b.visitedDate.compareTo(a.visitedDate));
 
         state = GeneralTweetsState(
           generalTweets: [...state.generalTweets, ...newGeneralTweetsList],

@@ -56,7 +56,8 @@ class FavoriteUserTweetsNotifier
         final List<BoulLogTweet> newFavoriteUserTweetsList =
             favoriteUserTweetsList
                 .map((tweet) => BoulLogTweet.fromJson(tweet))
-                .toList();
+                .toList()
+              ..sort((a, b) => b.visitedDate.compareTo(a.visitedDate));
 
         state = FavoriteUserTweetsState(
           favoriteUserTweets: [

@@ -56,8 +56,9 @@ class UserProfileSection extends ConsumerWidget {
                   buttonTextColorCode: 0xFF000000,
                 ),
                 Button(
-                  onPressedFunction: () =>
-                      {context.push("/FavoriteUser/favoredBy")},
+                  onPressedFunction: () => {
+                    context.push("/FavoredByUser"),
+                  },
                   buttonName: "お気に入られ",
                   buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
                   buttonHeight: 28,

@@ -7,6 +7,8 @@ class FavoriteUserItem extends StatelessWidget {
   final String description;
   final String imageUrl;
   final String userId;
+  final bool isFavorited;
+  final VoidCallback onToggleFavorite;
   final VoidCallback? onTap;
 
   const FavoriteUserItem({
@@ -15,6 +17,8 @@ class FavoriteUserItem extends StatelessWidget {
     required this.description,
     required this.imageUrl,
     required this.userId,
+    required this.isFavorited,
+    required this.onToggleFavorite,
     this.onTap,
   }) : super(key: key);
 
@@ -70,18 +74,16 @@ class FavoriteUserItem extends StatelessWidget {
               ),
             ),
 
-            // お気に入りを解除ボタン
+            // お気に入りを解除 or 登録ボタン
             OutlinedButton(
-              onPressed: () {
-                // TODO：お気に入り解除の処理を実装する
-              },
+              onPressed: onToggleFavorite,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.blue),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
-              child: const Text(
-                'お気に入りを解除',
-                style: TextStyle(color: Colors.blue),
+              child: Text(
+                isFavorited ? 'お気に入りを解除' : 'お気に入り登録',
+                style: const TextStyle(color: Colors.blue),
               ),
             ),
           ],

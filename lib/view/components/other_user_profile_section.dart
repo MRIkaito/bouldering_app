@@ -1,5 +1,5 @@
 import 'package:bouldering_app/view/components/button.dart';
-import 'package:bouldering_app/view_model/favorite_user_view_model.dart';
+import 'package:bouldering_app/view_model/favorite_user_provider.dart';
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:bouldering_app/view_model/other_user_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
@@ -10,68 +10,40 @@ import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart' as http;
 
-class OtherUserProfileSection extends ConsumerStatefulWidget {
-  // コンストラクタ
-  const OtherUserProfileSection({super.key, required this.userId});
-  // プロパティ
+/// ■ クラス
+class OtherUserProfileSection extends ConsumerWidget {
   final String userId;
+  const OtherUserProfileSection({super.key, required this.userId});
 
   @override
-  ConsumerState<OtherUserProfileSection> createState() =>
-      _OtherUserProfileSectionState();
-}
-
-class _OtherUserProfileSectionState
-    extends ConsumerState<OtherUserProfileSection> {
-  bool? isFavorited; // 訪問したユーザーがお気に入り登録をしている人であるかどうかを確認する
-
-  @override
-  void initState() {
-    super.initState();
-    _checkFavoriteStatus();
-  }
-
-  Future<void> _checkFavoriteStatus() async {
-    final currentUser = ref.read(userProvider);
-    if (currentUser == null) return;
-
-    final favoriteVM = FavoriteUserViewModel();
-    final result =
-        await favoriteVM.isAlreadyFavorited(currentUser.userId, widget.userId);
-    setState(() => isFavorited = result);
-  }
-
-  Future<void> _toggleFavorite() async {
-    final currentUser = ref.read(userProvider);
-    if (currentUser == null) return;
-
-    final likeeId = widget.userId;
-    final likerId = currentUser.userId;
-
-    const endpoint =
-        'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData';
-    final url = Uri.parse(endpoint).replace(queryParameters: {
-      'request_id': isFavorited! ? '10' : '9', // 解除:10 / 登録:9
-      'liker_user_id': likerId,
-      'likee_user_id': likeeId,
-    });
-
-    final response = await (isFavorited! ? http.delete(url) : http.get(url));
-    print('🟡 [DEBUG] status: ${response.statusCode}, body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      setState(() {
-        isFavorited = !isFavorited!;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final otherUserAsync = ref.watch(otherUserProvider(widget.userId));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final otherUserAsync = ref.watch(otherUserProvider(userId));
     final currentUser = ref.watch(userProvider);
+    final favoriteList = ref.watch(favoriteUserProvider);
+    final isFavorited = favoriteList.any((user) => user.userId == userId);
+
+    /// ■ メソッド
+    /// - お気に入り登録ボタン / お気に入り解除ボタンを押下して，ユーザーのお気に入り状態を管理する
+    Future<void> _toggleFavorite() async {
+      if (currentUser == null) return;
+
+      final favoriteUserState = ref.read(favoriteUserProvider.notifier);
+      final success = isFavorited
+          ? await favoriteUserState.removeFavoriteUser(
+              likerUserId: currentUser.userId, likeeUserId: userId)
+          : await favoriteUserState.addFavoriteUser(
+              likerUserId: currentUser.userId, likeeUserId: userId);
+
+      /* 再取得して状態を即時更新 */
+      /* 外部から状態変更された可能性があるときの状態を再進化したい場合の処理 */
+      /* データ整合性を厳密に保ち街時に個の処理を実装する */
+      /* 現状は実装不要 */
+      // if (success) {
+      //   await favoriteUserState.fetchDataFavoriteUser(
+      //       'favorite', currentUser.userId);
+      // }
+    }
 
     return otherUserAsync.when(
         loading: () => const SliverToBoxAdapter(
@@ -111,20 +83,20 @@ class _OtherUserProfileSectionState
                   ),
                   const SizedBox(height: 8),
 
-                  if (currentUser != null && isFavorited != null)
+                  if (currentUser != null)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Button(
                           onPressedFunction: _toggleFavorite,
-                          buttonName: isFavorited! ? 'お気に入り登録解除' : 'お気に入り登録',
+                          buttonName: isFavorited ? 'お気に入り登録解除' : 'お気に入り登録',
                           buttonWidth: MediaQuery.of(context).size.width - 48,
                           buttonHeight: 36,
                           buttonColorCode:
-                              isFavorited! ? 0xFF0056FF : 0xFFE3DCE4,
+                              isFavorited ? 0xFF0056FF : 0xFFE3DCE4,
                           buttonTextColorCode:
-                              isFavorited! ? 0xFFFFFFFF : 0xFF000000,
+                              isFavorited ? 0xFFFFFFFF : 0xFF000000,
                         ),
                       ],
                     ),

@@ -245,13 +245,13 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_name,
               B.user_icon_url,
               GI.gym_id,
-              GI.gym_name
+              COALESCE(GI.gym_name, '-') AS gym_name
             FROM
               favorite_user_relation AS FUR
             INNER JOIN
               boulder AS B
               ON FUR.likee_user_id = B.user_id
-            INNER JOIN
+            LEFT JOIN
               gym_info AS GI
               ON B.home_gym_id = GI.gym_id
             WHERE
@@ -307,13 +307,20 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_name,
               B.user_icon_url,
               GI.gym_id,
-              GI.gym_name
+              GI.gym_name,
+              EXISTS (
+                SELECT 1
+                FROM favorite_user_relation AS MY_FAV
+                WHERE
+                  MY_FAV.liker_user_id = $1
+                  AND MY_FAV.likee_user_id = FUR.liker_user_id
+              ) AS is_favorited
             FROM
               favorite_user_relation AS FUR
             INNER JOIN
               boulder AS B
               ON FUR.liker_user_id = B.user_id
-            INNER JOIN
+            LEFT JOIN
               gym_info AS GI
               ON B.home_gym_id = GI.gym_id
             WHERE
@@ -1201,8 +1208,58 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       }
       break;
 
-    // request_id: 20 - 21
+    // request_id: 20
     // なし
+
+    // requestId：21
+    // 特定のユーザーIDから、ユーザー情報（名前、アイコン、ジム情報）を取得
+    case 21:
+      try {
+        // クエリパラメータを取得
+        const { user_id } = req.query;
+
+        // user_idがない(null)のケース
+        if (!user_id) {
+          res.status(400).send("user_idパラメータが必要です");
+          return;
+        }
+
+        // DB接続
+        const client = await pool.connect();
+
+        // 特定ユーザーのプロフィール情報を取得
+        const result = await client.query(`
+          SELECT
+            B.user_id,
+            B.user_name,
+            B.user_icon_url,
+            GI.gym_id,
+            GI.gym_name
+          FROM
+            boulder AS B
+          LEFT JOIN
+            gym_info AS GI
+            ON B.home_gym_id = GI.gym_id
+          WHERE
+            B.user_id = $1;
+        `, [user_id]);
+
+        // DB接続を解放
+        client.release();
+
+        // データが見つからないケース
+        if (result.rows.length === 0) {
+          res.status(404).send("データは見つかりませんでした");
+          return;
+        }
+
+        // 結果を返信
+        res.status(200).json(result.rows);
+      } catch (error) {
+        console.error("Error querying database: ", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
 
 
     // request_id: 22

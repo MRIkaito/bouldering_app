@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/pages/activity_post_from_facility_info_page.dart';
+import 'package:bouldering_app/view/pages/favored_by_user_page.dart';
 import 'package:bouldering_app/view/pages/my_page_gate.dart';
 import 'package:bouldering_app/view/pages/other_user_page.dart';
 import 'package:bouldering_app/view/pages/search_gym_on_map_page.dart';
@@ -176,15 +177,24 @@ final routerProvider = Provider<GoRouter>((ref) {
               const MaterialPage(fullscreenDialog: true, child: SettingPage()),
         ),
         GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: '/FavoriteUser/:type',
-            pageBuilder: (context, state) {
-              // 遷移先に渡すパラメータ:お気に入り(favorite)・被お気に入り(favoredBy)を選ぶ
-              // デフォルト:favorite
-              final String type = state.pathParameters['type'] ?? 'favorite';
-              return MaterialPage(
-                  fullscreenDialog: true, child: FavoriteUserPage(type: type));
-            }),
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/FavoriteUser/:type',
+          pageBuilder: (context, state) {
+            // 遷移先に渡すパラメータ:お気に入り(favorite)・被お気に入り(favoredBy)を選ぶ
+            // デフォルト:favorite
+            final String type = state.pathParameters['type'] ?? 'favorite';
+            return MaterialPage(
+                fullscreenDialog: true, child: FavoriteUserPage(type: type));
+          },
+        ),
+        GoRoute(
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/FavoredByUser',
+          pageBuilder: (context, state) => const MaterialPage(
+            fullscreenDialog: true,
+            child: FavoredByUserPage(),
+          ),
+        ),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: '/EditProfile',

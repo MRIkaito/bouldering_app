@@ -1,4 +1,6 @@
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/favorite_by_user_provider.dart';
+import 'package:bouldering_app/view_model/favorite_user_provider.dart';
 import 'package:bouldering_app/view_model/my_tweets_provider.dart';
 import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
@@ -92,6 +94,16 @@ class AuthNotifier extends StateNotifier<bool> {
       await ref
           .read(wannaGoRelationProvider.notifier)
           .fetchWannaGoGymCards(userCredential.user!.uid); // イキタイジム情報を最初に取得しておく
+
+// お気に入りユーザーを取得しておく
+      await ref
+          .read(favoriteUserProvider.notifier)
+          .fetchDataFavoriteUser('favorite', userCredential.user!.uid);
+
+// 🔥 被お気に入りユーザーも取得しておく（←これが抜けていた）
+      await ref
+          .read(favoredByUserProvider.notifier)
+          .fetchFavoredByUsers(userCredential.user!.uid);
 
       // ログイン状態(true)に変更
       state = true;

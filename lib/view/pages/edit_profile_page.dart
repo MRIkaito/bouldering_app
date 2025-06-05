@@ -294,17 +294,25 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
               // ホームジム
               InkWell(
-                onTap: () => {
+                onTap: () {
+                  // ジムIDの確認
+                  final gymId = userRef?.homeGymId;
+                  final gymName =
+                      (gymId != null && gymRef[gymId]?.gymName != null)
+                          ? gymRef[gymId]!.gymName
+                          : '選択なし';
+
                   // ページ遷移
-                  selectHomeGymDialog(
-                      context, "ホームジム", gymRef[userRef.homeGymId]!.gymName),
+                  selectHomeGymDialog(context, "ホームジム", gymName);
                 },
                 child: EditSettingItem(
                   title: 'ホームジム',
-                  subtitle: ((userRef?.homeGymId == null) &&
-                          ((gymRef[userRef!.homeGymId]?.gymName) == null))
+                  subtitle: (userRef == null)
                       ? "選択無し"
-                      : gymRef[userRef!.homeGymId]!.gymName,
+                      : (userRef!.homeGymId == null ||
+                              gymRef[userRef.homeGymId] == null)
+                          ? "選択無し"
+                          : gymRef[userRef.homeGymId]!.gymName,
                 ),
               ),
 
@@ -316,9 +324,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 },
                 child: EditSettingItem(
                   title: '生年月日(非公開)',
-                  subtitle: (userRef.birthday == null)
+                  subtitle: (userRef == null)
                       ? "未設定"
-                      : "${userRef.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
+                      : (userRef.birthday == null)
+                          ? "未設定"
+                          : "${userRef.birthday.year}-${userRef.birthday.month}-${userRef.birthday.day}",
                 ),
               ),
 

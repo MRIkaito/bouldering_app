@@ -16,7 +16,11 @@ class OtherUserPage extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(),
+        backgroundColor: const Color(0xFFFEF7FF),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFFEF7FF),
+          surfaceTintColor: const Color(0xFFFEF7FF),
+        ),
         body: SafeArea(
           child: NestedScrollView(
             headerSliverBuilder:

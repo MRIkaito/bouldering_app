@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/favorite_user_item.dart';
 import 'package:bouldering_app/view_model/favorite_user_provider.dart';
 import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
@@ -87,7 +88,45 @@ class _FavoriteUserPageState extends ConsumerState<FavoriteUserPage>
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : isError
-              ? Center(child: Text("Errorが発生しました: $errorMessage"))
+              ? const Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 余白
+                    SizedBox(height: 128),
+
+                    // ロゴ
+                    Center(child: AppLogo()),
+                    SizedBox(height: 16),
+
+                    Text(
+                      'ボル活投稿をしてお気に入り登録してもらいましょう！',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF0056FF),
+                        fontSize: 20,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                        letterSpacing: -0.50,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+
+                    Text(
+                      'ボル活をしていろんな人に\n活動を見てもらいましょう！',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                        letterSpacing: -0.50,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                )
               : favoriteUserData.isEmpty
                   ? const Center(child: Text("データが見つかりませんでした"))
                   : ListView.builder(

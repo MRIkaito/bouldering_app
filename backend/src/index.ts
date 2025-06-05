@@ -244,7 +244,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_name,
               B.user_name,
               B.user_icon_url,
-              GI.gym_id,
+              COALESCE(GI.gym_id, -1) AS gym_id,
               COALESCE(GI.gym_name, '-') AS gym_name
             FROM
               favorite_user_relation AS FUR
@@ -306,8 +306,8 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               B.user_name,
               B.user_name,
               B.user_icon_url,
-              GI.gym_id,
-              GI.gym_name,
+              COALESCE(GI.gym_id, -1) AS gym_id,
+              COALESCE(GI.gym_name, '-') AS gym_name,
               EXISTS (
                 SELECT 1
                 FROM favorite_user_relation AS MY_FAV

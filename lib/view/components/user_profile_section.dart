@@ -142,7 +142,7 @@ class UserProfileSection extends ConsumerWidget {
                 const Text("ホームジム：", style: TextStyle(fontSize: 12)),
                 Builder(builder: (_) {
                   final homeGymId = user?.homeGymId;
-                  if (homeGymId == null) {
+                  if (homeGymId == null || homeGymId == 0) {
                     // ユーザーがホームジム設定していないとき
                     return const Text("-", style: TextStyle(fontSize: 12));
                   } else if (!gymRef.containsKey(homeGymId)) {

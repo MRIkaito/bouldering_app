@@ -99,7 +99,7 @@ class _FavoriteUserPageState extends ConsumerState<FavoriteUserPage>
                     SizedBox(height: 16),
 
                     Text(
-                      'ボル活投稿をしてお気に入り登録してもらいましょう！',
+                      'ボル活投稿をして\nお気に入り登録してもらいましょう！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color(0xFF0056FF),

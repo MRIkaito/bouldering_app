@@ -121,39 +121,88 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                   .read(favoriteUserTweetsProvider(userId).notifier)
                   .refreshTweets();
             },
-            child: ListView.builder(
-              controller: _favoriteTweetsScrollController,
-              itemCount: favoriteUserTweets.length +
-                  (_hasMoreFavoriteUserTweets ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == favoriteUserTweets.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: SizedBox.shrink(),
-                    ),
-                  );
-                }
+            child: favoriteUserTweets.isEmpty
+                ? ListView(
+                    children: const [
+                      // 余白
+                      SizedBox(height: 128),
 
-                final favoriteUserTweet = favoriteUserTweets[index];
+                      // ロゴ
+                      Center(child: AppLogo()),
+                      SizedBox(height: 16),
 
-                return BoulLog(
-                  userId: favoriteUserTweet.userId,
-                  userName: favoriteUserTweet.userName,
-                  userIconUrl: favoriteUserTweet.userIconUrl,
-                  visitedDate: favoriteUserTweet.visitedDate
-                      .toLocal()
-                      .toIso8601String()
-                      .split('T')[0],
-                  // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
-                  gymId: favoriteUserTweet.gymId.toString(),
-                  gymName: favoriteUserTweet.gymName,
-                  prefecture: favoriteUserTweet.prefecture,
-                  tweetContents: favoriteUserTweet.tweetContents,
-                  tweetImageUrls: favoriteUserTweet.mediaUrls,
-                );
-              },
-            ),
+                      Text(
+                        'ユーザーをお気に入り登録しよう！',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF0056FF),
+                          fontSize: 20,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                          letterSpacing: -0.50,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+
+                      Text(
+                        'お気に入り登録して\n他の人の活動を見てみましょう！',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w700,
+                          height: 1.4,
+                          letterSpacing: -0.50,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                    ],
+                  )
+                : ListView.builder(
+                    controller: _favoriteTweetsScrollController,
+                    itemCount: favoriteUserTweets.length +
+                        (_hasMoreFavoriteUserTweets ? 1 : 0) +
+                        1,
+                    itemBuilder: (context, index) {
+                      if (index ==
+                          favoriteUserTweets.length +
+                              (_hasMoreFavoriteUserTweets ? 1 : 0)) {
+                        return SizedBox(
+                          height: MediaQuery.of(context).size.height +
+                              100, // PullRefresh用余白を追加/どのデバイスでもPullできる動的な数値を設定
+                        );
+                      }
+
+                      if (index == favoriteUserTweets.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: SizedBox.shrink(),
+                          ),
+                        );
+                      }
+
+                      final favoriteUserTweet = favoriteUserTweets[index];
+
+                      return BoulLog(
+                        userId: favoriteUserTweet.userId,
+                        userName: favoriteUserTweet.userName,
+                        userIconUrl: favoriteUserTweet.userIconUrl,
+                        visitedDate: favoriteUserTweet.visitedDate
+                            .toLocal()
+                            .toIso8601String()
+                            .split('T')[0],
+                        // DateTime.parse(favoriteUserTweet.visitedDate.toString()).toLocal().toString().split(' ')[0],
+                        gymId: favoriteUserTweet.gymId.toString(),
+                        gymName: favoriteUserTweet.gymName,
+                        prefecture: favoriteUserTweet.prefecture,
+                        tweetContents: favoriteUserTweet.tweetContents,
+                        tweetImageUrls: favoriteUserTweet.mediaUrls,
+                      );
+                    },
+                  ),
           )
 
         // 未ログイン時

@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view_model/other_user_wanna_go_gyms_provider.dart';
 import 'package:bouldering_app/view_model/utility/is_open.dart';
@@ -16,6 +17,9 @@ class OtherUserWannaGoGymsSectrion extends ConsumerStatefulWidget {
 
 class WannaGoGymsSectionState
     extends ConsumerState<OtherUserWannaGoGymsSectrion> {
+  // ■ プロパティ
+  final ScrollController _scrollController = ScrollController();
+
   /// ■ 初期化
   @override
   initState() {
@@ -41,54 +45,56 @@ class WannaGoGymsSectionState
             .read(otherUserWannaGoRelationProvider(widget.userId).notifier)
             .fetchGymCards();
       },
-      child: ListView.builder(
-        key: const PageStorageKey<String>('other_user_wanna_go_gyms_section'),
-        itemCount: gymList.isEmpty ? 1 : gymList.length,
-        itemBuilder: (context, index) {
-          // 登録ジムがまだないケース
-          if (gymList.isEmpty) {
-            return const Center(
-              child: Text(
-                "登録されているジムがありません。",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
-          }
+      child: gymList.isEmpty
+          ? ListView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: true,
+              children: const [
+                SizedBox(height: 24),
+                AppLogo(),
+              ],
+            )
+          : ListView.builder(
+              controller: _scrollController,
+              key: const PageStorageKey<String>(
+                  'other_user_wanna_go_gyms_section'),
+              itemCount: gymList.length,
+              itemBuilder: (context, index) {
+                final gym = gymList[index];
 
-          final gym = gymList[index];
+                final Map<String, String> gymOpenHours = {
+                  'sun_open': gym.sunOpen ?? '-',
+                  'sun_close': gym.sunClose ?? '-',
+                  'mon_open': gym.monOpen ?? '-',
+                  'mon_close': gym.monClose ?? '-',
+                  'tue_open': gym.tueOpen ?? '-',
+                  'tue_close': gym.tueClose ?? '-',
+                  'wed_open': gym.wedOpen ?? '-',
+                  'wed_close': gym.wedClose ?? '-',
+                  'thu_open': gym.thuOpen ?? '-',
+                  'thu_close': gym.thuClose ?? '-',
+                  'fri_open': gym.friOpen ?? '-',
+                  'fri_close': gym.friClose ?? '-',
+                  'sat_open': gym.satOpen ?? '-',
+                  'sat_close': gym.satClose ?? '-',
+                };
 
-          final Map<String, String> gymOpenHours = {
-            'sun_open': gym.sunOpen ?? '-',
-            'sun_close': gym.sunClose ?? '-',
-            'mon_open': gym.monOpen ?? '-',
-            'mon_close': gym.monClose ?? '-',
-            'tue_open': gym.tueOpen ?? '-',
-            'tue_close': gym.tueClose ?? '-',
-            'wed_open': gym.wedOpen ?? '-',
-            'wed_close': gym.wedClose ?? '-',
-            'thu_open': gym.thuOpen ?? '-',
-            'thu_close': gym.thuClose ?? '-',
-            'fri_open': gym.friOpen ?? '-',
-            'fri_close': gym.friClose ?? '-',
-            'sat_open': gym.satOpen ?? '-',
-            'sat_close': gym.satClose ?? '-',
-          };
-
-          // TODO：gymPhotosを渡す仕様に変更する
-          return GimCard(
-            gymId: gym.gymId.toString(),
-            gymName: gym.gymName,
-            gymPrefecture: gym.prefecture,
-            ikitaiCount: gym.ikitaiCount,
-            boulCount: gym.boulCount,
-            minimumFee: gym.minimumFee,
-            isBoulderingGym: gym.isBoulderingGym,
-            isSpeedGym: gym.isSpeedGym,
-            isLeadGym: gym.isLeadGym,
-            isOpened: isOpen(gymOpenHours),
-          );
-        },
-      ),
+                // TODO：gymPhotosを渡す仕様に変更する
+                return GimCard(
+                  gymId: gym.gymId.toString(),
+                  gymName: gym.gymName,
+                  gymPrefecture: gym.prefecture,
+                  ikitaiCount: gym.ikitaiCount,
+                  boulCount: gym.boulCount,
+                  minimumFee: gym.minimumFee,
+                  isBoulderingGym: gym.isBoulderingGym,
+                  isSpeedGym: gym.isSpeedGym,
+                  isLeadGym: gym.isLeadGym,
+                  isOpened: isOpen(gymOpenHours),
+                );
+              },
+            ),
     );
   }
 }

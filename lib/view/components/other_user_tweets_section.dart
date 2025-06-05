@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view_model/other_user_tweets_provider.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +60,14 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
     return tweets.isEmpty
         ? Center(
             child: _showNoTweetsText
-                ? const Text("ツイートがありません")
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    children: const [
+                      SizedBox(height: 24),
+                      AppLogo(),
+                    ],
+                  )
                 : const CircularProgressIndicator(),
           )
         :
@@ -76,6 +84,7 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
             child: ListView.builder(
               key: const PageStorageKey<String>('other_user_tweets_section'),
               controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(), // ← 追加
               itemCount: tweets.length + (hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == tweets.length) {

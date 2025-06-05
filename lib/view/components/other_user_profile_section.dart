@@ -10,6 +10,7 @@ import 'package:bouldering_app/view_model/utility/show_gym_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 /// ■ クラス
 class OtherUserProfileSection extends ConsumerWidget {
@@ -174,7 +175,29 @@ class OtherUserProfileSection extends ConsumerWidget {
                       SvgPicture.asset('lib/view/assets/home_gim_icon.svg'),
                       const SizedBox(width: 8),
                       const Text("ホームジム："),
-                      Text(showGymName(user, gymRef)),
+                      // Text(showGymName(user, gymRef)),
+                      Builder(builder: (_) {
+                        final int homeGymId = user.homeGymId;
+                        if (homeGymId == null ||
+                            !gymRef.containsKey(homeGymId)) {
+                          return const Text("-",
+                              style: TextStyle(fontSize: 14));
+                        } else {
+                          return GestureDetector(
+                            onTap: () {
+                              context.push('/FacilityInfo/$homeGymId');
+                            },
+                            child: Text(
+                              showGymName(user, gymRef),
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }
+                      }),
                     ],
                   ),
                   const SizedBox(height: 16),

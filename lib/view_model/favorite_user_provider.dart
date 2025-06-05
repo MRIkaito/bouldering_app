@@ -40,13 +40,12 @@ class FavoriteUserNotifier extends StateNotifier<List<FavoriteUserState>> {
   /// お気に入り登録しているユーザーを返す
   ///
   /// 引数
-  /// - type : favorite(お気に入り)/favoredBy(被お気に入り)区分を分ける
   /// - userId : ログインしているユーザーID
   ///
   /// 返り値
   /// - お気に入り登録しているユーザーをdynamic型(= Map(String: dynamic))で，
   /// それをList形式で返す
-  Future<void> fetchDataFavoriteUser(String type, String userId) async {
+  Future<void> fetchDataFavoriteUser(String userId) async {
     final url = Uri.parse(
       'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
     ).replace(queryParameters: {

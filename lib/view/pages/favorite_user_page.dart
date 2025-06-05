@@ -10,10 +10,7 @@ import 'package:go_router/go_router.dart';
 /// - お気に入り登録している/されている ユーザーを表示するクラス
 class FavoriteUserPage extends ConsumerStatefulWidget {
   // コンストラクタ
-  const FavoriteUserPage({super.key, required this.type});
-
-  // favorite(お気に入り)/favoredBy(被お気に入り)の区分を示す
-  final String type;
+  const FavoriteUserPage({super.key});
 
   @override
   ConsumerState<FavoriteUserPage> createState() => _FavoriteUserPageState();
@@ -46,7 +43,7 @@ class _FavoriteUserPageState extends ConsumerState<FavoriteUserPage>
 
       await ref
           .read(favoriteUserProvider.notifier)
-          .fetchDataFavoriteUser(widget.type, currentUserId);
+          .fetchDataFavoriteUser(currentUserId);
 
       setState(() {
         favoriteUserData = ref.read(favoriteUserProvider);
@@ -74,8 +71,8 @@ class _FavoriteUserPageState extends ConsumerState<FavoriteUserPage>
       appBar: AppBar(
         backgroundColor: const Color(0xFFFEF7FF),
         surfaceTintColor: const Color(0xFFFEF7FF),
-        title: Text(
-          (widget.type == 'favorite') ? 'お気に入り' : 'お気に入られ',
+        title: const Text(
+          'お気に入り',
           style:
               const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
@@ -97,28 +94,6 @@ class _FavoriteUserPageState extends ConsumerState<FavoriteUserPage>
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: favoriteUserData.length,
                       itemBuilder: (context, index) {
-                        // final favoriteUser = favoriteUserData[index];
-                        // final String? rawUrl = favoriteUser['user_icon_url'];
-                        // final String favoriteUserIconUrl =
-                        //     isValidUrl(rawUrl) ? rawUrl! : '';
-                        // final String favoriteUserName =
-                        //     favoriteUser['user_name'] ?? '-';
-                        // final String favoriteUserHomeGym =
-                        //     favoriteUser['gym_name'] ?? '-';
-                        // final String favoriteUserId =
-                        //     (widget.type == 'favorite')
-                        //         ? favoriteUser['likee_user_id'] ?? ''
-                        //         : favoriteUser['liker_user_id'] ?? '';
-
-                        // return FavoriteUserItem(
-                        //   name: favoriteUserName,
-                        //   description: favoriteUserHomeGym,
-                        //   imageUrl: favoriteUserIconUrl,
-                        //   userId: favoriteUserId,
-                        //   onTap: () {
-                        //     context.push('/OtherUserPage/$favoriteUserId');
-                        //   },
-                        // );
                         final FavoriteUserState favoriteUser =
                             favoriteUserData[index];
                         final String rawUrl = favoriteUser.userIconUrl;

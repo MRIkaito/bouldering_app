@@ -42,10 +42,9 @@ class _FavoredByUserPageState extends ConsumerState<FavoredByUserPage>
       final currentUserId = ref.read(userProvider)?.userId;
       if (currentUserId == null) return;
 
-      // ←★ この行を追加
       await ref
           .read(favoriteUserProvider.notifier)
-          .fetchDataFavoriteUser('favorite', currentUserId);
+          .fetchDataFavoriteUser(currentUserId);
 
       await ref
           .read(favoredByUserProvider.notifier)

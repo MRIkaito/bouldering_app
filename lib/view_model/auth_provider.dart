@@ -95,12 +95,12 @@ class AuthNotifier extends StateNotifier<bool> {
           .read(wannaGoRelationProvider.notifier)
           .fetchWannaGoGymCards(userCredential.user!.uid); // イキタイジム情報を最初に取得しておく
 
-// お気に入りユーザーを取得しておく
+      // お気に入りユーザーを取得しておく
       await ref
           .read(favoriteUserProvider.notifier)
-          .fetchDataFavoriteUser('favorite', userCredential.user!.uid);
+          .fetchDataFavoriteUser(userCredential.user!.uid);
 
-// 🔥 被お気に入りユーザーも取得しておく（←これが抜けていた）
+      // 被お気に入りユーザーも取得しておく
       await ref
           .read(favoredByUserProvider.notifier)
           .fetchFavoredByUsers(userCredential.user!.uid);

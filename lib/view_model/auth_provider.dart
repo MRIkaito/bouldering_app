@@ -202,8 +202,16 @@ class AuthNotifier extends StateNotifier<bool> {
       await _auth.signOut();
       // 状態をログアウトに変更
       state = false;
-      // 取得していたユーザー情報(状態)をクリア
+      // 状態のクリア：取得していたユーザー情報(状態)をクリア
       ref.read(userProvider.notifier).clearUserData();
+      // 状態のクリア：取得していた自身のツイート情報(状態)をクリア
+      ref.read(myTweetsProvider.notifier).disposeMyTweets();
+      // 状態のクリア：取得していた自身のイキタイジム(状態)をクリア
+      ref.read(wannaGoRelationProvider.notifier).disposeWannaGoGymCards();
+      // 状態のクリア：お気に入りユーザー(状態)をクリア
+      ref.read(favoriteUserProvider.notifier).clear();
+      // 状態のクリア:被お気にいりユーザー(状態)をクリア
+      ref.read(favoredByUserProvider.notifier).clear();
     } catch (e) {
       throw Exception("ログアウトに失敗しました：\$e");
     }

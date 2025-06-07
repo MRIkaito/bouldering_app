@@ -52,12 +52,6 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
 
   /// ■ メソッド
   /// イキタイジムを再取得する
-  ///
-  /// 引数
-  /// - なし
-  ///
-  /// 返り値
-  /// - なし
   Future<void> _refreshWannaGoGyms() async {
     // 今持っているイキタイジムをすべて破棄する
     ref.read(wannaGoRelationProvider.notifier).disposeWannaGoGymCards();

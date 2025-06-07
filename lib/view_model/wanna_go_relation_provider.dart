@@ -20,12 +20,6 @@ class WannaGoRelationNotifier extends StateNotifier<Map<int, GymInfo>> {
   /// ■ メソッド
   /// - 自分が保持しているイキタイジムをすべて破棄する
   ///
-  /// 引数
-  /// - なし
-  ///
-  /// 返り値
-  /// - なし
-  ///
   /// 備考
   /// - リフレッシュ時に保持しているイキタイジム情報をすべて破棄する処理として実装
   /// - fetchWannaGoGymCardsに状態通知の処理が実装されているため、問う処理では

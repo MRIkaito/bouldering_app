@@ -89,88 +89,11 @@ class FavoredByUserNotifier extends StateNotifier<List<FavoredByUserState>> {
   }
 
   /// ■ メソッド
-  /// - お気に入りユーザーを追加する
-  // Future<void> addFavoriteUser({
-  //   required String likerUserId,
-  //   required String likeeUserId,
-  // }) async {
-  //   final url = Uri.parse(
-  //     'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/handleFavoriteUser',
-  //   );
-
-  //   final body = jsonEncode({
-  //     'request_id': '9',
-  //     'liker_user_id': likerUserId,
-  //     'likee_user_id': likeeUserId,
-  //   });
-
-  //   final response = await http.post(
-  //     url,
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: body,
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     // favoriteUserProvider にも追加
-  //     final detailUrl = Uri.parse(
-  //       'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData',
-  //     ).replace(queryParameters: {
-  //       'request_id': '21',
-  //       'user_id': likeeUserId,
-  //     });
-
-  //     final detailRes = await http.get(detailUrl);
-  //     if (detailRes.statusCode == 200) {
-  //       final dataRaw = jsonDecode(detailRes.body);
-  //       final data = (dataRaw is List && dataRaw.isNotEmpty) ? dataRaw[0] : {};
-
-  //       final user = FavoriteUserState(
-  //         userId: likeeUserId,
-  //         userName: data['user_name'] ?? '',
-  //         gymName: data['gym_name'] ?? '-',
-  //         userIconUrl: data['user_icon_url'] ?? '',
-  //       );
-
-  //       final favoriteNotifier = ref.read(favoriteUserProvider.notifier);
-  //       favoriteNotifier.state = [...favoriteNotifier.state, user];
-  //     }
-  //   } else {
-  //     print('❌ お気に入り登録失敗: ${response.statusCode}');
-  //   }
-  // }
-
-  /// ■ メソッド
-  /// - お気に入りユーザーを解除する
-  // Future<void> removeFavoriteUser({
-  //   required String likerUserId,
-  //   required String likeeUserId,
-  // }) async {
-  //   final url = Uri.parse(
-  //     'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/handleFavoriteUser',
-  //   );
-
-  //   final body = jsonEncode({
-  //     'request_id': '10',
-  //     'liker_user_id': likerUserId,
-  //     'likee_user_id': likeeUserId,
-  //   });
-
-  //   final response = await http.post(
-  //     url,
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: body,
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     // favoriteUserProvider からも削除
-  //     final favoriteNotifier = ref.read(favoriteUserProvider.notifier);
-  //     favoriteNotifier.state = favoriteNotifier.state
-  //         .where((user) => user.userId != likeeUserId)
-  //         .toList();
-  //   } else {
-  //     print('❌ お気に入り解除失敗: ${response.statusCode}');
-  //   }
-  // }
+  /// - 状態を初期化する
+  /// - ログアウト時 実施
+  void clear() {
+    state = [];
+  }
 }
 
 final favoredByUserProvider =

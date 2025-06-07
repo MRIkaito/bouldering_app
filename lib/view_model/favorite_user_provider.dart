@@ -216,6 +216,13 @@ class FavoriteUserNotifier extends StateNotifier<List<FavoriteUserState>> {
   bool isFavoritedByCurrentUser(String likeeUserId) {
     return state.any((user) => user.userId == likeeUserId);
   }
+
+  /// ■ メソッド
+  /// - 状態を初期化する
+  /// - ログアウト時 実施
+  void clear() {
+    state = [];
+  }
 }
 
 // StateNotifierProvider定義

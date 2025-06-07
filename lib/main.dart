@@ -72,20 +72,3 @@ class _AppState extends ConsumerState<App> {
     return MaterialApp.router(routerConfig: routerRef);
   }
 }
-
-/// ■ クラス
-/// - エントリポイント対象のクラス
-// class App extends ConsumerWidget {
-//   App({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final routerRef = ref.watch(routerProvider);
-
-//     ref.read(gymInfoProvider.notifier).fetchGymInfoData();
-
-//     return MaterialApp.router(
-//       routerConfig: routerRef,
-//     );
-//   }
-// }

@@ -1,4 +1,5 @@
 import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
+import 'package:bouldering_app/view_model/utility/is_strong_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -64,6 +65,17 @@ class _PasswordUpdateDialogPageState extends State<PasswordUpdateDialogPage>
 
     setState(() => _isLoading = true);
 
+    // 新しいパスワード
+    final String newPassword = _newPasswordController.text;
+
+    // 強度チェック
+    if (!isStrongPassword(newPassword)) {
+      resultMessage["result"] = false;
+      resultMessage["message"] = "新しいパスワードが条件を満たしていません。";
+      setState(() => _isLoading = false);
+      return resultMessage;
+    }
+
     try {
       User? user = _auth.currentUser;
       if (user == null) {
@@ -72,6 +84,7 @@ class _PasswordUpdateDialogPageState extends State<PasswordUpdateDialogPage>
           message: 'ユーザーが見つかりません',
         );
       }
+      print("email: ${user.email}");
 
       // 現在のパスワードで再認証
       AuthCredential credential = EmailAuthProvider.credential(
@@ -121,7 +134,7 @@ class _PasswordUpdateDialogPageState extends State<PasswordUpdateDialogPage>
               obscureText: true,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: '古いパスワード',
+                hintText: '現在のパスワード',
               ),
             ),
             const SizedBox(height: 2),
@@ -134,6 +147,16 @@ class _PasswordUpdateDialogPageState extends State<PasswordUpdateDialogPage>
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: '新しいパスワード',
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            const Text(
+              'パスワードの条件：\n・8文字以上\n・英大文字・英小文字・数字をそれぞれ1文字以上含めてください',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 2),
@@ -169,7 +192,6 @@ class _PasswordUpdateDialogPageState extends State<PasswordUpdateDialogPage>
                             message: resultMessage["message"],
                           );
                         } else {
-                          Navigator.of(context).pop();
                           confirmedDialog(
                             context,
                             resultMessage["result"],

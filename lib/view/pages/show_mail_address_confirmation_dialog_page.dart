@@ -102,10 +102,9 @@ class _MailAddressConfirmationDialogPageState
                     confirmedDialog(context, false,
                         message: "ログインが正常にできておりませんでした．もう一度ログインしなおして，お試しください．");
                   } else if (resultNo == 2) {
-                    Navigator.of(context).pop();
                     confirmedDialog(context, false,
                         message:
-                            "メールアドレス更新中にエラーが発生しました．再度お試しいただき，同じエラーが発生する場合は運営までお問い合わせください．");
+                            "メールアドレス更新に失敗しました．通信状況や入力内容(メールアドレスは有効か？パスワードは正しいか？)をご確認の上，もう一度お試しください．\n同じエラーが続く場合,運営までお問い合わせください");
                   }
                 },
                 child: const Text('変更', style: TextStyle(color: Colors.red)),
@@ -154,7 +153,8 @@ void mailAddressConfirmationDialog(BuildContext context) {
 /// 返り値
 /// - 0: 確認メールを送信しました．リンクをクリックして確認してください．
 /// - 1: ログインが正常にできておりませんでした．もう一度ログインしなおして，お試しください．
-/// - 2: メールアドレス更新中にエラーが発生しました．再度お試しいただき，同じエラーが発生する場合，運営までお問い合わせください．
+/// - 2: メールアドレス更新に失敗しました．通信状況や入力内容(メールアドレスは有効か？パスワードは正しいか？)をご確認の上，もう一度お試しください．
+///      \n同じエラーが続く場合,運営までお問い合わせください");
 Future<int> updateEmail(
     BuildContext context, String newEmail, String password) async {
   final user = FirebaseAuth.instance.currentUser;

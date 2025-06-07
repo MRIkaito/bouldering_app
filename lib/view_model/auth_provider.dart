@@ -2,6 +2,7 @@ import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/favorite_by_user_provider.dart';
 import 'package:bouldering_app/view_model/favorite_user_provider.dart';
 import 'package:bouldering_app/view_model/my_tweets_provider.dart';
+import 'package:bouldering_app/view_model/utility/is_strong_password.dart';
 import 'package:bouldering_app/view_model/utility/show_popup.dart';
 import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
 import 'package:flutter/material.dart';
@@ -137,7 +138,7 @@ class AuthNotifier extends StateNotifier<bool> {
   Future<void> signUp(
       BuildContext context, String email, String password) async {
     // パスワードが指定の条件を満たしていなければ終了する
-    if (!_isStrongPassword(password)) {
+    if (!isStrongPassword(password)) {
       showPopup(context, weakPasswordTitle, weakPasswordMessage);
       return;
     }

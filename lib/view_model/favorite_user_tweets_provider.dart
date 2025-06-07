@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:bouldering_app/model/boul_log_tweet.dart';
 
+/// ■ クラス
+/// - お気に入りユーザーのツイートを定義するクラス
 class FavoriteUserTweetsState {
   final List<BoulLogTweet> favoriteUserTweets;
   final bool hasMore;
@@ -15,13 +17,15 @@ class FavoriteUserTweetsState {
   });
 }
 
+/// ■ クラス
+/// - お気に入りユーザーのツイートを状態管理するクラス
 class FavoriteUserTweetsNotifier
     extends StateNotifier<FavoriteUserTweetsState> {
   // プロパティ
   bool _isLoading = false;
   final String userId;
 
-  // コンストラクタ
+  /// ■ コンストラクタ
   FavoriteUserTweetsNotifier(this.userId)
       : super(FavoriteUserTweetsState(
           favoriteUserTweets: [],
@@ -85,7 +89,8 @@ class FavoriteUserTweetsNotifier
   }
 
   /// ■ メソッド
-  /// - Pull-to-Refresh対応：ツイート一覧を初期化して再取得
+  /// - ツイート一覧を初期化して再取得
+  /// - Pull-to-Refresh対応
   Future<void> refreshTweets() async {
     if (_isLoading) return;
 

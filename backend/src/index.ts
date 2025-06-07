@@ -376,16 +376,23 @@ exports.getData = functions.https.onRequest(async (req, res) => {
           query =`
             SELECT
               BLT.tweet_id,
+              BLT.tweet_contents,
+              BLT.visited_date,
+              BLT.tweeted_date,
+              BLT.liked_counts,
+              BLT.movie_url,
               B.user_name,
               B.user_icon_url,
               FUR.likee_user_id AS user_id,
-              BLT.visited_date,
-              BLT.tweeted_date,
-              BLT.tweet_contents,
-              BLT.liked_counts,
-              BLT.movie_url,
               GI.gym_name,
-              GI.prefecture
+              GI.prefecture,
+              COALESCE(
+                (
+                  SELECT json_agg(media_url)
+                  FROM boul_log_tweet_media
+                  WHERE tweet_id = BLT.tweet_id
+                ), '[]'
+              ) AS media_urls
             FROM
               boul_log_tweet AS BLT
             INNER JOIN
@@ -418,7 +425,14 @@ exports.getData = functions.https.onRequest(async (req, res) => {
               BLT.liked_counts,
               BLT.movie_url,
               GI.gym_name,
-              GI.prefecture
+              GI.prefecture,
+              COALESCE(
+                (
+                  SELECT json_agg(media_url)
+                  FROM boul_log_tweet_media
+                  WHERE tweet_id = BLT.tweet_id
+                ), '[]'
+              ) AS media_urls
             FROM
               boul_log_tweet AS BLT
             INNER JOIN

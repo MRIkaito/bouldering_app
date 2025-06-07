@@ -43,9 +43,6 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
   Widget build(BuildContext context) {
     final isLoggedIn = ref.watch(authProvider);
     final userId = ref.watch(userProvider)?.userId;
-    // デバッグ
-    print("isLoggedIn: $isLoggedIn");
-    print("userId: $userId");
 
     if (!isLoggedIn || userId == null) {
       return const Column(
@@ -200,6 +197,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                         prefecture: favoriteUserTweet.prefecture,
                         tweetContents: favoriteUserTweet.tweetContents,
                         tweetImageUrls: favoriteUserTweet.mediaUrls,
+                        tweetId: favoriteUserTweet.tweetId,
                       );
                     },
                   ),

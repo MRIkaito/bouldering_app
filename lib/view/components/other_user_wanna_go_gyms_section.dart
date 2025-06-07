@@ -51,7 +51,7 @@ class WannaGoGymsSectionState
               physics: const AlwaysScrollableScrollPhysics(),
               shrinkWrap: true,
               children: const [
-                SizedBox(height: 24),
+                SizedBox(height: 96),
                 AppLogo(),
               ],
             )

@@ -9,17 +9,22 @@ class OtherUserWannaGoRelationNotifier
     extends StateNotifier<Map<int, GymInfo>> {
   OtherUserWannaGoRelationNotifier(this.userId) : super({});
 
+  /// ■ プロパティ
   final String userId;
   bool _isLoading = false;
 
+  /// ■ メソッド(ゲッター)
+  /// - 現在のローディング状態を返す
   bool get isLoading => _isLoading;
 
-  /// ■ イキタイジムをすべて破棄
+  /// ■ メソッド
+  /// - イキタイジムをすべて破棄する
   void disposeOtherUserGymCards() {
     state = {};
   }
 
-  /// ■ ジムカード情報を取得
+  /// ■ メソッド
+  /// - ジムカード情報を取得する
   Future<void> fetchGymCards() async {
     if (_isLoading) return;
 

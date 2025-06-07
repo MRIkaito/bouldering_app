@@ -14,22 +14,12 @@ class OtherUserTweetsSection extends ConsumerStatefulWidget {
 
 class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
   final ScrollController _scrollController = ScrollController();
-  bool _showNoTweetsText = false;
 
   /// ■ 初期化
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-
-    // 5秒後に「ツイートなし表示」に切り替え
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          _showNoTweetsText = true;
-        });
-      }
-    });
 
     // 初回ツイート取得
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -57,31 +47,25 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
     final hasMore =
         ref.watch(otherUserTweetsProvider(widget.userId).notifier).hasMore;
 
-    return tweets.isEmpty
-        ? Center(
-            child: _showNoTweetsText
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    children: const [
-                      SizedBox(height: 24),
-                      AppLogo(),
-                    ],
-                  )
-                : const CircularProgressIndicator(),
-          )
-        :
-        // ツイート表示
-        RefreshIndicator(
-            onRefresh: () async {
-              ref
-                  .read(otherUserTweetsProvider(widget.userId).notifier)
-                  .disposeOtherUserTweets();
-              await ref
-                  .read(otherUserTweetsProvider(widget.userId).notifier)
-                  .fetchTweets();
-            },
-            child: ListView.builder(
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref
+            .read(otherUserTweetsProvider(widget.userId).notifier)
+            .disposeOtherUserTweets();
+        await ref
+            .read(otherUserTweetsProvider(widget.userId).notifier)
+            .fetchTweets();
+      },
+      child: tweets.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: true,
+              children: const [
+                SizedBox(height: 24),
+                AppLogo(),
+              ],
+            )
+          : ListView.builder(
               key: const PageStorageKey<String>('other_user_tweets_section'),
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(), // ← 追加
@@ -113,6 +97,6 @@ class MyTweetsSectionState extends ConsumerState<OtherUserTweetsSection> {
                 );
               },
             ),
-          );
+    );
   }
 }

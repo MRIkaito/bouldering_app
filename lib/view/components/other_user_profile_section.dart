@@ -35,15 +35,6 @@ class OtherUserProfileSection extends ConsumerWidget {
               likerUserId: currentUser.userId, likeeUserId: userId)
           : await favoriteUserState.addFavoriteUser(
               likerUserId: currentUser.userId, likeeUserId: userId);
-
-      /* 再取得して状態を即時更新 */
-      /* 外部から状態変更された可能性があるときの状態を再進化したい場合の処理 */
-      /* データ整合性を厳密に保ち街時に個の処理を実装する */
-      /* 現状は実装不要 */
-      // if (success) {
-      //   await favoriteUserState.fetchDataFavoriteUser(
-      //       'favorite', currentUser.userId);
-      // }
     }
 
     return otherUserAsync.when(

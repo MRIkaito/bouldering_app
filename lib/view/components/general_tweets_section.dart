@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view_model/general_tweets_provider.dart';
 
+/// ■ クラス
+/// - みんなのボル活 表示クラス
 class GeneralTweetsSection extends ConsumerStatefulWidget {
   const GeneralTweetsSection({super.key});
 
@@ -15,19 +17,25 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
   // ボル活ページのスクロールを監視するコントローラ
   final ScrollController _generalTweetsScrollController = ScrollController();
 
-  // 初期化
+  /// ■ メソッド(イニシャライザ)
+  /// - 初期化
   @override
   void initState() {
     super.initState();
     _generalTweetsScrollController.addListener(_onGeneralTweetsScroll);
   }
 
+  /// ■ メソッド(クリーンアップ処理)
+  /// - dispose
+  /// - ページコントローラを破棄
   @override
   void dispose() {
     _generalTweetsScrollController.dispose();
     super.dispose();
   }
 
+  /// ■ メソッド
+  /// - スクロールが最下部にに行ったときに，新しいツイートをロードする処理
   void _onGeneralTweetsScroll() {
     if (_generalTweetsScrollController.position.pixels >
         _generalTweetsScrollController.position.maxScrollExtent - 100) {
@@ -78,6 +86,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
             prefecture: generalTweet.prefecture,
             tweetContents: generalTweet.tweetContents,
             tweetImageUrls: generalTweet.mediaUrls,
+            tweetId: generalTweet.tweetId,
           );
         },
       ),

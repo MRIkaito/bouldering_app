@@ -863,7 +863,7 @@ exports.getData = functions.https.onRequest(async (req, res) => {
       break;
 
 
-    // request_id: 13
+    // request_id: 13 : 【現在未使用】request_id: 31〜33で取得するように変更
     // - ジムの情報を取得する
     // - アプリ起動時に実行し，アプリ全体で参照する
     //
@@ -1914,6 +1914,93 @@ case 25:
       }
       break;
 
+    // requestId：31
+    // ジム情報を取得する
+    case 31:
+      try {
+        const client = await pool.connect();
+
+        const result = await client.query(`
+          SELECT
+            GI.gym_id,
+            GI.gym_name,
+            GI.hp_link,
+            GI.prefecture,
+            GI.city,
+            GI.address_line,
+            GI.latitude,
+            GI.longitude,
+            GI.tel_no,
+            GI.fee,
+            GI.minimum_fee,
+            GI.equipment_rental_fee,
+            CT.is_bouldering_gym,
+            CT.is_lead_gym,
+            CT.is_speed_gym,
+            GH.sun_open, GH.sun_close,
+            GH.mon_open, GH.mon_close,
+            GH.tue_open, GH.tue_close,
+            GH.wed_open, GH.wed_close,
+            GH.thu_open, GH.thu_close,
+            GH.fri_open, GH.fri_close,
+            GH.sat_open, GH.sat_close
+          FROM gym_info GI
+          INNER JOIN climbing_types CT ON CT.gym_id = GI.gym_id
+          INNER JOIN gym_hours GH ON GH.gym_id = GI.gym_id;
+        `);
+
+        client.release();
+        if (result.rows.length === 0) {
+          res.status(404).send("データは見つかりませんでした");
+          return;
+        }
+
+        res.status(200).json(result.rows);
+      } catch (error) {
+        console.error("Error querying gym base info:", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
+    // requestId：32
+    // ジム毎の行きたいカウントを取得
+    case 32:
+      try {
+        const client = await pool.connect();
+
+        const result = await client.query(`
+          SELECT gym_id, COUNT(*) AS ikitai_count
+          FROM wanna_go_relation
+          GROUP BY gym_id;
+        `);
+
+        client.release();
+        res.status(200).json(result.rows);
+      } catch (error) {
+        console.error("Error querying ikitai counts:", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
+
+    // requestId：33
+    // ジム毎の投稿数を取得
+    case 33:
+      try {
+        const client = await pool.connect();
+
+        const result = await client.query(`
+          SELECT gym_id, COUNT(*) AS boul_count
+          FROM boul_log_tweet
+          GROUP BY gym_id;
+        `);
+
+        client.release();
+        res.status(200).json(result.rows);
+      } catch (error) {
+        console.error("Error querying boul counts:", error);
+        res.status(500).send("Error querying database");
+      }
+      break;
 
     // 無効なIDが送られてきたとき
     default:

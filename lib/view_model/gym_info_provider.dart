@@ -11,33 +11,65 @@ class GymInfoNotifier extends StateNotifier<Map<int, GymInfo>> {
   /// ■ メソッド
   /// - GymInfoクラスのプロパティとして設定されているジムデータをDBから取得する
   Future<void> fetchGymInfoData() async {
-    const requestId = 13;
-
-    final url = Uri.parse(
-            'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
-        .replace(queryParameters: {
-      'request_id': requestId.toString(),
-    });
-
     try {
       print("▼ gymInfoProvider デバッグログ");
-      print("URL: $url");
 
-      final response = await http.get(url);
+      // 1. 基本情報の取得（request_id=31）
+      final baseUrl = Uri.parse(
+              'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+          .replace(queryParameters: {'request_id': '31'});
+      final baseResponse = await http.get(baseUrl);
+      print("statusCode (base): ${baseResponse.statusCode}");
 
-      print("statusCode: ${response.statusCode}");
-      print("body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        final Map<int, GymInfo> map = {
-          for (var item in data)
-            if (item['gym_id'] != null) item['gym_id']: GymInfo.fromJson(item),
-        };
-        state = map;
-      } else {
-        throw Exception('ジム詳細情報の取得に失敗 (statusCode=${response.statusCode})');
+      if (baseResponse.statusCode != 200) {
+        throw Exception('ジム基本情報の取得に失敗');
       }
+      final List<dynamic> baseData = jsonDecode(baseResponse.body);
+
+      // 2. イキタイ数の取得（request_id=32）
+      final ikitaiUrl = Uri.parse(
+              'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+          .replace(queryParameters: {'request_id': '32'});
+      final ikitaiResponse = await http.get(ikitaiUrl);
+      print("statusCode (ikitai): ${ikitaiResponse.statusCode}");
+
+      if (ikitaiResponse.statusCode != 200) {
+        throw Exception('イキタイ数の取得に失敗');
+      }
+      final Map<int, int> ikitaiMap = {
+        for (var item in jsonDecode(ikitaiResponse.body))
+          int.parse(item['gym_id'].toString()):
+              int.parse(item['ikitai_count'].toString())
+      };
+
+      // 3. 投稿数の取得（request_id=33）
+      final boulUrl = Uri.parse(
+              'https://us-central1-gcp-compute-engine-441303.cloudfunctions.net/getData')
+          .replace(queryParameters: {'request_id': '33'});
+      final boulResponse = await http.get(boulUrl);
+      print("statusCode (boul): ${boulResponse.statusCode}");
+
+      if (boulResponse.statusCode != 200) {
+        throw Exception('投稿数の取得に失敗');
+      }
+      final Map<int, int> boulMap = {
+        for (var item in jsonDecode(boulResponse.body))
+          int.parse(item['gym_id'].toString()):
+              int.parse(item['boul_count'].toString())
+      };
+
+      // 4. 各ジムに統合
+      final Map<int, GymInfo> map = {
+        for (var item in baseData)
+          if (item['gym_id'] != null)
+            item['gym_id']: GymInfo.fromJson({
+              ...item,
+              'ikitai_count': ikitaiMap[item['gym_id']] ?? 0,
+              'boul_count': boulMap[item['gym_id']] ?? 0,
+            }),
+      };
+
+      state = map;
     } catch (e) {
       print("ジム詳細取得エラー: $e");
     }

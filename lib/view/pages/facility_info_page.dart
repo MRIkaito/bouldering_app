@@ -11,6 +11,8 @@ import 'package:bouldering_app/view_model/specific_gym_tweets_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/facility_info_provider.dart';
 
+/// ■ クラス
+/// - 施設情報表示ページ クラス
 class FacilityInfoPage extends ConsumerStatefulWidget {
   const FacilityInfoPage({
     Key? key,
@@ -118,7 +120,7 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
               body: const Center(child: Text("このジムデータはありません")),
             ),
         /*
-        // 下記デバッグ用の
+        // 下記デバッグ用 コード
         // error: (error, stack) => Center(child: Text('エラー発生:$error')),
         */
 
@@ -142,16 +144,14 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
               body: Stack(
                 children: [
                   // SwitcherTabの下に中身のスクロール部分を配置
-                  Positioned(
+                  const Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
-                    child: Container(
-                      child: const SwitcherTab(
-                        leftTabName: "施設情報",
-                        rightTabName: "ボル活",
-                        colorCode: 0xFFFEF7FF,
-                      ),
+                    child: SwitcherTab(
+                      leftTabName: "施設情報",
+                      rightTabName: "ボル活",
+                      colorCode: 0xFFFEF7FF,
                     ),
                   ),
 
@@ -211,18 +211,31 @@ class FacilityInfoPageState extends ConsumerState<FacilityInfoPage> {
 
                             // ギャラリー
                             // TODO：値をもらう箇所 + 写真オブジェクトを取得して表示するように実装する必要が（前段階で）ある
+                            // TODO：下記，画像を表示する用に実装をする
+                            // SizedBox(
+                            //   height: 100, // ギャラリーの高さ
+                            //   child: ListView.builder(
+                            //     scrollDirection: Axis.horizontal, // 横スクロール可
+                            //     itemCount: 5, // TODO：外部DBから取得した枚数にする/ただし最大5枚にする
+                            //     itemBuilder: (context, index) {
+                            //       return Padding(
+                            //         padding: const EdgeInsets.only(right: 8),
+                            //         child: _buildImage(
+                            //             'lib/view/assets/gym_facilitation.png'),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
                             SizedBox(
-                              height: 100, // ギャラリーの高さ
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal, // 横スクロール可
-                                itemCount: 5, // 画像の枚数 // TODO：外部DBから取得した枚数にする
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildImage(
-                                        'lib/view/assets/gym_facilitation.png'),
-                                  );
-                                },
+                              height: 100,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 8),
+                                    child: _PlaceholderImage(), // 下記で定義します
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -525,6 +538,34 @@ class GymIkitaiBoullogCount extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// ■ クラス
+/// - ダミー表示用ウィジェット
+/// - 250607：最初は写真は表示しない運用とする，
+/// そのためダミー表示ウィジェットで写真表示箇所を代用する
+class _PlaceholderImage extends StatelessWidget {
+  const _PlaceholderImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 150,
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      alignment: Alignment.center,
+      child: const Text(
+        '写真なし',
+        style: TextStyle(
+          color: Colors.black54,
+          fontSize: 16,
+        ),
       ),
     );
   }

@@ -67,7 +67,7 @@ class _MailAddressConfirmationDialogPageState
               obscureText: true,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: 'パスワード',
+                hintText: '現在のパスワード',
               ),
             ),
           ],

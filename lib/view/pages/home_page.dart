@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bouldering_app/view/components/app_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -124,7 +125,44 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 64),
+
+                /// 写真提供URL実装
+                const Text(
+                  'ジムの写真を提供してくれる方は ぜひご協力ください！',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final Uri formUrl =
+                          Uri.parse('https://forms.gle/fshfxBP8Sd49mfBi6');
+                      if (await canLaunchUrl(formUrl)) {
+                        await launchUrl(formUrl,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        debugPrint('GoogleフォームのURLを開けませんでした。');
+                      }
+                    },
+                    icon: const Icon(Icons.send),
+                    label: const Text('ジムの写真を送る'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF0056FF),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

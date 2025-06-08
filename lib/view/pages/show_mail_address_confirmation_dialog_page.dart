@@ -96,7 +96,8 @@ class _MailAddressConfirmationDialogPageState
                   if (resultNo == 0) {
                     Navigator.of(context).pop();
                     confirmedDialog(context, true,
-                        message: "確認メールを送信しました．リンクをクリックして変更処理してください．");
+                        message:
+                            "確認メールを送信しました．リンクをクリックして変更処理してください．\nリンクをクリックした後、アプリを再起動するか、再ログインしてください．");
                   } else if (resultNo == 1) {
                     Navigator.of(context).pop();
                     confirmedDialog(context, false,

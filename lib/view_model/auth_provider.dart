@@ -43,7 +43,8 @@ class AuthNotifier extends StateNotifier<bool> {
   static const String networkRequestFailedMessage =
       "サーバーとの通信に失敗しました。デバイスのネットワーク設定と環境を確認して、再度試してください。";
   static const String otherErrorTitle = "不明なエラー";
-  static const String otherErrorMessage = "不明なエラーが発生しました。時間をおいて再度お試しください。";
+  static const String otherErrorMessage =
+      "不明なエラーが発生しました。入力内容に誤りがないかを確認して、再度試してください。";
   static const String weakPassword = "weak-password";
   static const String weakPasswordTitle = "パスワードエラー";
   static const String weakPasswordMessage = "パスワードが指定された条件を満たしていません。";

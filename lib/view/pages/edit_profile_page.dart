@@ -1,3 +1,5 @@
+import 'package:bouldering_app/view/pages/confirm_profile_image_page.dart';
+import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/gym_info_provider.dart';
 import 'package:bouldering_app/view/pages/select_home_gym_dialog_page.dart';
 import 'package:bouldering_app/view/pages/show_date_selection_dialog_page.dart';
@@ -6,18 +8,14 @@ import 'package:bouldering_app/view/pages/edit_username_page.dart';
 import 'package:bouldering_app/view/pages/edit_user_introduce_favorite_gym_page.dart';
 import 'package:bouldering_app/view/components/edit_setting_item.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
-import 'package:bouldering_app/view/pages/confirmed_dialog_page.dart';
 import 'package:bouldering_app/view_model/utility/is_valid_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis/storage/v1.dart' as gcs;
+
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as path;
-import 'package:crypto/crypto.dart';
+
 import 'dart:io';
-import 'dart:convert';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -27,78 +25,10 @@ class EditProfilePage extends ConsumerStatefulWidget {
 }
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
-  /// ■ プロパティ
-  File? _imageFile; // ユーザーアイコンの写真ファイル
-
   /// ■ 初期化
   @override
   void initState() {
     super.initState();
-  }
-
-  /// ■ メソッド
-  /// アイコン画像をギャラリーから選択して設定する
-  ///
-  /// 引数：なし
-  ///
-  /// 返り値：
-  /// - true : 写真選択
-  /// - false : 写真未選択
-  Future<bool> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        _imageFile = File(result.files.single.path!);
-      });
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /// ■ メソッド
-  /// Google Cloud Storageにユーザーアイコン写真をアップロードする
-  ///
-  /// 引数
-  /// - [file] 写真
-  ///
-  /// 返り値
-  /// - GoogleCloudStorageに保存したユーザーアイコン写真の公開URLを返す
-  Future<String?> _uploadToCloudStorage(File file) async {
-    // GCS保存先情報
-    final jsonString =
-        await rootBundle.loadString('assets/keys/service_account.json');
-    final credentials =
-        ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
-    final client = await clientViaServiceAccount(
-        credentials, [gcs.StorageApi.devstorageFullControlScope]);
-    final storage = gcs.StorageApi(client);
-    const bucketName = "boulderingapp_tweets_media";
-
-    // ファイルの中身を読み込み，ハッシュ値を作成する
-    final bytes = await file.readAsBytes();
-    final digest = sha256.convert(bytes);
-
-    // ファイル名作成(prefix + ハッシュ値)
-    final fileName =
-        "user_icon_url_${digest.toString()}${path.extension(file.path)}";
-
-    final media = gcs.Media(file.openRead(), file.lengthSync());
-
-    // GCS保存処理
-    await storage.objects.insert(
-      gcs.Object()..name = fileName,
-      bucketName,
-      uploadMedia: media,
-    );
-    client.close();
-
-    // GCSの公開URL
-    return "https://storage.googleapis.com/$bucketName/$fileName";
   }
 
   @override
@@ -203,16 +133,49 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () async {
-                        final isPickedImage = await _pickImage();
-                        if (isPickedImage && _imageFile != null) {
-                          final uploadedImageUrl =
-                              await _uploadToCloudStorage(_imageFile!);
-                          final userId = ref.read(userProvider)!.userId;
-                          final result = await ref
-                              .read(userProvider.notifier)
-                              .updateUserIconUrl(uploadedImageUrl!, userId);
-                          if (context.mounted) {
-                            confirmedDialog(context, result);
+                        // 画像ギャラリーから写真を選択する
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.image,
+                          allowMultiple: false,
+                        );
+
+                        if (result != null && result.files.isNotEmpty) {
+                          // 選択した写真のパスを画像ファイル化する
+                          final File selectedFile =
+                              File(result.files.single.path!);
+
+                          // プレビュー画面に遷移する
+                          final File? confirmedFile =
+                              await Navigator.push<File?>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ConfirmProfileImagePage(
+                                  imageFile: selectedFile),
+                            ),
+                          );
+
+                          if (confirmedFile != null) {
+                            // アップロード処理
+                            final userId = ref.read(userProvider)!.userId;
+                            final tempUrl = confirmedFile.path;
+                            ref
+                                .read(userProvider.notifier)
+                                .state
+                                ?.copyWith(userIconUrl: tempUrl);
+
+                            Future(() async {
+                              try {
+                                final uploadedImageUrl = await ref
+                                    .read(userProvider.notifier)
+                                    .uploadUserIcon(confirmedFile);
+                                await ref
+                                    .read(userProvider.notifier)
+                                    .updateUserIconUrl(
+                                        uploadedImageUrl!, userId);
+                              } catch (e) {
+                                // debugPrint("アイコン更新失敗: $e");
+                              }
+                            });
                           }
                         }
                       },

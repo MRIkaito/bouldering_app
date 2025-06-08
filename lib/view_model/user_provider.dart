@@ -1,7 +1,13 @@
 import 'package:bouldering_app/model/boulder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis/storage/v1.dart' as gcs;
+import 'package:path/path.dart' as path;
+import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:io';
 
 /// ■ クラス
 /// - ログイン時に取得するユーザー情報を管理する
@@ -10,6 +16,47 @@ class UserNotifier extends StateNotifier<Boulder?> {
   /// ■コンストラクタ
   /// - 状態をnullに初期化して、未ログイン状態にする
   UserNotifier() : super(null);
+
+  /// ■ メソッド
+  /// Google Cloud Storageにユーザーアイコン写真をアップロードする
+  ///
+  /// 引数
+  /// - [imageFile] 写真
+  ///
+  /// 返り値
+  /// - GoogleCloudStorageに保存したユーザーアイコン写真の公開URLを返す
+  Future<String?> uploadUserIcon(File imageFile) async {
+    // GCS保存先情報
+    final jsonString =
+        await rootBundle.loadString('assets/keys/service_account.json');
+    final credentials =
+        ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
+    final client = await clientViaServiceAccount(
+        credentials, [gcs.StorageApi.devstorageFullControlScope]);
+    final storage = gcs.StorageApi(client);
+    const bucketName = "boulderingapp_tweets_media";
+
+    // ファイルの中身を読み込み，ハッシュ値を作成する
+    final bytes = await imageFile.readAsBytes();
+    final digest = sha256.convert(bytes);
+
+    // ファイル名作成(prefix + ハッシュ値)
+    final fileName =
+        "user_icon_url_${digest.toString()}${path.extension(imageFile.path)}";
+
+    final media = gcs.Media(imageFile.openRead(), imageFile.lengthSync());
+
+    // GCS保存処理
+    await storage.objects.insert(
+      gcs.Object()..name = fileName,
+      bucketName,
+      uploadMedia: media,
+    );
+    client.close();
+
+    // GCSの公開URL
+    return "https://storage.googleapis.com/$bucketName/$fileName";
+  }
 
   /// ■ メソッド
   /// - ユーザーアイコンURLを更新する

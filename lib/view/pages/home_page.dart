@@ -125,42 +125,65 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 64),
+                const SizedBox(height: 52),
 
                 /// 写真提供URL実装
-                const Text(
-                  'ジムの写真を提供してくれる方は ぜひご協力ください！',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-
-                SizedBox(
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final Uri formUrl =
-                          Uri.parse('https://forms.gle/fshfxBP8Sd49mfBi6');
-                      if (await canLaunchUrl(formUrl)) {
-                        await launchUrl(formUrl,
-                            mode: LaunchMode.externalApplication);
-                      } else {
-                        debugPrint('GoogleフォームのURLを開けませんでした。');
-                      }
-                    },
-                    icon: const Icon(Icons.send),
-                    label: const Text('ジムの写真を送る'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF0056FF),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF4D9), // 薄い黄色背景
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        '🙇‍♂️ 現在、ジム写真を募集中です！🙇‍♀️',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'ジムの写真を提供してくれる方は ぜひご協力ください！',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final Uri formUrl = Uri.parse(
+                                'https://forms.gle/fshfxBP8Sd49mfBi6');
+                            if (await canLaunchUrl(formUrl)) {
+                              await launchUrl(formUrl,
+                                  mode: LaunchMode.externalApplication);
+                            } else {
+                              debugPrint('GoogleフォームのURLを開けませんでした。');
+                            }
+                          },
+                          icon: const Icon(Icons.send),
+                          label: const Text('ジムの写真を送る'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF0056FF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

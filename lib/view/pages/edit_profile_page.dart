@@ -140,10 +140,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         );
 
                         if (result != null && result.files.isNotEmpty) {
+                          // 必要なrefを先に保持
+                          final userId = ref.read(userProvider)!.userId;
+                          final notifier = ref.read(userProvider.notifier);
+
                           // 選択した写真のパスを画像ファイル化する
                           final File selectedFile =
                               File(result.files.single.path!);
-
                           // プレビュー画面に遷移する
                           final File? confirmedFile =
                               await Navigator.push<File?>(
@@ -156,24 +159,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           if (confirmedFile != null) {
                             // アップロード処理
-                            final userId = ref.read(userProvider)!.userId;
-                            final tempUrl = confirmedFile.path;
-                            ref
-                                .read(userProvider.notifier)
-                                .state
-                                ?.copyWith(userIconUrl: tempUrl);
+                            // 一度ローカル状態を借り更新(即UI更新)
+                            notifier.state = notifier.state?.copyWith(
+                              userIconUrl: confirmedFile.path,
+                            );
 
-                            Future(() async {
+                            // 完了を待つ(popされても処理が残るよう，microtaskで対応)
+                            Future.microtask(() async {
                               try {
-                                final uploadedImageUrl = await ref
-                                    .read(userProvider.notifier)
+                                final uploadedImageUrl = await notifier
                                     .uploadUserIcon(confirmedFile);
-                                await ref
-                                    .read(userProvider.notifier)
-                                    .updateUserIconUrl(
-                                        uploadedImageUrl!, userId);
+                                await notifier.updateUserIconUrl(
+                                    uploadedImageUrl!, userId);
+                                print("写真更新完了");
                               } catch (e) {
-                                // debugPrint("アイコン更新失敗: $e");
+                                debugPrint("アイコン更新失敗!!: $e");
                               }
                             });
                           }

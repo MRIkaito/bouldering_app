@@ -1,9 +1,12 @@
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/boul_log.dart';
 import 'package:bouldering_app/view_model/my_tweets_provider.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// ■ クラス
+/// - 自分が投稿したツイートを表示するクラス
 class MyTweetsSection extends ConsumerStatefulWidget {
   const MyTweetsSection({super.key});
 
@@ -12,8 +15,8 @@ class MyTweetsSection extends ConsumerStatefulWidget {
 }
 
 class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
+  // ■ プロパティ
   final ScrollController _scrollController = ScrollController();
-  bool _showNoTweetsText = false;
 
   /// ■ 初期化
   @override
@@ -23,15 +26,6 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     _fetchTweets();
     // 無限スクロール用リスナー
     _scrollController.addListener(_onScroll);
-
-    // 5病後に「ツイートなし表示」に切り替える
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          _showNoTweetsText = true;
-        });
-      }
-    });
   }
 
   /// ■ dispose
@@ -69,7 +63,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
   /// - リフレッシュ開始
   /// - もらった引数を反映した状態
   Future<void> _refetchTweets() async {
-    // 今持っているツイートをすべて破棄する
+    // 今持つツイート(状態)をすべて破棄する
     ref.read(myTweetsProvider.notifier).disposeMyTweets();
 
     // ツイートを新しく取得しなおす
@@ -82,17 +76,18 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     final tweets = ref.watch(myTweetsProvider);
     final hasMore = ref.watch(myTweetsProvider.notifier).hasMore;
 
-    return tweets.isEmpty
-        ? Center(
-            child: _showNoTweetsText
-                ? const CircularProgressIndicator() // ツイートが出るまでローディング表示
-                : const Text("ツイートがありません"), // 5秒後にこれが出る
-          )
-        :
-        // 自分のツイート
-        RefreshIndicator(
-            onRefresh: _refetchTweets,
-            child: ListView.builder(
+    return RefreshIndicator(
+      onRefresh: _refetchTweets,
+      child: tweets.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: true,
+              children: const [
+                SizedBox(height: 96),
+                AppLogo(),
+              ],
+            )
+          : ListView.builder(
               key: const PageStorageKey<String>('my_tweets_section'),
               controller: _scrollController,
               itemCount: tweets.length + (hasMore ? 1 : 0),
@@ -124,6 +119,6 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 );
               },
             ),
-          );
+    );
   }
 }

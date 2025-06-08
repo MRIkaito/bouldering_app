@@ -1,3 +1,4 @@
+import 'package:bouldering_app/view/components/app_logo.dart';
 import 'package:bouldering_app/view/components/gim_card.dart';
 import 'package:bouldering_app/view_model/user_provider.dart';
 import 'package:bouldering_app/view_model/utility/is_open.dart';
@@ -5,6 +6,8 @@ import 'package:bouldering_app/view_model/wanna_go_relation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// ■ クラス
+/// - 自分が登録したイキタイジムを表示するクラス
 class WannaGoGymsSectrion extends ConsumerStatefulWidget {
   const WannaGoGymsSectrion({super.key});
 
@@ -13,13 +16,13 @@ class WannaGoGymsSectrion extends ConsumerStatefulWidget {
 }
 
 class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
+  // ■ プロパティ
   final ScrollController _scrollController = ScrollController();
 
   /// ■ 初期化
   @override
   initState() {
     super.initState();
-
     // 起動時に一度だけジムカードを取得する
     Future.microtask(() async {
       await fetchGymCards();
@@ -36,11 +39,11 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
   Future<void> fetchGymCards() async {
     // ユーザーID
     final userId = ref.read(userProvider)?.userId;
-    print("🟡 [DEBUG] user_id before request: $userId");
+    // print("🟡 [DEBUG] user_id before request: $userId");
 
     // ユーザーID取得できていない時、実行しない
     if (userId == null) {
-      // ❌ [ERROR] user_id is null! API リクエストをスキップ
+      // print("❌ [ERROR] user_id is null! API リクエストをスキップ");
       return;
     }
 
@@ -65,68 +68,63 @@ class WannaGoGymsSectionState extends ConsumerState<WannaGoGymsSectrion> {
   @override
   Widget build(BuildContext context) {
     // 自分のイキタイ登録しているジム情報
-    // ✅ デバッグポイント 1: wannaGoRelationProvider の状態をチェック
     final gymCards = ref.watch(wannaGoRelationProvider);
-    print("🟢 [DEBUG] gymCardsのデータ: $gymCards");
-    print("🟢 [DEBUG] gymCards.keys: ${gymCards.keys}");
-    print("🟢 [DEBUG] gymCards.values.toList(): ${gymCards.values.toList()}");
-    print("🟢 [DEBUG] gymCards.length: ${gymCards.length}");
-
+    //【DEBUG】下記エラー表示時に確認するときに使用
+    // print("🟢 [DEBUG] gymCardsのデータ: $gymCards");
+    // print("🟢 [DEBUG] gymCards.keys: ${gymCards.keys}");
+    // print("🟢 [DEBUG] gymCards.values.toList(): ${gymCards.values.toList()}");
+    // print("🟢 [DEBUG] gymCards.length: ${gymCards.length}");
     final gymCardsList = gymCards.values.toList();
 
     return RefreshIndicator(
       onRefresh: _refreshWannaGoGyms,
-      child: ListView.builder(
-        controller: _scrollController,
-        key: const PageStorageKey<String>('wanna_go_gyms_section'),
-        itemCount: gymCardsList.isEmpty ? 1 : gymCardsList.length,
-        itemBuilder: (context, index) {
-          // 登録ジムがまだないケース
-          if (gymCardsList.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 100),
-                child: Text(
-                  "登録されているジムがありません",
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            );
-          }
+      child: gymCardsList.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: true,
+              children: const [
+                SizedBox(height: 96),
+                AppLogo(),
+              ],
+            )
+          : ListView.builder(
+              controller: _scrollController,
+              key: const PageStorageKey<String>('wanna_go_gyms_section'),
+              itemCount: gymCardsList.isEmpty ? 1 : gymCardsList.length,
+              itemBuilder: (context, index) {
+                final gymCard = gymCardsList[index];
+                final Map<String, String> gymOpenHours = {
+                  'sun_open': gymCard.sunOpen ?? '-',
+                  'sun_close': gymCard.sunClose ?? '-',
+                  'mon_open': gymCard.monOpen ?? '-',
+                  'mon_close': gymCard.monClose ?? '-',
+                  'tue_open': gymCard.tueOpen ?? '-',
+                  'tue_close': gymCard.tueClose ?? '-',
+                  'wed_open': gymCard.wedOpen ?? '-',
+                  'wed_close': gymCard.wedClose ?? '-',
+                  'thu_open': gymCard.thuOpen ?? '-',
+                  'thu_close': gymCard.thuClose ?? '-',
+                  'fri_open': gymCard.friOpen ?? '-',
+                  'fri_close': gymCard.friClose ?? '-',
+                  'sat_open': gymCard.satOpen ?? '-',
+                  'sat_close': gymCard.satClose ?? '-',
+                };
 
-          final gymCard = gymCardsList[index];
-          final Map<String, String> gymOpenHours = {
-            'sun_open': gymCard.sunOpen ?? '-',
-            'sun_close': gymCard.sunClose ?? '-',
-            'mon_open': gymCard.monOpen ?? '-',
-            'mon_close': gymCard.monClose ?? '-',
-            'tue_open': gymCard.tueOpen ?? '-',
-            'tue_close': gymCard.tueClose ?? '-',
-            'wed_open': gymCard.wedOpen ?? '-',
-            'wed_close': gymCard.wedClose ?? '-',
-            'thu_open': gymCard.thuOpen ?? '-',
-            'thu_close': gymCard.thuClose ?? '-',
-            'fri_open': gymCard.friOpen ?? '-',
-            'fri_close': gymCard.friClose ?? '-',
-            'sat_open': gymCard.satOpen ?? '-',
-            'sat_close': gymCard.satClose ?? '-',
-          };
-
-          // TODO：gymPhotosを渡す仕様に変更する
-          return GimCard(
-            gymId: gymCard.gymId.toString(),
-            gymName: gymCard.gymName,
-            gymPrefecture: gymCard.prefecture,
-            ikitaiCount: gymCard.ikitaiCount,
-            boulCount: gymCard.boulCount,
-            minimumFee: gymCard.minimumFee,
-            isBoulderingGym: gymCard.isBoulderingGym,
-            isSpeedGym: gymCard.isSpeedGym,
-            isLeadGym: gymCard.isLeadGym,
-            isOpened: isOpen(gymOpenHours),
-          );
-        },
-      ),
+                // TODO：gymPhotosを渡す仕様に変更する
+                return GimCard(
+                  gymId: gymCard.gymId.toString(),
+                  gymName: gymCard.gymName,
+                  gymPrefecture: gymCard.prefecture,
+                  ikitaiCount: gymCard.ikitaiCount,
+                  boulCount: gymCard.boulCount,
+                  minimumFee: gymCard.minimumFee,
+                  isBoulderingGym: gymCard.isBoulderingGym,
+                  isSpeedGym: gymCard.isSpeedGym,
+                  isLeadGym: gymCard.isLeadGym,
+                  isOpened: isOpen(gymOpenHours),
+                );
+              },
+            ),
     );
   }
 }
